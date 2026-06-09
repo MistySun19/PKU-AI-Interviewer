@@ -29,7 +29,7 @@ PKU AI Interviewer 不是通用模拟面试题库。
 
 不要把“手填项目描述”作为 V1.0.0 的主要入口。它只能作为兜底补充。
 
-JD / 岗位描述不进入 V1.0.0 主流程，放到 V1.1 作为岗位偏置层。arXiv / 论文解析放到 V1.2。
+V1.0.0 内部按 alpha / beta / rc 推进：先 GitHub repo 理解，再接 `kaomian`，再支持一句话自述。arXiv / 论文解析放到 v1.1.0，JD / 岗位描述放到 v1.2.0。
 
 ## V1.0.0 输出目标
 
@@ -159,8 +159,8 @@ GitHub 审查重点：
 
 后续再加：
 
-- JD / 岗位描述偏置
 - arXiv / 论文项目理解
+- JD / 岗位描述偏置
 - 向量检索
 - 题库定时更新
 - 数据库存储
@@ -223,6 +223,7 @@ V1.0.0 成功，不要求完成完整聊天产品。
 核心定位文档：
 
 - `CHANGELOG.md`
+- `ROADMAP.md`
 - `V1.0.0_PLAN.md`
 - `VERSION_WORKLOG.md`
 - `PROJECT_POSITIONING_v0.0.1.md`

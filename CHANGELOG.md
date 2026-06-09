@@ -12,12 +12,12 @@
 - 新增 V1.0.0 证据驱动面试生成器计划。
 - 新增智能体工作规则 `AGENTS.md`。
 - 新增 DevContext.AI 与本项目 agent workflow 对比页。
+- 新增产品路线图 `ROADMAP.md`。
 
 ### 调整
 
 - 将 V1.0.0 范围调整为 GitHub 仓库理解优先。
-- 将 JD / 岗位描述偏置后置到 V1.1。
-- 将 arXiv / 论文项目理解后置到 V1.2。
+- 将路线调整为 GitHub repo -> `kaomian` -> 一句话自述 -> arXiv -> JD。
 
 ## v0.0.1 - 项目定位
 

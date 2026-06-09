@@ -25,13 +25,17 @@ AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 
 ## 后续增强
 
-- V1.1：接入 JD / 岗位描述偏置。
-- V1.2：接入 arXiv / 论文项目理解。
-- V1.3：接入实时面试追问。
+- v1.0.0-alpha：只支持 GitHub repo 理解。
+- v1.0.0-beta：接入 `kaomian`。
+- v1.0.0-rc：支持 GitHub repo + 一句话自述。
+- v1.1.0：接入 arXiv / 论文项目理解。
+- v1.2.0：接入 JD / 岗位描述偏置。
+- v1.3.0：接入实时面试追问。
 
 ## 文档
 
 - `V1.0.0_PLAN.md`: V1.0.0 架构和落地计划
+- `ROADMAP.md`: 从 GitHub repo 到 kaomian、一句话自述、arXiv、JD 的计划线
 - `VERSION_WORKLOG.md`: 版本演化工作日志，保留 v0.0.1 到 V1.0.0 的定位变化
 - `CHANGELOG.md`: 对外版本变更日志
 - `AGENTS.md`: 仓库定位、V1.0.0 架构和智能体工作规则
