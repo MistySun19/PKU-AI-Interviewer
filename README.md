@@ -26,6 +26,7 @@ AI、算法、研究岗实习与保研场景下的证据驱动面试生成器。
 ## 文档
 
 - `V1.0.0_PLAN.md`: V1.0.0 架构和落地计划
+- `VERSION_WORKLOG.md`: 版本演化工作日志，保留 v0.0.1 到 V1.0.0 的定位变化
 - `AGENTS.md`: 仓库定位、V1.0.0 架构和智能体工作规则
 - `agent.md`: 智能体入口说明，指向 `AGENTS.md`
 - `PROJECT_POSITIONING_v0.0.1.md`: v0.0.1 项目定位总结
