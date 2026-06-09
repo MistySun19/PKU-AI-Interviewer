@@ -1,0 +1,634 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>DevContext.AI 与 PKU AI Interviewer Agent Workflow 对比</title>
+  <style>
+    :root {
+      --ink: #18212f;
+      --muted: #5d6878;
+      --line: #d9dee7;
+      --paper: #f7f8fb;
+      --panel: #ffffff;
+      --dev: #355f9f;
+      --dev-soft: #e8f0fb;
+      --pku: #13795b;
+      --pku-soft: #e8f6f1;
+      --warn: #9a5b13;
+      --warn-soft: #fff3dd;
+      --risk: #a23b3b;
+      --risk-soft: #ffecec;
+      --shadow: 0 18px 48px rgba(28, 39, 61, 0.09);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+        "Microsoft YaHei", sans-serif;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 42px 22px 56px;
+    }
+
+    header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 28px;
+      align-items: end;
+      padding: 30px 0 34px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    h1,
+    h2,
+    h3,
+    p {
+      margin: 0;
+    }
+
+    h1 {
+      max-width: 800px;
+      font-size: 42px;
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin-bottom: 16px;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      font-size: 16px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 820px;
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 17px;
+    }
+
+    .position-card {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .position-card strong {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--pku);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+
+    .section {
+      margin-top: 34px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 22px;
+    }
+
+    .lane {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .lane-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: flex-start;
+      min-height: 126px;
+      padding: 22px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .dev .lane-head {
+      background: var(--dev-soft);
+    }
+
+    .pku .lane-head {
+      background: var(--pku-soft);
+    }
+
+    .badge {
+      flex: 0 0 auto;
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dev .badge {
+      color: var(--dev);
+      background: #d7e5f8;
+    }
+
+    .pku .badge {
+      color: var(--pku);
+      background: #d4eee5;
+    }
+
+    .lane-body {
+      padding: 20px 22px 24px;
+    }
+
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: step;
+    }
+
+    .step {
+      position: relative;
+      display: grid;
+      grid-template-columns: 34px minmax(0, 1fr);
+      gap: 12px;
+      min-height: 68px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: #fbfcfe;
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      display: grid;
+      place-items: center;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      color: #fff;
+      font-weight: 800;
+      font-size: 14px;
+    }
+
+    .dev .step::before {
+      background: var(--dev);
+    }
+
+    .pku .step::before {
+      background: var(--pku);
+    }
+
+    .step p {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+    }
+
+    th,
+    td {
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: #eef1f5;
+      font-size: 13px;
+      color: #3f4a5b;
+    }
+
+    td {
+      font-size: 14px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      border: 1px solid var(--line);
+      background: #fbfcfe;
+      padding: 6px 10px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .insight-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .insight {
+      min-height: 176px;
+      padding: 18px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .insight strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 15px;
+    }
+
+    .insight p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .adopt {
+      border-top: 5px solid var(--pku);
+    }
+
+    .adapt {
+      border-top: 5px solid var(--warn);
+    }
+
+    .avoid {
+      border-top: 5px solid var(--risk);
+    }
+
+    .flow-strip {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .flow-node {
+      position: relative;
+      min-height: 96px;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+    }
+
+    .flow-node::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -10px;
+      width: 10px;
+      height: 1px;
+      background: var(--line);
+    }
+
+    .flow-node:last-child::after {
+      display: none;
+    }
+
+    .flow-node strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+    }
+
+    .flow-node p {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .source {
+      margin-top: 28px;
+      padding: 18px 20px;
+      border: 1px solid var(--line);
+      background: #fdfefe;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .source a {
+      color: var(--dev);
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    @media (max-width: 900px) {
+      header,
+      .grid-2,
+      .insight-grid,
+      .flow-strip {
+        grid-template-columns: 1fr;
+      }
+
+      h1 {
+        font-size: 32px;
+      }
+
+      .position-card {
+        max-width: none;
+      }
+
+      .flow-node::after {
+        top: auto;
+        right: 50%;
+        bottom: -10px;
+        width: 1px;
+        height: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div>
+        <h1>DevContext.AI 与 PKU AI Interviewer 的 Agent Workflow 对比</h1>
+        <p class="subtitle">
+          DevContext.AI 的架构值得借鉴，因为它已经把“仓库分析 -> 项目报告 -> 项目面试 -> 回答评价”跑成了闭环。
+          但 PKU AI Interviewer 的目标不是复刻一个软件工程仓库解释器，而是做面向实习、保研、研究岗的项目考核拷打器。
+        </p>
+      </div>
+      <aside class="position-card">
+        <strong>核心差异</strong>
+        <p>他们问“这个软件项目工程上做得怎么样”；我们先问“系统能不能读懂这个仓库，并找到面试官会追的项目考核点”。</p>
+      </aside>
+    </header>
+
+    <section class="section grid-2">
+      <article class="lane dev">
+        <div class="lane-head">
+          <div>
+            <h2>DevContext.AI Workflow</h2>
+            <p>输入 GitHub 仓库，生成招聘友好的工程项目报告，并进入项目相关文字面试。</p>
+          </div>
+          <span class="badge">Repo Analyzer</span>
+        </div>
+        <div class="lane-body">
+          <ol class="steps">
+            <li class="step">
+              <div>
+                <h3>Repository Processing</h3>
+                <p>克隆仓库，过滤依赖、构建产物、二进制和 boilerplate，保留用户代码。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Stage 1 Project Review</h3>
+                <p>评估代码质量、架构清晰度、复杂度、生产可用性和真实性信号。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Stage 2 Intelligence Report</h3>
+                <p>生成架构报告、设计决策、技术取舍、可扩展性和简历要点。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Stage 3 Interview Simulation</h3>
+                <p>生成项目专属题目，分为 project understanding、implementation、domain expertise、edge cases、scaling。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Answer Evaluation & Follow-up</h3>
+                <p>用户文本回答后，系统即时评分；如果回答浅或漏点，则生成动态追问。</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </article>
+
+      <article class="lane pku">
+        <div class="lane-head">
+          <div>
+            <h2>PKU AI Interviewer Workflow</h2>
+            <p>V1.0.0 先输入 GitHub 仓库，生成面向项目考核的证据驱动面试计划；JD 和 arXiv 后置。</p>
+          </div>
+          <span class="badge">Project Examiner</span>
+        </div>
+        <div class="lane-body">
+          <ol class="steps">
+            <li class="step">
+              <div>
+                <h3>Input Parsing</h3>
+                <p>校验 GitHub 仓库链接，解析 owner、repo、branch 和用户补充的负责模块。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Evidence Ingestion</h3>
+                <p>抓 README、文件树、核心代码、配置、测试、评测脚本和示例材料；保留可引用证据。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Material Understanding</h3>
+                <p>理解项目目标、主流程、核心模块、数据流、agent loop、评测、异常处理和部署边界。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Examiner Review</h3>
+                <p>像认真面试官或导师一样找追问点：设计理由、细节缺口、实验可信度、失败场景和真实贡献。</p>
+              </div>
+            </li>
+            <li class="step">
+              <div>
+                <h3>Bagu Retrieval & Interview Plan</h3>
+                <p>用 kaomian 召回高频八股，再把八股改写成绑定仓库证据的追问链。</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </article>
+    </section>
+
+    <section class="section">
+      <h2>关键维度对比</h2>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>维度</th>
+              <th>DevContext.AI</th>
+              <th>PKU AI Interviewer</th>
+              <th>我们的产品判断</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>核心对象</td>
+              <td>GitHub 软件工程仓库。</td>
+              <td>V1.0.0 先聚焦 GitHub 仓库；arXiv、JD、笔试题复盘进入后续版本。</td>
+              <td>先把仓库理解做深，再扩展到更多项目证据。</td>
+            </tr>
+            <tr>
+              <td>主要用户</td>
+              <td>工程毕业生或软件工程候选人，想把项目讲成招聘语言。</td>
+              <td>AI、算法、研究岗实习候选人，以及保研找导师的学生。</td>
+              <td>用户焦虑不是“报告好不好看”，而是“被追问时会不会露馅”。</td>
+            </tr>
+            <tr>
+              <td>证据粒度</td>
+              <td>强调文件、函数、代码模式、行号引用。</td>
+              <td>V1.0.0 需要 README、文件、函数、模块、测试、评测和运行路径证据。</td>
+              <td>先做到 repo-grounded，再扩展到 paper-grounded 和 JD-grounded。</td>
+            </tr>
+            <tr>
+              <td>问题类型</td>
+              <td>架构、实现、取舍、边界情况、扩展性、代码质量。</td>
+              <td>项目事实、设计理由、核心实现、评测可信度、八股连接、失败场景、真实贡献。</td>
+              <td>我们要保留工程深挖，但用项目考核标准重写它。</td>
+            </tr>
+            <tr>
+              <td>实时面试</td>
+              <td>文字作答，提交后即时评分，根据弱点生成 follow-up。</td>
+              <td>V1.0.0 先生成面试计划；V1.3 再做基于回答的连续追问。</td>
+              <td>先把题出准，再做聊天；顺序很重要。</td>
+            </tr>
+            <tr>
+              <td>题库角色</td>
+              <td>主要从仓库上下文生成项目问题。</td>
+              <td>kaomian 作为高频八股校准器，bagu-killer 未来做题库更新流水线。</td>
+              <td>题库不能直接拼题，必须和材料证据绑定。</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>我们应该借鉴什么</h2>
+      <div class="insight-grid">
+        <article class="insight adopt">
+          <strong>直接借鉴：分阶段流水线</strong>
+          <p>先处理材料，再结构化理解，再生成面试内容。这个顺序能避免模型直接泛问，也方便展示进度。</p>
+          <div class="pill-row">
+            <span class="pill">Stage pipeline</span>
+            <span class="pill">Progressive output</span>
+          </div>
+        </article>
+        <article class="insight adopt">
+          <strong>直接借鉴：证据绑定</strong>
+          <p>每个结论和问题都要引用来源。V1.0.0 先绑定 README、代码文件、核心模块、测试和评测证据。</p>
+          <div class="pill-row">
+            <span class="pill">Grounded claims</span>
+            <span class="pill">Evidence source</span>
+          </div>
+        </article>
+        <article class="insight adopt">
+          <strong>直接借鉴：回答评价闭环</strong>
+          <p>V1.3 可以采用“回答 -> 评分 -> 判断缺口 -> 追问”的机制，让拷打变成连续回合。</p>
+          <div class="pill-row">
+            <span class="pill">Answer scoring</span>
+            <span class="pill">Dynamic follow-up</span>
+          </div>
+        </article>
+        <article class="insight adapt">
+          <strong>需要改造：领域理解</strong>
+          <p>他们的领域理解偏软件工程；我们需要先让 agent 在仓库里识别 RL、RAG、后训练、具身智能、eval benchmark、合成数据等方向痕迹。</p>
+          <div class="pill-row">
+            <span class="pill">AI research</span>
+            <span class="pill">Paper-aware</span>
+          </div>
+        </article>
+        <article class="insight adapt">
+          <strong>需要改造：问题生成标准</strong>
+          <p>不能只问工程扩展性，也要问评测是否可信、方法为什么成立、细节为什么这么设计、哪些地方会被面试官质疑。</p>
+          <div class="pill-row">
+            <span class="pill">Project exam</span>
+            <span class="pill">Research defense</span>
+          </div>
+        </article>
+        <article class="insight avoid">
+          <strong>不要照搬：软件工程单一视角</strong>
+          <p>如果只做代码质量报告，我们会和 DevContext.AI 过于接近。我们的差异是“项目考核”，不是“仓库体检”。</p>
+          <div class="pill-row">
+            <span class="pill">Avoid clone</span>
+            <span class="pill">Keep positioning</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>PKU AI Interviewer 的推荐 V1.0.0 Agent Loop</h2>
+      <div class="flow-strip">
+        <div class="flow-node">
+          <strong>1. 解析输入</strong>
+          <p>识别 GitHub 仓库，解析仓库元信息和用户负责模块。</p>
+        </div>
+        <div class="flow-node">
+          <strong>2. 抓取证据</strong>
+          <p>获取 README、文件树、关键代码、测试和评测材料。</p>
+        </div>
+        <div class="flow-node">
+          <strong>3. 审查材料</strong>
+          <p>找真实面试官会追问的风险点。</p>
+        </div>
+        <div class="flow-node">
+          <strong>4. 连接题库</strong>
+          <p>召回 kaomian 高频题并绑定项目证据。</p>
+        </div>
+        <div class="flow-node">
+          <strong>5. 生成计划</strong>
+          <p>输出题目、证据、期望回答、红旗和追问链。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>一句话结论</h2>
+      <div class="position-card">
+        <p>
+          DevContext.AI 证明了“读仓库生成面试”这条技术路线可行；PKU AI Interviewer 的 V1.0.0 先把仓库理解做深，再把这条路线推进到更贴近中国学生真实场景的项目考核：代码、八股、评测、真实贡献和导师/面试官式连续追问。
+        </p>
+      </div>
+    </section>
+
+    <div class="source">
+      参考对象：
+      <a href="https://github.com/Rounakneema/DevContext.AI">DevContext.AI</a>
+      的公开 README、Stage 3 question generation、answer evaluation 和 live follow-up 设计；
+      PKU AI Interviewer 侧参考本仓库的 <code>V1.0.0_PLAN.md</code>、<code>AGENTS.md</code> 与用户访谈工作日志。
+    </div>
+  </main>
+</body>
+</html>

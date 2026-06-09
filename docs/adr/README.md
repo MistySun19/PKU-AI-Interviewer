@@ -31,4 +31,4 @@ ADR 用来记录不可轻易回滚的重要决策。
 
 - `0001-evidence-first-input.md`: V1.0.0 以 arXiv / GitHub 为必要输入。
 - `0002-kaomian-as-snapshot.md`: V1.0.0 先使用 `kaomian` 题库快照。
-
+- `0003-repo-understanding-first.md`: V1.0.0 先做好 GitHub 仓库理解，JD 和 arXiv 后置。
