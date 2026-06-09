@@ -32,8 +32,12 @@ npm run dev
 
 - `OPENAI_API_KEY`: OpenAI-compatible API key。未配置时会生成降级报告。
 - `OPENAI_BASE_URL`: OpenAI-compatible endpoint，默认 `https://api.openai.com/v1`。
-- `OPENAI_MODEL`: 模型名，默认 `gpt-4o-mini`。
+- `OPENAI_MODEL`: OpenAI-compatible 模型名；使用 Tokendance 时可以留空。
 - `GITHUB_TOKEN`: 可选，用于提高 GitHub API rate limit。
+- `TOKENDANCE_API_KEY`: 可选，Tokendance API key；未配置 `OPENAI_API_KEY` 时自动使用。
+- `TOKENDANCE_BASE_URL`: 可选，Tokendance OpenAI-compatible endpoint。
+- `TOKENDANCE_CHAT_COMPLETIONS_URL`: 可选，Tokendance chat completions 完整 URL。
+- `TOKENDANCE_MODEL`: 可选，Tokendance 模型名，默认 `deepseek-v4-pro`。
 
 ## 题库策略
 

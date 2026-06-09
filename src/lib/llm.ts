@@ -8,47 +8,52 @@ import {
 } from "./report";
 import type { AnalyzeResponse, ExamPoint, InterviewQuestion, RepoContext, Understanding } from "./types";
 
+const stringArraySchema = z.preprocess(
+  (value) => (Array.isArray(value) ? value : []),
+  z.array(z.string())
+);
+
 const understandingSchema = z.object({
   summary: z.string(),
-  techStack: z.array(z.string()).default([]),
-  entryPoints: z.array(z.string()).default([]),
+  techStack: stringArraySchema,
+  entryPoints: stringArraySchema,
   coreModules: z
+    .preprocess((value) => (Array.isArray(value) ? value : []), z
     .array(
       z.object({
         name: z.string(),
         responsibility: z.string(),
-        evidence: z.array(z.string()).default([])
+        evidence: stringArraySchema
       })
-    )
-    .default([]),
-  mainFlow: z.array(z.string()).default([]),
-  dataFlow: z.array(z.string()).default([]),
-  evaluationSignals: z.array(z.string()).default([]),
-  deploymentNotes: z.array(z.string()).default([]),
-  contributionHypotheses: z.array(z.string()).default([])
+    )),
+  mainFlow: stringArraySchema,
+  dataFlow: stringArraySchema,
+  evaluationSignals: stringArraySchema,
+  deploymentNotes: stringArraySchema,
+  contributionHypotheses: stringArraySchema
 });
 
 const examPointSchema = z.object({
   title: z.string(),
   riskLevel: z.enum(["low", "medium", "high"]).default("medium"),
-  evidence: z.array(z.string()).default([]),
+  evidence: stringArraySchema,
   whyAsk: z.string(),
-  followUps: z.array(z.string()).default([])
+  followUps: stringArraySchema
 });
 
 const questionSchema = z.object({
   question: z.string(),
   difficulty: z.enum(["warmup", "medium", "hard"]).default("medium"),
-  evidence: z.array(z.string()).default([]),
+  evidence: stringArraySchema,
   whyAsk: z.string(),
-  expectedAnswer: z.array(z.string()).default([]),
-  redFlags: z.array(z.string()).default([]),
-  followUps: z.array(z.string()).default([])
+  expectedAnswer: stringArraySchema,
+  redFlags: stringArraySchema,
+  followUps: stringArraySchema
 });
 
 const reviewSchema = z.object({
-  examPoints: z.array(examPointSchema).min(1).max(8),
-  questions: z.array(questionSchema).min(1).max(12)
+  examPoints: z.preprocess((value) => (Array.isArray(value) ? value : []), z.array(examPointSchema).min(1).max(8)),
+  questions: z.preprocess((value) => (Array.isArray(value) ? value : []), z.array(questionSchema).min(1).max(12))
 });
 
 export async function analyzeRepoWithLlm(context: RepoContext): Promise<AnalyzeResponse> {
@@ -59,8 +64,8 @@ export async function analyzeRepoWithLlm(context: RepoContext): Promise<AnalyzeR
   let examPoints: ExamPoint[];
   let questions: InterviewQuestion[];
 
-  if (!process.env.OPENAI_API_KEY) {
-    warnings.push("未配置 OPENAI_API_KEY，已使用仓库结构生成降级报告。");
+  if (!getApiKey()) {
+    warnings.push("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY，已使用仓库结构生成降级报告。");
     understanding = fallbackUnderstanding(context);
     examPoints = fallbackExamPoints(understanding);
     questions = fallbackQuestions(examPoints);
@@ -71,7 +76,7 @@ export async function analyzeRepoWithLlm(context: RepoContext): Promise<AnalyzeR
       examPoints = review.examPoints;
       questions = review.questions;
     } catch (error) {
-      warnings.push(`模型分析失败，已使用降级报告：${error instanceof Error ? error.message : "未知错误"}`);
+      warnings.push(`模型分析失败，已使用降级报告：${formatModelError(error)}`);
       understanding = fallbackUnderstanding(context);
       examPoints = fallbackExamPoints(understanding);
       questions = fallbackQuestions(examPoints);
@@ -193,18 +198,25 @@ ${codeContext}
 }
 
 async function chatJson(messages: Array<{ role: "system" | "user"; content: string }>): Promise<string> {
-  const baseUrl = process.env.OPENAI_BASE_URL ?? "https://api.openai.com/v1";
-  const model = process.env.OPENAI_MODEL ?? "gpt-4o-mini";
-  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY。");
+
+  const chatCompletionsUrl =
+    process.env.TOKENDANCE_CHAT_COMPLETIONS_URL ??
+    `${(process.env.OPENAI_BASE_URL ?? process.env.TOKENDANCE_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+  const model = getModelName();
+  const response = await fetch(chatCompletionsUrl, {
     method: "POST",
+    signal: AbortSignal.timeout(55_000),
     headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
       model,
       messages,
       temperature: 0.2,
+      max_tokens: 4000,
       response_format: { type: "json_object" }
     })
   });
@@ -219,4 +231,20 @@ async function chatJson(messages: Array<{ role: "system" | "user"; content: stri
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error("模型返回为空。");
   return content;
+}
+
+function getApiKey(): string | undefined {
+  return process.env.OPENAI_API_KEY || process.env.TOKENDANCE_API_KEY;
+}
+
+function getModelName(): string {
+  if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
+  if (process.env.TOKENDANCE_MODEL) return process.env.TOKENDANCE_MODEL;
+  if (process.env.TOKENDANCE_API_KEY) return "deepseek-v4-pro";
+  return "gpt-4o-mini";
+}
+
+function formatModelError(error: unknown): string {
+  if (error instanceof z.ZodError) return "模型 JSON 字段不完整或格式不稳定。";
+  return error instanceof Error ? error.message : "未知错误";
 }
