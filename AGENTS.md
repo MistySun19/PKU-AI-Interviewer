@@ -229,11 +229,25 @@ V1.0.0 成功，不要求完成完整聊天产品。
 
 核心定位文档：
 
+- `CHANGELOG.md`
 - `V1.0.0_PLAN.md`
+- `VERSION_WORKLOG.md`
 - `PROJECT_POSITIONING_v0.0.1.md`
 - `interview-worklog.md`
 - `user-research.md`
 - `github-competitor-research.md`
+- `docs/workflows/GIT_WORKFLOW.md`
+- `docs/workflows/VERSIONING.md`
+- `docs/workflows/WORKLOG_SYSTEM.md`
+- `docs/adr/`
 
 当本文和旧文档冲突时，以 `V1.0.0_PLAN.md` 和本文为准。
 
+## 仓库治理规则
+
+- 对外版本变化写入 `CHANGELOG.md`。
+- 产品定位演化写入 `VERSION_WORKLOG.md`。
+- 用户访谈继续写入 `interview-worklog.md`。
+- 关键架构决策写入 `docs/adr/`。
+- Git 提交和版本规则遵守 `docs/workflows/`。
+- 新文档必须被 README 或对应索引引用。

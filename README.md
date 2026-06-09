@@ -27,8 +27,13 @@ AI、算法、研究岗实习与保研场景下的证据驱动面试生成器。
 
 - `V1.0.0_PLAN.md`: V1.0.0 架构和落地计划
 - `VERSION_WORKLOG.md`: 版本演化工作日志，保留 v0.0.1 到 V1.0.0 的定位变化
+- `CHANGELOG.md`: 对外版本变更日志
 - `AGENTS.md`: 仓库定位、V1.0.0 架构和智能体工作规则
 - `agent.md`: 智能体入口说明，指向 `AGENTS.md`
+- `docs/workflows/GIT_WORKFLOW.md`: Git 提交流程
+- `docs/workflows/VERSIONING.md`: 版本管理规则
+- `docs/workflows/WORKLOG_SYSTEM.md`: 工作日志体系
+- `docs/adr/`: 架构决策记录
 - `PROJECT_POSITIONING_v0.0.1.md`: v0.0.1 项目定位总结
 - `interview-worklog.md`: 用户访谈工作日志
 - `user-research.md`: 国内大学生面试需求初步调研
