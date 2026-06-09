@@ -1,6 +1,9 @@
 *.pdf
 .DS_Store
 node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
 .env
 .env.local
-

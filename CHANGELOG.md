@@ -13,6 +13,9 @@
 - 新增智能体工作规则 `AGENTS.md`。
 - 新增 DevContext.AI 与本项目 agent workflow 对比页。
 - 新增产品路线图 `ROADMAP.md`。
+- 实现 v1.0.0-alpha Web Demo：输入公开 GitHub 仓库，生成项目考核面试计划。
+- 新增 GitHub 仓库抓取、文件筛选、证据文件选择、LLM 分析和降级报告能力。
+- 新增基础单元测试，覆盖 GitHub URL 解析、文件过滤、文件排序和 JSON 容错。
 
 ### 调整
 

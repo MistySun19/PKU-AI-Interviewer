@@ -18,6 +18,23 @@ AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 6. 系统把仓库证据和八股题连接起来。
 7. 输出一份项目考核面试计划。
 
+## 本地运行
+
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
+
+打开 `http://localhost:3000`，输入公开 GitHub 仓库链接即可生成 alpha 报告。
+
+环境变量：
+
+- `OPENAI_API_KEY`: OpenAI-compatible API key。未配置时会生成降级报告。
+- `OPENAI_BASE_URL`: OpenAI-compatible endpoint，默认 `https://api.openai.com/v1`。
+- `OPENAI_MODEL`: 模型名，默认 `gpt-4o-mini`。
+- `GITHUB_TOKEN`: 可选，用于提高 GitHub API rate limit。
+
 ## 题库策略
 
 - `kaomian`: V1.0.0 直接使用的题库快照。
