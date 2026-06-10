@@ -1,6 +1,5 @@
 import { z } from "zod";
 import type {
-  AnalysisMode,
   EvidenceFile,
   PaperSignals,
   RepoContext,
@@ -282,6 +281,9 @@ export async function fetchRepoContext(
   }
 
   const files = await fetchSelectedFiles(parsed.owner, parsed.repo, branch, candidates, headers, warnings, options.onFileFetched);
+  if (files.length === 0 && candidates.length > 0) {
+    throw new Error("无法读取任何仓库文件（GitHub raw 与 contents API 均失败），请检查网络后重试。");
+  }
   const readme = files.find((file) => file.path.toLowerCase().includes("readme"))?.content ?? "";
   const researchArtifacts = collectResearchArtifacts(candidates);
   const paperSignals = emptyPaperSignals();
@@ -309,10 +311,13 @@ export async function fetchSingleFile(
   branch: string,
   path: string
 ): Promise<{ content: string; truncated: boolean } | null> {
-  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${path}`;
-  const response = await fetch(rawUrl, { headers: githubHeaders() });
-  if (!response.ok) return null;
-  let content = await response.text();
+  let content: string | null;
+  try {
+    content = await fetchRawWithFallback(owner, repo, branch, path, githubHeaders());
+  } catch {
+    return null;
+  }
+  if (content === null) return null;
   let truncated = false;
   if (content.length > MAX_FILE_BYTES) {
     content = `${content.slice(0, MAX_FILE_BYTES)}\n... (truncated by alpha limit)`;
@@ -321,22 +326,54 @@ export async function fetchSingleFile(
   return { content, truncated };
 }
 
-export function buildCodeContext(files: RepoFileContent[]): { context: string; warnings: string[] } {
-  const warnings: string[] = [];
-  let total = 0;
-  const blocks: string[] = [];
+const RAW_FETCH_CONCURRENCY = 5;
 
-  for (const file of files) {
-    const header = `\n--- File: ${file.path} | category: ${file.category} | reason: ${file.reason} ---\n`;
-    const next = header + file.content;
-    total += next.length;
-    blocks.push(next);
-  }
+const ownerRepoPattern = /^[A-Za-z0-9_.-]+$/;
 
-  return { context: blocks.join("\n"), warnings };
+function encodePathSegments(path: string): string {
+  const segments = path.split("/").map((segment) => {
+    if (segment === "" || segment === "." || segment === ".." || segment.includes("\\")) {
+      throw new Error(`非法的文件路径：${path}`);
+    }
+    return encodeURIComponent(segment);
+  });
+  return segments.join("/");
 }
 
-const RAW_FETCH_CONCURRENCY = 5;
+export function buildRawUrl(owner: string, repo: string, branch: string, path: string): string {
+  if (!ownerRepoPattern.test(owner) || !ownerRepoPattern.test(repo)) {
+    throw new Error(`非法的 owner/repo：${owner}/${repo}`);
+  }
+  return `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${encodePathSegments(path)}`;
+}
+
+async function fetchRawWithFallback(
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string,
+  headers: HeadersInit
+): Promise<string | null> {
+  const rawUrl = buildRawUrl(owner, repo, branch, path);
+  const contentsUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${encodePathSegments(path)}?ref=${encodeURIComponent(branch)}`;
+
+  try {
+    const response = await fetch(rawUrl, { headers, signal: AbortSignal.timeout(20_000) });
+    if (response.ok) return await response.text();
+  } catch {
+    /* raw CDN 失败，回退 contents API */
+  }
+  try {
+    const response = await fetch(contentsUrl, {
+      headers: { ...(headers as Record<string, string>), Accept: "application/vnd.github.raw" },
+      signal: AbortSignal.timeout(20_000)
+    });
+    if (response.ok) return await response.text();
+  } catch {
+    /* 两个通道都失败 */
+  }
+  return null;
+}
 
 export async function mapWithConcurrency<T, R>(
   items: T[],
@@ -366,13 +403,17 @@ async function fetchSelectedFiles(
   onFileFetched?: (path: string) => void
 ): Promise<RepoFileContent[]> {
   const fetched = await mapWithConcurrency(candidates, RAW_FETCH_CONCURRENCY, async (candidate) => {
-    const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${candidate.path}`;
-    const response = await fetch(rawUrl, { headers });
-    if (!response.ok) {
-      warnings.push(`读取文件失败：${candidate.path} (${response.status})`);
+    let content: string | null;
+    try {
+      content = await fetchRawWithFallback(owner, repo, branch, candidate.path, headers);
+    } catch {
+      warnings.push(`跳过非法文件路径：${candidate.path}`);
       return null;
     }
-    let content = await response.text();
+    if (content === null) {
+      warnings.push(`读取文件失败（raw 与 contents API 均不可用）：${candidate.path}`);
+      return null;
+    }
     let truncated = false;
     if (content.length > MAX_FILE_BYTES) {
       content = `${content.slice(0, MAX_FILE_BYTES)}\n... (truncated by alpha limit)`;

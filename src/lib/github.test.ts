@@ -1,11 +1,31 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildRawUrl,
   classifyResearchArtifact,
   parseGitHubUrl,
   scoreFilePath,
   selectCandidateFiles,
   shouldExcludePath
 } from "./github";
+
+describe("buildRawUrl", () => {
+  it("encodes path segments", () => {
+    expect(buildRawUrl("o", "r", "main", "docs/带空格 文件.md")).toBe(
+      `https://raw.githubusercontent.com/o/r/main/docs/${encodeURIComponent("带空格 文件.md")}`
+    );
+  });
+
+  it("rejects traversal and empty segments", () => {
+    expect(() => buildRawUrl("o", "r", "main", "../secret")).toThrow();
+    expect(() => buildRawUrl("o", "r", "main", "a//b")).toThrow();
+    expect(() => buildRawUrl("o", "r", "main", "a/./b")).toThrow();
+  });
+
+  it("rejects illegal owner or repo", () => {
+    expect(() => buildRawUrl("o/evil", "r", "main", "a.py")).toThrow();
+    expect(() => buildRawUrl("o", "r?x=1", "main", "a.py")).toThrow();
+  });
+});
 
 describe("parseGitHubUrl", () => {
   it("parses normal GitHub repo URLs", () => {
