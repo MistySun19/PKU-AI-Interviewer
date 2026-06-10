@@ -298,7 +298,27 @@ export async function fetchRepoContext(
     fileCount: blobFiles.length
   };
 
-  return { repo, readme, files, analysisMode, paperSignals, researchArtifacts, warnings };
+  const treeFiles = blobFiles.map((item) => ({ path: item.path, size: item.size ?? 0 }));
+
+  return { repo, readme, files, treeFiles, analysisMode, paperSignals, researchArtifacts, warnings };
+}
+
+export async function fetchSingleFile(
+  owner: string,
+  repo: string,
+  branch: string,
+  path: string
+): Promise<{ content: string; truncated: boolean } | null> {
+  const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${path}`;
+  const response = await fetch(rawUrl, { headers: githubHeaders() });
+  if (!response.ok) return null;
+  let content = await response.text();
+  let truncated = false;
+  if (content.length > MAX_FILE_BYTES) {
+    content = `${content.slice(0, MAX_FILE_BYTES)}\n... (truncated by alpha limit)`;
+    truncated = true;
+  }
+  return { content, truncated };
 }
 
 export function buildCodeContext(files: RepoFileContent[]): { context: string; warnings: string[] } {

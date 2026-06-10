@@ -27,6 +27,7 @@ export type RepoContext = {
   repo: RepoInfo;
   readme: string;
   files: RepoFileContent[];
+  treeFiles: Array<{ path: string; size: number }>;
   analysisMode: AnalysisMode;
   paperSignals: PaperSignals;
   researchArtifacts: ResearchArtifacts;
@@ -139,6 +140,16 @@ export type ResearchPlanSummary = {
   analysisMode: AnalysisMode;
   techTags: string[];
   dimensions: Array<{ key: ResearchDimensionKey; goal: string; files: string[] }>;
+};
+
+export type DimensionDigest = {
+  dimension: ResearchDimensionKey;
+  summary: string;
+  findings: Array<{ claim: string; evidence: string[]; confidence: Confidence }>;
+  claimCodeLinks: Array<{ claim: string; code: string[]; experiments: string[] }>;
+  askPoints: string[];
+  openQuestions: string[];
+  requestedFiles: string[];
 };
 
 export type SseEvent =
