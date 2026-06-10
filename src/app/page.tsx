@@ -104,6 +104,7 @@ export default function Home() {
   const [interviewSession, setInterviewSession] = useState<InterviewSession | null>(null);
   const [answerDraft, setAnswerDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [practiceHelpLoading, setPracticeHelpLoading] = useState<"hint" | "answer" | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [restoredNotice, setRestoredNotice] = useState("");
   const feedSeq = useRef(0);
@@ -468,16 +469,26 @@ export default function Home() {
     window.setTimeout(() => setCopied(false), 1600);
   }
 
-  function showPracticeHint() {
-    const question = currentPracticeQuestion(interviewSession);
-    if (!question) return;
-    pushChat({ role: "system", text: buildPracticeHint(question, currentPromptText(chat)) });
-  }
-
-  function showReferenceAnswer() {
-    const question = currentPracticeQuestion(interviewSession);
-    if (!question) return;
-    pushChat({ role: "system", text: buildReferenceAnswer(question, currentPromptText(chat)) });
+  async function requestPracticeHelp(kind: "hint" | "answer") {
+    if (!sessionId || !interviewSession || practiceHelpLoading) return;
+    setPracticeHelpLoading(kind);
+    try {
+      const response = await fetch("/api/practice-help", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId, kind, restoreSession: interviewSession })
+      });
+      const data = (await response.json().catch(() => null)) as { text?: string; error?: string } | null;
+      if (!response.ok) throw new Error(data?.error ?? `AI 生成失败 (${response.status})。`);
+      pushChat({
+        role: "system",
+        text: data?.text?.trim() || (kind === "hint" ? "AI 暂时没有生成有效提示。" : "AI 暂时没有生成有效参考答案。")
+      });
+    } catch (err) {
+      pushChat({ role: "system", text: err instanceof Error ? err.message : "AI 生成失败，请稍后重试。" });
+    } finally {
+      setPracticeHelpLoading(null);
+    }
   }
 
   function clearPersistedRun() {
@@ -655,11 +666,19 @@ export default function Home() {
 
             {practiceMode && !summary && sessionId && (
               <div className="practiceTools" aria-label="练习辅助">
-                <button type="button" disabled={sending || !interviewSession} onClick={showPracticeHint}>
-                  给我提示
+                <button
+                  type="button"
+                  disabled={sending || !interviewSession || practiceHelpLoading !== null}
+                  onClick={() => void requestPracticeHelp("hint")}
+                >
+                  {practiceHelpLoading === "hint" ? "AI 生成中" : "给我提示"}
                 </button>
-                <button type="button" disabled={sending || !interviewSession} onClick={showReferenceAnswer}>
-                  看参考答案
+                <button
+                  type="button"
+                  disabled={sending || !interviewSession || practiceHelpLoading !== null}
+                  onClick={() => void requestPracticeHelp("answer")}
+                >
+                  {practiceHelpLoading === "answer" ? "AI 生成中" : "看参考答案"}
                 </button>
               </div>
             )}
@@ -1137,47 +1156,6 @@ function formatSavedAt(savedAt: number): string {
     minute: "2-digit",
     second: "2-digit"
   }).format(savedAt);
-}
-
-function currentPracticeQuestion(session: InterviewSession | null): InterviewQuestion | null {
-  if (!session || session.questions.length === 0) return null;
-  return session.questions[Math.min(session.currentIndex, session.questions.length - 1)] ?? null;
-}
-
-function currentPromptText(chat: ChatMessage[]): string {
-  for (let i = chat.length - 1; i >= 0; i--) {
-    const message = chat[i];
-    if (message.role === "interviewer") return message.text;
-  }
-  return "";
-}
-
-function buildPracticeHint(question: InterviewQuestion, promptText: string): string {
-  const clues = [
-    question.whyAsk ? `先说明为什么问：${question.whyAsk}` : "",
-    question.evidence.length > 0 ? `回到证据：${question.evidence.slice(0, 3).join("、")}` : "",
-    question.expectedAnswer.length > 0 ? `至少覆盖：${question.expectedAnswer.slice(0, 2).join("；")}` : "",
-    question.followUps.length > 0 ? `留意追问方向：${question.followUps[0]}` : ""
-  ].filter(Boolean);
-  return [`提示：${promptText || question.question}`, ...clues.map((item) => `- ${item}`)].join("\n");
-}
-
-function buildReferenceAnswer(question: InterviewQuestion, promptText: string): string {
-  const answerPoints =
-    question.expectedAnswer.length > 0
-      ? question.expectedAnswer
-      : ["先描述项目事实，再解释设计理由，最后主动补充限制、风险和可改进点。"];
-  const redFlags = question.redFlags.length > 0 ? `\n\n需要避免：\n${question.redFlags.map((item) => `- ${item}`).join("\n")}` : "";
-  const evidence = question.evidence.length > 0 ? `\n\n可引用证据：${question.evidence.slice(0, 4).join("、")}` : "";
-  return [
-    `参考答案：${promptText || question.question}`,
-    "",
-    ...answerPoints.map((item) => `- ${item}`),
-    evidence,
-    redFlags
-  ]
-    .filter(Boolean)
-    .join("\n");
 }
 
 function RenderedInterviewPlan({

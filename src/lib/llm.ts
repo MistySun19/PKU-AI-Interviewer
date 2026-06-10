@@ -613,6 +613,10 @@ const interviewSummarySchema = z.object({
   )
 });
 
+const practiceHelpSchema = z.object({
+  text: z.string().default("")
+});
+
 export async function evaluateAnswer(args: {
   repoFullName: string;
   understanding: Understanding;
@@ -688,6 +692,65 @@ ${JSON.stringify(args.rounds, null, 2)}
   return withRetry("summary", async () =>
     parseModelJson(interviewSummarySchema, await chatJson(messages, 180_000), "summary")
   );
+}
+
+export async function generatePracticeHelp(args: {
+  repoFullName: string;
+  understanding: Understanding;
+  question: InterviewQuestion;
+  questionText: string;
+  kind: "hint" | "answer";
+}): Promise<string> {
+  const task =
+    args.kind === "hint"
+      ? "给候选人一个启发式提示，不直接完整作答。提示要指出答题切入点、应引用的项目证据、容易遗漏的关键点。"
+      : "直接生成一版高质量中文参考答案。答案要像候选人在面试中当场回答，先回答项目事实，再解释设计理由/原理，再主动补充风险、替代方案或失败场景。";
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `仓库：${args.repoFullName}
+项目理解摘要：${args.understanding.summary}
+问题设定：${args.understanding.problemSetting}
+技术栈：${args.understanding.techStack.join("、") || "未明确识别"}
+核心模块：
+${args.understanding.coreModules
+  .map((module) => `${module.name}: ${module.responsibility}（证据：${module.evidence.join("、") || "无"}）`)
+  .join("\n")}
+
+主考题元数据：
+${JSON.stringify(
+  {
+    question: args.question.question,
+    difficulty: args.question.difficulty,
+    evidence: args.question.evidence,
+    whyAsk: args.question.whyAsk,
+    expectedAnswer: args.question.expectedAnswer,
+    redFlags: args.question.redFlags,
+    followUps: args.question.followUps
+  },
+  null,
+  2
+)}
+
+当前实际提问（可能是追问）：${args.questionText}
+
+任务：${task}
+
+返回 JSON：
+{"text": "给候选人看的中文内容"}
+
+要求：
+- 必须围绕当前实际提问，不要泛泛讲面试技巧。
+- 必须结合题目证据和项目理解，但不要编造代码细节。
+- ${args.kind === "hint" ? "提示控制在 3-5 条要点，不要给完整答案。" : "参考答案用自然口语但有结构，控制在 4-7 句或 3-5 个要点。"}
+- 不要说“根据元数据”“根据提示词”。`
+    }
+  ];
+  const parsed = await withRetry(`practice-${args.kind}`, async () =>
+    parseModelJson(practiceHelpSchema, await chatJson(messages, 120_000), `practice-${args.kind}`)
+  );
+  return parsed.text;
 }
 
 export function assembleResponse(
