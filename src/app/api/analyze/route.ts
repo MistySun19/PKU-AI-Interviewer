@@ -9,6 +9,7 @@ export const maxDuration = 1200;
 
 const requestSchema = z.object({
   repositoryUrl: z.string().optional(),
+  repoUrl: z.string().optional(),
   runId: z.string().optional(),
   mode: z.enum(["survey", "interview", "practice"]).default("survey")
 });
@@ -57,12 +58,13 @@ export async function POST(request: Request) {
     return Response.json({ error: "分析任务不存在或已过期，请重新开始。" }, { status: 404 });
   }
   if (!run) {
-    if (!body.repositoryUrl) {
+    const repositoryUrl = body.repositoryUrl ?? body.repoUrl;
+    if (!repositoryUrl) {
       return Response.json({ error: "请求体需要包含 repositoryUrl 或 runId。" }, { status: 400 });
     }
     let parsedRepo;
     try {
-      parsedRepo = parseGitHubUrl(body.repositoryUrl);
+      parsedRepo = parseGitHubUrl(repositoryUrl);
     } catch (error) {
       return Response.json(
         { error: error instanceof Error ? error.message : "GitHub 仓库链接无法解析。" },
@@ -72,7 +74,7 @@ export async function POST(request: Request) {
     if (isDemoSnapshotEnabled() && isDemoSnapshotRepo(parsedRepo.owner, parsedRepo.repo)) {
       return createDemoSnapshotStream();
     }
-    run = createAnalysisRun(body.repositoryUrl, body.mode);
+    run = createAnalysisRun(repositoryUrl, body.mode);
   }
 
   const encoder = new TextEncoder();
