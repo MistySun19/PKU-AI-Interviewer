@@ -45,6 +45,7 @@ npm run dev
 - `TOKENDANCE_CHAT_COMPLETIONS_URL`: 可选，Tokendance chat completions 完整 URL。
 - `TOKENDANCE_MODEL`: 可选，Tokendance 模型名，默认 `deepseek-v4-pro`。
 - `TOKENDANCE_RESEARCH_MODEL`: 可选，Plan / Research digest 阶段模型名，默认 `deepseek-v4-flash`。
+- `TOKENDANCE_THINKING_TYPE`: 可选，DeepSeek V4 thinking 开关，默认 `disabled`，用于快速迭代时关闭 reasoning。
 
 ## 技术栈
 

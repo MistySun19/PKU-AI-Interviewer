@@ -504,6 +504,16 @@ async function* chatNdjson(messages: ChatMessage[], timeoutMs: number): AsyncGen
   const chatCompletionsUrl =
     process.env.TOKENDANCE_CHAT_COMPLETIONS_URL ??
     `${(process.env.OPENAI_BASE_URL ?? process.env.TOKENDANCE_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+  const model = getModelName();
+  const body = withModelOptions(
+    {
+      model,
+      messages,
+      temperature: 0.2,
+      stream: true
+    },
+    model
+  );
   const response = await fetch(chatCompletionsUrl, {
     method: "POST",
     signal: AbortSignal.timeout(timeoutMs),
@@ -511,12 +521,7 @@ async function* chatNdjson(messages: ChatMessage[], timeoutMs: number): AsyncGen
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      model: getModelName(),
-      messages,
-      temperature: 0.2,
-      stream: true
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok || !response.body) {
@@ -835,6 +840,16 @@ type ChatMessage = { role: "system" | "user"; content: string };
 type ModelRole = "research" | "final";
 const DEFAULT_TOKENDANCE_MODEL = "deepseek-v4-pro";
 const DEFAULT_TOKENDANCE_RESEARCH_MODEL = "deepseek-v4-flash";
+const DEFAULT_TOKENDANCE_THINKING_TYPE = "disabled";
+
+type ChatRequestBody = {
+  model: string;
+  messages: ChatMessage[];
+  temperature: number;
+  response_format?: { type: "json_object" };
+  stream?: true;
+  thinking?: { type: string };
+};
 
 async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: ModelRole = "final"): Promise<string> {
   const apiKey = getApiKey();
@@ -844,6 +859,15 @@ async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: Mode
     process.env.TOKENDANCE_CHAT_COMPLETIONS_URL ??
     `${(process.env.OPENAI_BASE_URL ?? process.env.TOKENDANCE_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
   const model = getModelName(role);
+  const body = withModelOptions(
+    {
+      model,
+      messages,
+      temperature: 0.2,
+      response_format: { type: "json_object" }
+    },
+    model
+  );
   const response = await fetch(chatCompletionsUrl, {
     method: "POST",
     signal: AbortSignal.timeout(timeoutMs),
@@ -851,12 +875,7 @@ async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: Mode
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.2,
-      response_format: { type: "json_object" }
-    })
+    body: JSON.stringify(body)
   });
 
   if (!response.ok) {
@@ -879,4 +898,15 @@ function getModelName(role: ModelRole = "final"): string {
   if (process.env.TOKENDANCE_MODEL) return process.env.TOKENDANCE_MODEL;
   if (process.env.TOKENDANCE_API_KEY) return DEFAULT_TOKENDANCE_MODEL;
   return "gpt-4o-mini";
+}
+
+function withModelOptions(body: ChatRequestBody, model: string): ChatRequestBody {
+  const thinkingType = getThinkingType(model);
+  return thinkingType ? { ...body, thinking: { type: thinkingType } } : body;
+}
+
+function getThinkingType(model: string): string | undefined {
+  if (process.env.TOKENDANCE_THINKING_TYPE) return process.env.TOKENDANCE_THINKING_TYPE;
+  if (/^deepseek-v4-(flash|pro)$/i.test(model)) return DEFAULT_TOKENDANCE_THINKING_TYPE;
+  return undefined;
 }
