@@ -14,6 +14,7 @@ export type EvidenceFile = {
   path: string;
   size: number;
   score: number;
+  category: ResearchArtifactKind | "other";
   reason: string;
   truncated: boolean;
 };
@@ -26,11 +27,50 @@ export type RepoContext = {
   repo: RepoInfo;
   readme: string;
   files: RepoFileContent[];
+  analysisMode: AnalysisMode;
+  paperSignals: PaperSignals;
+  researchArtifacts: ResearchArtifacts;
   warnings: string[];
 };
 
+export type AnalysisMode = "paper-code" | "general-code" | "unknown";
+
+export type ResearchArtifactKind =
+  | "paperDocs"
+  | "methodFiles"
+  | "trainingFiles"
+  | "evaluationFiles"
+  | "configFiles"
+  | "dataFiles"
+  | "demoFiles"
+  | "scripts";
+
+export type PaperSignals = {
+  venues: string[];
+  paperLinks: string[];
+  citationFound: boolean;
+  officialImplementation: boolean;
+  benchmarkSignals: string[];
+  trainingSignals: string[];
+  evaluationSignals: string[];
+  methodSignals: string[];
+};
+
+export type ResearchArtifacts = Record<ResearchArtifactKind, string[]>;
+
+export type PaperCodeMapItem = {
+  claim: string;
+  codeEvidence: string[];
+  experimentEvidence: string[];
+  interviewRisk: string;
+};
+
 export type Understanding = {
+  analysisMode: AnalysisMode;
+  paperSignals: PaperSignals;
   summary: string;
+  problemSetting: string;
+  paperClaims: string[];
   techStack: string[];
   entryPoints: string[];
   coreModules: Array<{
@@ -41,6 +81,10 @@ export type Understanding = {
   mainFlow: string[];
   dataFlow: string[];
   evaluationSignals: string[];
+  reproductionRecipe: string[];
+  methodCodeMap: string[];
+  experimentEvidence: string[];
+  keyHyperparameters: string[];
   deploymentNotes: string[];
   contributionHypotheses: string[];
 };
@@ -65,6 +109,10 @@ export type InterviewQuestion = {
 
 export type AnalyzeResponse = {
   repo: RepoInfo;
+  analysisMode: AnalysisMode;
+  paperSignals: PaperSignals;
+  researchArtifacts: ResearchArtifacts;
+  paperCodeMap: PaperCodeMapItem[];
   understanding: Understanding;
   examPoints: ExamPoint[];
   questions: InterviewQuestion[];

@@ -1,9 +1,29 @@
 import { z } from "zod";
-import type { EvidenceFile, RepoContext, RepoFileContent, RepoInfo } from "./types";
+import type {
+  AnalysisMode,
+  EvidenceFile,
+  PaperSignals,
+  RepoContext,
+  RepoFileContent,
+  RepoInfo,
+  ResearchArtifactKind,
+  ResearchArtifacts
+} from "./types";
 
 const MAX_FILES = 30;
 const MAX_FILE_BYTES = 200_000;
-const MAX_CONTEXT_CHARS = 180_000;
+
+const bucketCaps: Record<ResearchArtifactKind | "other", number> = {
+  paperDocs: 5,
+  methodFiles: 8,
+  trainingFiles: 5,
+  evaluationFiles: 6,
+  configFiles: 6,
+  dataFiles: 4,
+  demoFiles: 3,
+  scripts: 4,
+  other: 3
+};
 
 const excludedDirs = new Set([
   ".git",
@@ -66,6 +86,7 @@ const sourceExtensions = new Set([
   ".cc",
   ".cpp",
   ".cs",
+  ".csv",
   ".css",
   ".go",
   ".html",
@@ -74,6 +95,7 @@ const sourceExtensions = new Set([
   ".js",
   ".jsx",
   ".json",
+  ".jsonl",
   ".md",
   ".mjs",
   ".py",
@@ -84,6 +106,7 @@ const sourceExtensions = new Set([
   ".toml",
   ".ts",
   ".tsx",
+  ".tsv",
   ".yaml",
   ".yml"
 ]);
@@ -127,7 +150,7 @@ export function parseGitHubUrl(input: string): ParsedGitHubUrl {
     throw new Error("请输入 github.com 仓库链接。");
   }
 
-  const [owner, repoSegment, marker, branch] = url.pathname
+  const [owner, repoSegment, marker, ...rest] = url.pathname
     .split("/")
     .filter(Boolean);
   if (!owner || !repoSegment) {
@@ -138,7 +161,7 @@ export function parseGitHubUrl(input: string): ParsedGitHubUrl {
   return {
     owner,
     repo,
-    branch: marker === "tree" && branch ? branch : undefined
+    branch: marker === "tree" && rest.length > 0 ? rest.join("/") : undefined
   };
 }
 
@@ -160,20 +183,29 @@ export function scoreFilePath(path: string, size = 0): { score: number; reason: 
   const file = lower.split("/").at(-1) ?? lower;
   let score = 0;
   const reasons: string[] = [];
+  const category = classifyResearchArtifact(path);
 
-  if (file.startsWith("readme")) add(100, "README");
-  if (lower.startsWith("docs/") || lower.includes("/docs/")) add(70, "docs");
-  if (lower.startsWith("examples/") || lower.includes("/examples/")) add(64, "examples");
-  if (/(^|\/)(main|index|app|server|cli|train|infer|evaluate|eval|benchmark)\.(ts|tsx|js|jsx|py|go|rs)$/i.test(path)) {
-    add(80, "entrypoint");
+  if (category !== "other") add(15, artifactReason(category));
+  if (file.startsWith("readme")) add(120, "README/paper overview");
+  if (/(paper|arxiv|citation|bibtex|project|supplement|method|algorithm)/i.test(lower)) add(55, "paper signal");
+  if (/(^|\/)(train|pretrain|finetune|main|launch|run|scripts?\/.*train).*\.(ts|tsx|js|jsx|py|sh)$/i.test(path)) {
+    add(100, "training entry");
   }
-  if (/(src|lib|backend|server|app|core|models?|agents?|rag|retriev|train|eval|benchmark|tests?)/i.test(path)) {
-    add(45, "core path");
+  if (/(^|\/)(infer|inference|demo|sample|generate|predict).*\.(ts|tsx|js|jsx|py|sh)$/i.test(path)) {
+    add(82, "inference/demo entry");
   }
-  if (/(package\.json|pyproject\.toml|requirements\.txt|dockerfile|compose|next\.config|vite\.config|tsconfig)/i.test(path)) {
-    add(55, "config");
+  if (/(eval|evaluate|benchmark|metric|ablation|reproduce|results?)/i.test(path)) add(78, "evaluation/reproduce");
+  if (/(configs?|hydra|yaml|yml|toml|json|requirements|environment|pyproject)/i.test(path)) {
+    add(62, "config/hyperparameter");
   }
-  if (/(test|spec|eval|benchmark|metric)/i.test(path)) add(45, "test/eval");
+  if (/(models?|modules?|loss|criterion|algorithms?|methods?|diffusion|transformer|attention|agent|rlhf|ppo|dpo|sft|rag|retriev|encoder|decoder)/i.test(path)) {
+    add(76, "method implementation");
+  }
+  if (/(datasets?|dataloader|data_loader|preprocess|tokeniz|collat|sampler)/i.test(path)) add(70, "data pipeline");
+  if (/(^|\/)(test|spec|ci|deploy|docker|compose|server|api|web|ui)/i.test(path)) add(-16, "software-engineering lower priority");
+  if (/\.(csv|tsv|jsonl)$/i.test(path) && /(label|labels|data|annotations?|benchmark|test)/i.test(path)) {
+    add(-45, "data blob cap");
+  }
   if (size > MAX_FILE_BYTES) add(-30, "large file");
   if (path.split("/").length > 6) add(-12, "deep path");
 
@@ -186,20 +218,32 @@ export function scoreFilePath(path: string, size = 0): { score: number; reason: 
 }
 
 export function selectCandidateFiles(files: Array<{ path: string; size?: number }>): EvidenceFile[] {
-  return files
+  const ranked = files
     .filter((file) => !shouldExcludePath(file.path, file.size ?? 0))
     .map((file) => {
       const { score, reason } = scoreFilePath(file.path, file.size ?? 0);
+      const category = classifyResearchArtifact(file.path);
       return {
         path: file.path,
         size: file.size ?? 0,
         score,
+        category,
         reason,
         truncated: false
       };
     })
-    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path))
-    .slice(0, MAX_FILES);
+    .sort((a, b) => b.score - a.score || a.path.localeCompare(b.path));
+
+  const selected: EvidenceFile[] = [];
+  const counts = new Map<ResearchArtifactKind | "other", number>();
+  for (const file of ranked) {
+    const used = counts.get(file.category) ?? 0;
+    if (used >= bucketCaps[file.category]) continue;
+    selected.push(file);
+    counts.set(file.category, used + 1);
+    if (selected.length >= MAX_FILES) break;
+  }
+  return selected;
 }
 
 export async function fetchRepoContext(repositoryUrl: string): Promise<RepoContext> {
@@ -219,6 +263,9 @@ export async function fetchRepoContext(repositoryUrl: string): Promise<RepoConte
   const blobFiles = tree.tree.filter((item) => item.type === "blob");
   const candidates = selectCandidateFiles(blobFiles);
   const warnings: string[] = [];
+  if (!process.env.GITHUB_TOKEN) {
+    warnings.push("未配置 GITHUB_TOKEN，GitHub REST API 未认证限制较低，建议配置 token 提升到常规 5000 次/小时。");
+  }
   if (tree.truncated) warnings.push("GitHub tree API 返回已截断，可能遗漏部分文件。");
   if (!candidates.some((file) => file.path.toLowerCase().includes("readme"))) {
     warnings.push("未读取到 README，报告会更多依赖代码结构。");
@@ -229,6 +276,9 @@ export async function fetchRepoContext(repositoryUrl: string): Promise<RepoConte
 
   const files = await fetchSelectedFiles(parsed.owner, parsed.repo, branch, candidates, headers, warnings);
   const readme = files.find((file) => file.path.toLowerCase().includes("readme"))?.content ?? "";
+  const researchArtifacts = collectResearchArtifacts(candidates);
+  const paperSignals = emptyPaperSignals();
+  const analysisMode = "unknown";
   const repo: RepoInfo = {
     owner: parsed.owner,
     name: repoApi.name,
@@ -241,7 +291,7 @@ export async function fetchRepoContext(repositoryUrl: string): Promise<RepoConte
     fileCount: blobFiles.length
   };
 
-  return { repo, readme, files, warnings };
+  return { repo, readme, files, analysisMode, paperSignals, researchArtifacts, warnings };
 }
 
 export function buildCodeContext(files: RepoFileContent[]): { context: string; warnings: string[] } {
@@ -250,12 +300,8 @@ export function buildCodeContext(files: RepoFileContent[]): { context: string; w
   const blocks: string[] = [];
 
   for (const file of files) {
-    const header = `\n--- File: ${file.path} | reason: ${file.reason} ---\n`;
+    const header = `\n--- File: ${file.path} | category: ${file.category} | reason: ${file.reason} ---\n`;
     const next = header + file.content;
-    if (total + next.length > MAX_CONTEXT_CHARS) {
-      warnings.push("仓库上下文超过 alpha 限制，后续文件未送入模型。");
-      break;
-    }
     total += next.length;
     blocks.push(next);
   }
@@ -291,11 +337,21 @@ async function fetchSelectedFiles(
   return files;
 }
 
+function getExtension(path: string): string {
+  const last = path.split("/").at(-1) ?? path;
+  const index = last.lastIndexOf(".");
+  return index >= 0 ? last.slice(index) : "";
+}
+
 async function githubFetch<T>(url: string, headers: HeadersInit): Promise<T> {
   const response = await fetch(url, { headers });
   if (!response.ok) {
     const rateLimit = response.headers.get("x-ratelimit-remaining") === "0";
-    const hint = rateLimit ? "GitHub rate limit 已耗尽，请配置 GITHUB_TOKEN。" : await response.text();
+    const reset = response.headers.get("x-ratelimit-reset");
+    const resetHint = reset ? `，重置时间 Unix 秒：${reset}` : "";
+    const hint = rateLimit
+      ? `GitHub rate limit 已耗尽${resetHint}。请配置 GITHUB_TOKEN，认证请求通常可提升到 5000 次/小时。`
+      : await response.text();
     throw new Error(`GitHub 请求失败 (${response.status}): ${hint}`);
   }
   return (await response.json()) as T;
@@ -312,8 +368,100 @@ function githubHeaders(): HeadersInit {
   return headers;
 }
 
-function getExtension(path: string): string {
-  const last = path.split("/").at(-1) ?? path;
-  const index = last.lastIndexOf(".");
-  return index >= 0 ? last.slice(index) : "";
+export function classifyResearchArtifact(path: string): ResearchArtifactKind | "other" {
+  const lower = path.toLowerCase();
+  const file = lower.split("/").at(-1) ?? lower;
+
+  if (
+    file.startsWith("readme") ||
+    /(paper|arxiv|citation|bibtex|supplement|project_page|project-page)/i.test(lower) ||
+    lower.startsWith("docs/")
+  ) {
+    return "paperDocs";
+  }
+  if (/(configs?|conf|hydra|\.yaml$|\.yml$|\.toml$|requirements|environment|pyproject|setup\.py)/i.test(lower)) {
+    return "configFiles";
+  }
+  if (/(^|\/)(train|pretrain|finetune|main|launch|run|scripts?\/.*train).*\.(py|sh|ts|tsx|js|jsx)$/i.test(path)) {
+    return "trainingFiles";
+  }
+  if (/(eval|evaluate|benchmark|metric|ablation|reproduce|results?|tests?)/i.test(lower)) {
+    return "evaluationFiles";
+  }
+  if (/(datasets?|dataloader|data_loader|preprocess|tokeniz|collat|sampler|labels?|annotations?)/i.test(lower)) {
+    return "dataFiles";
+  }
+  if (/(infer|inference|demo|sample|generate|predict|gradio|streamlit|app\.py)/i.test(lower)) {
+    return "demoFiles";
+  }
+  if (/(^|\/)(scripts?|slurm|jobs?|notebooks?)\//i.test(lower) || /\.(ipynb|sh)$/i.test(lower)) {
+    return "scripts";
+  }
+  if (
+    /(models?|modules?|loss|criterion|algorithms?|methods?|diffusion|transformer|attention|agent|rlhf|ppo|dpo|sft|rag|retriev|encoder|decoder|policy|reward|trainer|solver)/i.test(
+      lower
+    )
+  ) {
+    return "methodFiles";
+  }
+  return "other";
+}
+
+export function collectResearchArtifacts(files: Array<{ path: string; category?: ResearchArtifactKind | "other" }>): ResearchArtifacts {
+  const artifacts = emptyResearchArtifacts();
+  for (const file of files) {
+    const category = file.category ?? classifyResearchArtifact(file.path);
+    if (category === "other") continue;
+    artifacts[category].push(file.path);
+  }
+  return artifacts;
+}
+
+function emptyResearchArtifacts(): ResearchArtifacts {
+  return {
+    paperDocs: [],
+    methodFiles: [],
+    trainingFiles: [],
+    evaluationFiles: [],
+    configFiles: [],
+    dataFiles: [],
+    demoFiles: [],
+    scripts: []
+  };
+}
+
+function emptyPaperSignals(): PaperSignals {
+  return {
+    venues: [],
+    paperLinks: [],
+    citationFound: false,
+    officialImplementation: false,
+    benchmarkSignals: [],
+    trainingSignals: [],
+    evaluationSignals: [],
+    methodSignals: []
+  };
+}
+
+function artifactReason(category: ResearchArtifactKind | "other"): string {
+  switch (category) {
+    case "paperDocs":
+      return "paper/README evidence";
+    case "methodFiles":
+      return "method implementation";
+    case "trainingFiles":
+      return "training entry";
+    case "evaluationFiles":
+      return "evaluation/benchmark";
+    case "configFiles":
+      return "config/hyperparameter";
+    case "dataFiles":
+      return "data pipeline";
+    case "demoFiles":
+      return "inference/demo";
+    case "scripts":
+      return "script/reproduce";
+    default:
+      return "source file";
+  }
 }

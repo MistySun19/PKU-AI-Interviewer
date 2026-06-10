@@ -16,11 +16,20 @@
 - 实现 v1.0.0-alpha Web Demo：输入公开 GitHub 仓库，生成项目考核面试计划。
 - 新增 GitHub 仓库抓取、文件筛选、证据文件选择、LLM 分析和降级报告能力。
 - 新增基础单元测试，覆盖 GitHub URL 解析、文件过滤、文件排序和 JSON 容错。
+- 实现 v1.0.0-alpha.1：GitHub repo paper-code 理解，自动识别论文 / AI 项目制仓库。
+- 新增 paper signals、research artifacts、paper-code map 输出。
+- 新增 ICLR / AI paper repo 结构调研文档，作为 alpha.1 文件筛选和面试追问依据。
+- 在计划中加入轻量论文项目理解 skill registry，覆盖 benchmark、training、inference、method、data 和 reproduce 仓库形态。
+- 明确 alpha.1 继续使用 GitHub REST API，不使用 `git clone`；通过 `GITHUB_TOKEN` 提升 API 次数。
+- 调整 paperSignals / analysisMode：不再由 ingest 阶段正则判断，改为 Step 1 大模型基于 README、链接、文件树和代码证据自行判断。
+- 移除模型请求的 `max_tokens` 输出限制，并取消 README 30k 字符截断。
+- 将模型请求和 `/api/analyze` 路由超时调整为 20 分钟，支持 repo deep research 长请求。
 
 ### 调整
 
 - 将 V1.0.0 范围调整为 GitHub 仓库理解优先。
 - 将路线调整为 GitHub repo -> `kaomian` -> 一句话自述 -> arXiv -> JD。
+- 将 alpha 主线从通用软件工程审查调整为 AI 算法岗项目考核，重点覆盖方法、训练、评测、配置、数据和复现。
 
 ## v0.0.1 - 项目定位
 

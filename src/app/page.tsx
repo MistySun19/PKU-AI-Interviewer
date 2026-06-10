@@ -46,10 +46,10 @@ export default function Home() {
     <main className="shell">
       <section className="workspace">
         <div className="intro">
-          <p className="eyebrow">v1.0.0-alpha</p>
+          <p className="eyebrow">v1.0.0-alpha.1</p>
           <h1>GitHub Repo 项目考核面试生成器</h1>
           <p className="lede">
-            读取公开仓库，先理解项目目标、主流程、核心模块和评测信号，再生成有证据来源的面试追问计划。
+            读取公开仓库，优先按论文/AI 项目制代码库理解方法、训练、评测、配置和复现证据，再生成有证据来源的算法岗项目追问计划。
           </p>
         </div>
 
@@ -81,6 +81,10 @@ export default function Home() {
           <section className="resultGrid">
             <aside className="sidebar" aria-label="仓库分析摘要">
               <div className="metric">
+                <span>Mode</span>
+                <strong>{result.analysisMode}</strong>
+              </div>
+              <div className="metric">
                 <span>Repository</span>
                 <strong>{result.repo.fullName}</strong>
               </div>
@@ -101,7 +105,10 @@ export default function Home() {
                 <h2>证据文件</h2>
                 <ul>
                   {result.evidenceFiles.slice(0, 12).map((file) => (
-                    <li key={file.path}>{file.path}</li>
+                    <li key={file.path}>
+                      {file.path}
+                      <span> {file.category}</span>
+                    </li>
                   ))}
                 </ul>
               </div>

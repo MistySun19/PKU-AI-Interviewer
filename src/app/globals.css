@@ -219,6 +219,11 @@ h2 {
   line-height: 1.45;
 }
 
+.sideBlock li span {
+  color: var(--accent);
+  font-weight: 800;
+}
+
 .warning li {
   color: var(--warn);
 }

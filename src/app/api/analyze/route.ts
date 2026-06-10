@@ -4,7 +4,7 @@ import { fetchRepoContext } from "@/lib/github";
 import { analyzeRepoWithLlm } from "@/lib/llm";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 1200;
 
 const requestSchema = z.object({
   repositoryUrl: z.string().min(1)
