@@ -1,27 +1,127 @@
 import { z } from "zod";
-import { buildCodeContext } from "./github";
 import {
   buildMarkdownReport,
-  fallbackPaperCodeMap,
   fallbackExamPoints,
+  fallbackPaperCodeMap,
   fallbackQuestions,
   fallbackUnderstanding
 } from "./report";
-import type { AnalyzeResponse, ExamPoint, InterviewQuestion, PaperCodeMapItem, RepoContext, Understanding } from "./types";
+import type {
+  AnalysisMode,
+  AnalyzeResponse,
+  DimensionDigest,
+  ExamPoint,
+  InterviewQuestion,
+  PaperCodeMapItem,
+  RepoContext,
+  ResearchPlanSummary,
+  Understanding
+} from "./types";
 
-const stringArraySchema = z.preprocess(
-  (value) => (Array.isArray(value) ? value : []),
-  z.array(z.string())
-);
+const SYSTEM_PROMPT =
+  "你是 AI 算法岗项目考核面试官。你的工作：深入理解论文/AI 项目制 GitHub 仓库（方法、训练、评测、数据、配置、复现证据），并基于仓库证据生成项目考核计划。所有结论必须能落到具体文件证据，不要编造没有证据的内容，不要按通用软件工程评分。你只返回 JSON 对象，不要 Markdown，不要解释。";
+
+const stringArraySchema = z.preprocess((value) => {
+  if (!Array.isArray(value)) return [];
+  return value
+    .map((item) => {
+      if (typeof item === "string") return item;
+      if (item && typeof item === "object") {
+        const record = item as Record<string, unknown>;
+        const candidate = record.path ?? record.file ?? record.evidence ?? record.claim;
+        if (typeof candidate === "string") return candidate;
+        return JSON.stringify(item);
+      }
+      return item == null ? null : String(item);
+    })
+    .filter((item): item is string => typeof item === "string" && item.length > 0);
+}, z.array(z.string()));
+
+function lenientEnum<const T extends readonly [string, ...string[]]>(values: T, fallback: T[number]) {
+  return z.preprocess(
+    (value) => (typeof value === "string" && (values as readonly string[]).includes(value) ? value : fallback),
+    z.enum(values)
+  );
+}
+
+function lenientBoolean(fallback: boolean) {
+  return z.preprocess((value) => {
+    if (typeof value === "boolean") return value;
+    if (typeof value === "string") {
+      if (/^(true|yes|是|有)$/i.test(value.trim())) return true;
+      if (/^(false|no|否|无|未识别)$/i.test(value.trim())) return false;
+    }
+    return fallback;
+  }, z.boolean());
+}
+
+const analysisModeSchema = lenientEnum(["paper-code", "general-code", "unknown"], "unknown");
+
+const dimensionKeyValues = ["overview", "method", "training", "evaluation", "data"] as const;
+const dimensionKeySchema = z.enum(dimensionKeyValues);
+
+const planSchema = z.object({
+  analysisMode: analysisModeSchema,
+  techTags: stringArraySchema,
+  dimensions: z.preprocess(
+    (value) => {
+      if (!Array.isArray(value)) return [];
+      return value.filter(
+        (item) =>
+          item &&
+          typeof item === "object" &&
+          (dimensionKeyValues as readonly string[]).includes((item as Record<string, unknown>).key as string)
+      );
+    },
+    z
+      .array(
+        z.object({
+          key: dimensionKeySchema,
+          goal: z.string().default(""),
+          files: stringArraySchema
+        })
+      )
+      .min(1)
+      .max(5)
+  )
+});
+
+const digestSchema = z.object({
+  dimension: dimensionKeySchema.default("overview"),
+  summary: z.string().default(""),
+  findings: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(
+      z.object({
+        claim: z.string(),
+        evidence: stringArraySchema,
+        confidence: lenientEnum(["high", "medium", "low"], "medium")
+      })
+    )
+  ),
+  claimCodeLinks: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(
+      z.object({
+        claim: z.string(),
+        code: stringArraySchema,
+        experiments: stringArraySchema
+      })
+    )
+  ),
+  askPoints: stringArraySchema,
+  openQuestions: stringArraySchema,
+  requestedFiles: stringArraySchema
+});
 
 const understandingSchema = z.object({
-  analysisMode: z.enum(["paper-code", "general-code", "unknown"]).default("unknown"),
+  analysisMode: analysisModeSchema,
   paperSignals: z
     .object({
       venues: stringArraySchema,
       paperLinks: stringArraySchema,
-      citationFound: z.boolean().default(false),
-      officialImplementation: z.boolean().default(false),
+      citationFound: lenientBoolean(false),
+      officialImplementation: lenientBoolean(false),
       benchmarkSignals: stringArraySchema,
       trainingSignals: stringArraySchema,
       evaluationSignals: stringArraySchema,
@@ -37,20 +137,21 @@ const understandingSchema = z.object({
       evaluationSignals: [],
       methodSignals: []
     }),
-  summary: z.string(),
+  summary: z.string().default(""),
   problemSetting: z.string().default("未明确识别"),
   paperClaims: stringArraySchema,
   techStack: stringArraySchema,
   entryPoints: stringArraySchema,
-  coreModules: z
-    .preprocess((value) => (Array.isArray(value) ? value : []), z
-    .array(
+  coreModules: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(
       z.object({
         name: z.string(),
         responsibility: z.string(),
         evidence: stringArraySchema
       })
-    )),
+    )
+  ),
   mainFlow: stringArraySchema,
   dataFlow: stringArraySchema,
   evaluationSignals: stringArraySchema,
@@ -62,24 +163,6 @@ const understandingSchema = z.object({
   contributionHypotheses: stringArraySchema
 });
 
-const examPointSchema = z.object({
-  title: z.string(),
-  riskLevel: z.enum(["low", "medium", "high"]).default("medium"),
-  evidence: stringArraySchema,
-  whyAsk: z.string(),
-  followUps: stringArraySchema
-});
-
-const questionSchema = z.object({
-  question: z.string(),
-  difficulty: z.enum(["warmup", "medium", "hard"]).default("medium"),
-  evidence: stringArraySchema,
-  whyAsk: z.string(),
-  expectedAnswer: stringArraySchema,
-  redFlags: stringArraySchema,
-  followUps: stringArraySchema
-});
-
 const paperCodeMapSchema = z.object({
   claim: z.string(),
   codeEvidence: stringArraySchema,
@@ -87,71 +170,256 @@ const paperCodeMapSchema = z.object({
   interviewRisk: z.string()
 });
 
-const reviewSchema = z.object({
-  paperCodeMap: z.preprocess(
-    (value) => (Array.isArray(value) ? value : []),
-    z.array(paperCodeMapSchema).max(8)
-  ),
-  examPoints: z.preprocess((value) => (Array.isArray(value) ? value : []), z.array(examPointSchema).min(1).max(8)),
-  questions: z.preprocess((value) => (Array.isArray(value) ? value : []), z.array(questionSchema).min(1).max(12))
+const synthesisSchema = understandingSchema.extend({
+  paperCodeMap: z
+    .preprocess((value) => (Array.isArray(value) ? value : []), z.array(paperCodeMapSchema).max(8))
+    .default([])
 });
 
-export async function analyzeRepoWithLlm(context: RepoContext): Promise<AnalyzeResponse> {
-  const { context: codeContext, warnings: contextWarnings } = buildCodeContext(context.files);
-  const warnings = [...context.warnings, ...contextWarnings];
+const examPointSchema = z.object({
+  title: z.string(),
+  riskLevel: lenientEnum(["low", "medium", "high"], "medium"),
+  evidence: stringArraySchema,
+  whyAsk: z.string().default(""),
+  followUps: stringArraySchema
+});
 
-  let understanding: Understanding;
-  let paperCodeMap: PaperCodeMapItem[];
-  let examPoints: ExamPoint[];
-  let questions: InterviewQuestion[];
+const questionSchema = z.object({
+  question: z.string(),
+  difficulty: lenientEnum(["warmup", "medium", "hard"], "medium"),
+  evidence: stringArraySchema,
+  whyAsk: z.string().default(""),
+  expectedAnswer: stringArraySchema,
+  redFlags: stringArraySchema,
+  followUps: stringArraySchema
+});
 
-  if (!getApiKey()) {
-    warnings.push("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY，已使用仓库结构生成降级报告。");
-    understanding = fallbackUnderstanding(context);
-    paperCodeMap = fallbackPaperCodeMap(context, understanding);
-    examPoints = fallbackExamPoints(understanding);
-    questions = fallbackQuestions(examPoints);
-  } else {
-    try {
-      understanding = await generateUnderstanding(context, codeContext);
-      const review = await generateInterviewReview(context, understanding, codeContext);
-      paperCodeMap = review.paperCodeMap.length > 0 ? review.paperCodeMap : fallbackPaperCodeMap(context, understanding);
-      examPoints = review.examPoints;
-      questions = review.questions;
-    } catch (error) {
-      warnings.push(`模型分析失败，已使用降级报告：${formatModelError(error)}`);
-      understanding = fallbackUnderstanding(context);
-      paperCodeMap = fallbackPaperCodeMap(context, understanding);
-      examPoints = fallbackExamPoints(understanding);
-      questions = fallbackQuestions(examPoints);
-    }
+const interrogationSchema = z.object({
+  examPoints: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(examPointSchema).min(1).max(8)
+  ),
+  questions: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(questionSchema).min(1).max(12)
+  )
+});
+
+export function getApiKey(): string | undefined {
+  return process.env.OPENAI_API_KEY || process.env.TOKENDANCE_API_KEY;
+}
+
+export async function generateResearchPlan(
+  context: RepoContext,
+  repoMapText: string
+): Promise<ResearchPlanSummary> {
+  const messages: ChatMessage[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${repoMapText}
+
+README（截取）：
+${context.readme.slice(0, 12_000)}
+
+任务：为这个仓库制定深度研究计划。返回 JSON：
+{
+  "analysisMode": "paper-code|general-code|unknown",
+  "techTags": ["..."],
+  "dimensions": [
+    {"key": "overview|method|training|evaluation|data", "goal": "该维度要回答的问题", "files": ["路径"]}
+  ]
+}
+
+要求：
+- dimensions 按仓库实际形态取舍，2-5 个；overview 必须存在，负责项目目标、主流程和贡献定位；纯工程库可以没有 training/evaluation。
+- 每个维度的 files 只能从"已读取的证据文件"清单中选 3-8 个路径，按相关性排序，不要发明路径。
+- analysisMode：存在论文/复现/benchmark/citation 信号选 paper-code。
+- techTags 8-15 个，用于检索高频面试题库，写具体技术点（如 RAG、PPO、diffusion、attention、对比学习、数据增强），不要写宽泛词（如 Python、深度学习）。`
+      }
+    ];
+  const parsed = await withRetry("plan", async () =>
+    parseModelJson(planSchema, await chatJson(messages, 180_000), "plan")
+  );
+
+  const known = new Set(context.files.map((file) => file.path));
+  const dimensions = parsed.dimensions
+    .map((dimension) => ({ ...dimension, files: dimension.files.filter((path) => known.has(path)) }))
+    .filter((dimension) => dimension.files.length > 0);
+  if (dimensions.length === 0) {
+    throw new Error("研究计划没有给出可用的文件分配。");
   }
+  return { analysisMode: parsed.analysisMode, techTags: parsed.techTags, dimensions };
+}
 
-  const repaired = ensureEvidence(context, paperCodeMap, examPoints, questions);
-  paperCodeMap = repaired.paperCodeMap;
-  examPoints = repaired.examPoints;
-  questions = repaired.questions;
+export async function generateDimensionDigest(args: {
+  repoMapText: string;
+  dimensionKey: string;
+  goal: string;
+  filesBlock: string;
+  openQuestions?: string[];
+}): Promise<DimensionDigest> {
+  const followUpBlock =
+    args.openQuestions && args.openQuestions.length > 0
+      ? `\n上一轮未决问题（优先回答）：\n${args.openQuestions.map((q) => `- ${q}`).join("\n")}\n`
+      : "";
+
+  const messages: ChatMessage[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${args.repoMapText}
+
+你本次只负责研究维度「${args.dimensionKey}」：${args.goal}
+${followUpBlock}
+分配给你的文件内容：
+${args.filesBlock}
+
+返回 JSON：
+{
+  "dimension": "${args.dimensionKey}",
+  "summary": "不超过 3 句话的维度结论",
+  "findings": [{"claim": "发现", "evidence": ["文件路径，可带 :起-止行"], "confidence": "high|medium|low"}],
+  "claimCodeLinks": [{"claim": "论文/README 主张", "code": ["实现文件"], "experiments": ["实验/评测/配置文件"]}],
+  "askPoints": ["该维度最值得面试官追问的具体点（绑定文件）"],
+  "openQuestions": ["看完现有文件仍回答不了的问题"],
+  "requestedFiles": ["需要补读的文件路径，必须出现在目录结构中，最多 3 个"]
+}
+
+要求：
+- findings 3-7 条，每条必须有 evidence；没有证据的猜测不要写。
+- askPoints 3-6 条，写"问什么 + 为什么值得问"。
+- 不需要补读文件时 requestedFiles 返回 []。`
+      }
+    ];
+  return withRetry(`digest:${args.dimensionKey}`, async () =>
+    parseModelJson(digestSchema, await chatJson(messages, 180_000), `digest:${args.dimensionKey}`)
+  );
+}
+
+export async function synthesizeUnderstanding(
+  repoMapText: string,
+  digests: DimensionDigest[],
+  analysisModeHint: AnalysisMode = "unknown"
+): Promise<{ understanding: Understanding; paperCodeMap: PaperCodeMapItem[] }> {
+  const messages: ChatMessage[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${repoMapText}
+
+各维度研究 digest（来自并行深读，原始代码不再提供）：
+${JSON.stringify(digests, null, 2)}
+
+研究规划阶段已把 analysisMode 判定为 ${analysisModeHint}；除非 digest 证据明显矛盾，否则沿用该值（只能取 paper-code、general-code、unknown 三者之一）。
+
+任务：把所有 digest 合成为一份自洽的仓库理解 JSON。返回字段：
+analysisMode, paperSignals{venues,paperLinks,citationFound,officialImplementation,benchmarkSignals,trainingSignals,evaluationSignals,methodSignals}, summary, problemSetting, paperClaims, techStack, entryPoints, coreModules[{name,responsibility,evidence}], mainFlow, dataFlow, evaluationSignals, reproductionRecipe, methodCodeMap, experimentEvidence, keyHyperparameters, deploymentNotes, contributionHypotheses, paperCodeMap[{claim,codeEvidence,experimentEvidence,interviewRisk}]
+
+要求：
+- 必须消解 digest 之间的冲突；不确定的地方在对应字段里写明"不确定"。
+- paperClaims 写论文/README/项目页声称解决什么、贡献是什么。
+- methodCodeMap 写"方法概念 -> 代码文件"的映射。
+- paperCodeMap 是面试视角的"主张 -> 代码证据 -> 实验证据 -> 追问风险"，3-8 条。
+- deploymentNotes 只记录推理/demo/运行约束。`
+      }
+    ];
+  const parsed = await withRetry("synthesize", async () =>
+    parseModelJson(synthesisSchema, await chatJson(messages, 240_000), "synthesize")
+  );
+  const { paperCodeMap, ...understanding } = parsed;
+  return { understanding, paperCodeMap };
+}
+
+export async function generateExamAndQuestions(
+  repoMapText: string,
+  understanding: Understanding,
+  paperCodeMap: PaperCodeMapItem[],
+  digests: DimensionDigest[]
+): Promise<{ examPoints: ExamPoint[]; questions: InterviewQuestion[] }> {
+  const askPoints = digests.flatMap((digest) =>
+    digest.askPoints.map((point) => `[${digest.dimension}] ${point}`)
+  );
+
+  const messages: ChatMessage[] = [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${repoMapText}
+
+仓库理解：
+${JSON.stringify(understanding, null, 2)}
+
+Paper claim -> 代码/实验证据映射：
+${JSON.stringify(paperCodeMap, null, 2)}
+
+各维度可出题点：
+${askPoints.map((point) => `- ${point}`).join("\n") || "- 无"}
+
+任务：生成项目考核点与分层面试题。返回 JSON：
+{
+  "examPoints": [{"title": "...", "riskLevel": "low|medium|high", "evidence": ["路径"], "whyAsk": "...", "followUps": ["..."]}],
+  "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."]}]
+}
+
+约束：
+- examPoints 5-8 个，questions 8-12 道。
+- 追问优先覆盖 method validity、baseline/ablation、data leakage、metric choice、config/hyperparameter、reproducibility、failure cases、论文主张和代码是否一致。
+- 不要输出 employability score、code quality score、部署能力评分。
+- 不要泛问"这个项目用了什么技术栈"，每道题必须落到具体文件证据。`
+      }
+    ];
+  return withRetry("questions", async () =>
+    parseModelJson(interrogationSchema, await chatJson(messages, 240_000), "questions")
+  );
+}
+
+export function assembleResponse(
+  context: RepoContext,
+  parts: {
+    understanding: Understanding;
+    paperCodeMap: PaperCodeMapItem[];
+    examPoints: ExamPoint[];
+    questions: InterviewQuestion[];
+  },
+  warnings: string[]
+): AnalyzeResponse {
+  const repaired = ensureEvidence(context, parts.paperCodeMap, parts.examPoints, parts.questions);
+  const allWarnings = [...warnings];
   if (repaired.repairedCount > 0) {
-    warnings.push(`有 ${repaired.repairedCount} 个问题缺少证据，已回退绑定到已读取的仓库文件。`);
+    allWarnings.push(`有 ${repaired.repairedCount} 个问题缺少证据，已回退绑定到已读取的仓库文件。`);
   }
 
   const base = {
     repo: context.repo,
-    analysisMode: understanding.analysisMode,
-    paperSignals: understanding.paperSignals,
+    analysisMode: parts.understanding.analysisMode,
+    paperSignals: parts.understanding.paperSignals,
     researchArtifacts: context.researchArtifacts,
-    paperCodeMap,
-    understanding,
-    examPoints,
-    questions,
+    paperCodeMap: repaired.paperCodeMap,
+    understanding: parts.understanding,
+    examPoints: repaired.examPoints,
+    questions: repaired.questions,
     evidenceFiles: context.files.map(({ content: _content, ...file }) => file),
-    warnings
+    warnings: allWarnings
   };
 
-  return {
-    ...base,
-    markdownReport: buildMarkdownReport(base)
-  };
+  return { ...base, markdownReport: buildMarkdownReport(base) };
+}
+
+export function buildFallbackResponse(context: RepoContext, warnings: string[]): AnalyzeResponse {
+  const understanding = fallbackUnderstanding(context);
+  const paperCodeMap = fallbackPaperCodeMap(context, understanding);
+  const examPoints = fallbackExamPoints(understanding);
+  const questions = fallbackQuestions(examPoints);
+  return assembleResponse(context, { understanding, paperCodeMap, examPoints, questions }, warnings);
+}
+
+export function fallbackInterrogation(understanding: Understanding): {
+  examPoints: ExamPoint[];
+  questions: InterviewQuestion[];
+} {
+  const examPoints = fallbackExamPoints(understanding);
+  return { examPoints, questions: fallbackQuestions(examPoints) };
 }
 
 function ensureEvidence(
@@ -159,7 +427,12 @@ function ensureEvidence(
   paperCodeMap: PaperCodeMapItem[],
   examPoints: ExamPoint[],
   questions: InterviewQuestion[]
-): { paperCodeMap: PaperCodeMapItem[]; examPoints: ExamPoint[]; questions: InterviewQuestion[]; repairedCount: number } {
+): {
+  paperCodeMap: PaperCodeMapItem[];
+  examPoints: ExamPoint[];
+  questions: InterviewQuestion[];
+  repairedCount: number;
+} {
   const fallback = context.files[0]?.path ?? "README";
   let repairedCount = 0;
   const repair = <T extends { evidence: string[] }>(item: T): T => {
@@ -180,6 +453,57 @@ function ensureEvidence(
   };
 }
 
+function parseModelJson<T>(schema: { parse: (input: unknown) => T }, text: string, label: string): T {
+  const raw = extractJsonObject(text);
+  try {
+    return schema.parse(raw);
+  } catch (error) {
+    if (raw && typeof raw === "object") {
+      const record = raw as Record<string, unknown>;
+      const values = Object.values(record);
+      if (values.length === 1 && values[0] && typeof values[0] === "object") {
+        try {
+          return schema.parse(values[0]);
+        } catch {
+          /* 解包后仍失败，走原始错误 */
+        }
+      }
+      if (record.understanding && typeof record.understanding === "object") {
+        try {
+          return schema.parse({
+            ...(record.understanding as Record<string, unknown>),
+            paperCodeMap:
+              record.paperCodeMap ?? (record.understanding as Record<string, unknown>).paperCodeMap ?? []
+          });
+        } catch {
+          /* 摊平后仍失败，走原始错误 */
+        }
+      }
+    }
+    if (error instanceof z.ZodError) {
+      console.error(`[llm] ${label} 字段校验失败：`, JSON.stringify(error.issues.slice(0, 5)));
+    } else {
+      console.error(`[llm] ${label} JSON 解析失败，原始输出前 800 字符：`, text.slice(0, 800));
+    }
+    throw error;
+  }
+}
+
+async function withRetry<T>(label: string, attempt: () => Promise<T>, retries = 1): Promise<T> {
+  let lastError: unknown;
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await attempt();
+    } catch (error) {
+      lastError = error;
+      if (i < retries) {
+        console.error(`[llm] ${label} 第 ${i + 1} 次尝试失败，重试：${formatModelError(error)}`);
+      }
+    }
+  }
+  throw lastError;
+}
+
 export function extractJsonObject(text: string): unknown {
   const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/i);
   const raw = fenced?.[1] ?? text;
@@ -191,96 +515,14 @@ export function extractJsonObject(text: string): unknown {
   return JSON.parse(raw.slice(first, last + 1));
 }
 
-async function generateUnderstanding(context: RepoContext, codeContext: string): Promise<Understanding> {
-  const content = await chatJson([
-    {
-      role: "system",
-      content:
-        "你是 AI 算法岗项目考核面试官，任务是读懂论文/AI 项目制 GitHub 仓库。优先理解方法、训练、评测、配置和复现证据。只返回 JSON，不要 Markdown。"
-    },
-    {
-      role: "user",
-      content: `请基于仓库证据生成“论文/AI 项目理解” JSON。不要编造没有证据的模块，也不要按通用软件工程评分。
-
-先在脑中选择一个或多个轻量理解 skill：benchmark-skill、training-skill、inference-skill、method-skill、data-skill、reproduce-skill、paper-code-general-skill。skill 只影响你如何读仓库：benchmark 重评测协议，training 重训练配置，inference 重推理链路，method 重算法实现，data 重数据处理，reproduce 重命令链和环境。不要单独输出 skill 字段，直接把理解结果落到下面 JSON 字段里。
-
-仓库：${context.repo.fullName}
-描述：${context.repo.description ?? "无"}
-当前系统不预先判断分析模式或 paper signals。请你基于 README、链接、文件树和代码证据自行判断 analysisMode 和 paperSignals。
-Research artifacts：
-${JSON.stringify(context.researchArtifacts, null, 2)}
-README：
-${context.readme}
-
-代码上下文：
-${codeContext}
-
-返回字段：
-analysisMode, paperSignals{venues,paperLinks,citationFound,officialImplementation,benchmarkSignals,trainingSignals,evaluationSignals,methodSignals}, summary, problemSetting, paperClaims, techStack, entryPoints, coreModules[{name,responsibility,evidence}], mainFlow, dataFlow, evaluationSignals, reproductionRecipe, methodCodeMap, experimentEvidence, keyHyperparameters, deploymentNotes, contributionHypotheses
-
-字段要求：
-- analysisMode 必须由你判断为 paper-code、general-code 或 unknown。
-- paperSignals 必须由你从 README、website、Hugging Face、arXiv/OpenReview、citation、文件树和代码证据中判断，不要依赖系统预处理。
-- paperClaims 写论文/README/项目页面声称解决了什么、贡献是什么。
-- methodCodeMap 写“方法概念 -> 代码文件”的映射。
-- experimentEvidence 写训练、评测、benchmark、ablation、metric 证据。
-- deploymentNotes 只记录推理/demo/运行约束，不要把部署生产化作为主线。`
-    }
-  ]);
-  return understandingSchema.parse(extractJsonObject(content));
+export function formatModelError(error: unknown): string {
+  if (error instanceof z.ZodError) return "模型 JSON 字段不完整或格式不稳定。";
+  return error instanceof Error ? error.message : "未知错误";
 }
 
-async function generateInterviewReview(
-  context: RepoContext,
-  understanding: Understanding,
-  codeContext: string
-): Promise<{ paperCodeMap: PaperCodeMapItem[]; examPoints: ExamPoint[]; questions: InterviewQuestion[] }> {
-  const content = await chatJson([
-    {
-      role: "system",
-      content:
-        "你是严厉但公平的 AI 算法岗项目考核面试官。目标是围绕论文主张、方法代码、训练评测和复现风险生成追问，不是代码质量评分。只返回 JSON。"
-    },
-    {
-      role: "user",
-      content: `请基于仓库理解和代码证据生成 AI 算法岗项目考核点与面试题。每个主问题必须绑定 evidence 文件路径。
+type ChatMessage = { role: "system" | "user"; content: string };
 
-仓库：${context.repo.fullName}
-分析模式：${context.analysisMode}
-Paper signals：
-${JSON.stringify(context.paperSignals, null, 2)}
-Research artifacts：
-${JSON.stringify(context.researchArtifacts, null, 2)}
-仓库理解：
-${JSON.stringify(understanding, null, 2)}
-
-代码证据：
-${codeContext}
-
-返回 JSON：
-{
-  "paperCodeMap": [
-    {"claim": "...", "codeEvidence": ["path"], "experimentEvidence": ["path"], "interviewRisk": "..."}
-  ],
-  "examPoints": [
-    {"title": "...", "riskLevel": "low|medium|high", "evidence": ["path"], "whyAsk": "...", "followUps": ["..."]}
-  ],
-  "questions": [
-    {"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["path"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."]}
-  ]
-}
-
-约束：
-- examPoints 5-8 个，questions 8-12 道。
-- 追问优先覆盖 method validity、baseline/ablation、data leakage、metric choice、config/hyperparameter、reproducibility、failure cases、论文主张和代码是否一致。
-- 不要输出 employability score、code quality score、部署能力评分。
-- 不要泛问“这个项目用了什么技术栈”，必须落到具体文件证据。`
-    }
-  ]);
-  return reviewSchema.parse(extractJsonObject(content));
-}
-
-async function chatJson(messages: Array<{ role: "system" | "user"; content: string }>): Promise<string> {
+async function chatJson(messages: ChatMessage[], timeoutMs = 240_000): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY。");
 
@@ -290,7 +532,7 @@ async function chatJson(messages: Array<{ role: "system" | "user"; content: stri
   const model = getModelName();
   const response = await fetch(chatCompletionsUrl, {
     method: "POST",
-    signal: AbortSignal.timeout(20 * 60 * 1000),
+    signal: AbortSignal.timeout(timeoutMs),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json"
@@ -315,18 +557,9 @@ async function chatJson(messages: Array<{ role: "system" | "user"; content: stri
   return content;
 }
 
-function getApiKey(): string | undefined {
-  return process.env.OPENAI_API_KEY || process.env.TOKENDANCE_API_KEY;
-}
-
 function getModelName(): string {
   if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
   if (process.env.TOKENDANCE_MODEL) return process.env.TOKENDANCE_MODEL;
   if (process.env.TOKENDANCE_API_KEY) return "deepseek-v4-pro";
   return "gpt-4o-mini";
-}
-
-function formatModelError(error: unknown): string {
-  if (error instanceof z.ZodError) return "模型 JSON 字段不完整或格式不稳定。";
-  return error instanceof Error ? error.message : "未知错误";
 }

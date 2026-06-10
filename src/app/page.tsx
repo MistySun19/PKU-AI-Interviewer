@@ -7,7 +7,7 @@ type Status = "idle" | "loading" | "done" | "error";
 
 type FeedItem = {
   id: number;
-  kind: "stage" | "file" | "warning";
+  kind: "stage" | "file" | "warning" | "finding";
   text: string;
 };
 
@@ -34,7 +34,18 @@ export default function Home() {
         pushFeed("stage", event.detail ?? event.stage);
         break;
       case "file_read":
-        pushFeed("file", `读取 ${event.path}`);
+        pushFeed("file", `读取 ${event.path}${event.dimension ? `（${event.dimension} 补读）` : ""}`);
+        break;
+      case "plan":
+        pushFeed(
+          "stage",
+          `研究计划（${event.plan.analysisMode}）：${event.plan.dimensions
+            .map((dimension) => `${dimension.key}×${dimension.files.length}文件`)
+            .join("，")}`
+        );
+        break;
+      case "finding":
+        pushFeed("finding", `[${event.dimension}] ${event.claim}（${event.evidence.join("、") || "无证据"}）`);
         break;
       case "warning":
         pushFeed("warning", event.message);

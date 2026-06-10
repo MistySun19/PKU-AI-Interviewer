@@ -312,6 +312,10 @@ pre {
   color: var(--warn);
 }
 
+.feedItem.finding {
+  color: var(--ink);
+}
+
 @keyframes pulse {
   0%,
   100% {

@@ -1,8 +1,14 @@
 import type { AnalyzeResponse, ExamPoint, InterviewQuestion, PaperCodeMapItem, RepoContext, Understanding } from "./types";
 
-export function buildMarkdownReport(result: Omit<AnalyzeResponse, "markdownReport">): string {
+export type ReportBase = Omit<AnalyzeResponse, "markdownReport">;
+
+export function buildMarkdownReport(result: ReportBase): string {
+  return `${buildUnderstandingMarkdown(result)}\n${buildInterrogationMarkdown(result)}`;
+}
+
+export function buildUnderstandingMarkdown(result: ReportBase): string {
   const lines: string[] = [];
-  const { repo, analysisMode, paperSignals, researchArtifacts, paperCodeMap, understanding, examPoints, questions, evidenceFiles, warnings } = result;
+  const { repo, analysisMode, paperSignals, paperCodeMap, understanding } = result;
 
   lines.push(`# ${repo.fullName} AI 算法岗项目考核面试计划`);
   lines.push("");
@@ -75,6 +81,13 @@ export function buildMarkdownReport(result: Omit<AnalyzeResponse, "markdownRepor
     });
   }
   lines.push("");
+
+  return lines.join("\n");
+}
+
+export function buildInterrogationMarkdown(result: ReportBase): string {
+  const lines: string[] = [];
+  const { researchArtifacts, understanding, examPoints, questions, evidenceFiles, warnings } = result;
 
   lines.push("## 7. 项目考核点");
   lines.push("");
