@@ -44,6 +44,7 @@ npm run dev
 - `TOKENDANCE_BASE_URL`: 可选，Tokendance OpenAI-compatible endpoint。
 - `TOKENDANCE_CHAT_COMPLETIONS_URL`: 可选，Tokendance chat completions 完整 URL。
 - `TOKENDANCE_MODEL`: 可选，Tokendance 模型名，默认 `deepseek-v4-pro`。
+- `TOKENDANCE_RESEARCH_MODEL`: 可选，Plan / Research digest 阶段模型名，默认 `DeepSeek-V4-Flash`。
 
 ## 技术栈
 

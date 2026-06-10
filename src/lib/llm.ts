@@ -833,6 +833,8 @@ export function formatModelError(error: unknown): string {
 
 type ChatMessage = { role: "system" | "user"; content: string };
 type ModelRole = "research" | "final";
+const DEFAULT_TOKENDANCE_MODEL = "deepseek-v4-pro";
+const DEFAULT_TOKENDANCE_RESEARCH_MODEL = "DeepSeek-V4-Flash";
 
 async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: ModelRole = "final"): Promise<string> {
   const apiKey = getApiKey();
@@ -871,9 +873,10 @@ async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: Mode
 
 function getModelName(role: ModelRole = "final"): string {
   if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
-  // 调研阶段（plan/digest）可单独配更快的模型；不配则回退到主模型
+  // 调研阶段（plan/digest）默认走更快的 Flash；可用环境变量覆盖。
   if (role === "research" && process.env.TOKENDANCE_RESEARCH_MODEL) return process.env.TOKENDANCE_RESEARCH_MODEL;
+  if (role === "research" && process.env.TOKENDANCE_API_KEY) return DEFAULT_TOKENDANCE_RESEARCH_MODEL;
   if (process.env.TOKENDANCE_MODEL) return process.env.TOKENDANCE_MODEL;
-  if (process.env.TOKENDANCE_API_KEY) return "deepseek-v4-pro";
+  if (process.env.TOKENDANCE_API_KEY) return DEFAULT_TOKENDANCE_MODEL;
   return "gpt-4o-mini";
 }
