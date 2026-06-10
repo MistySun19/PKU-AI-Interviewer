@@ -284,14 +284,14 @@ ${args.filesBlock}
   "summary": "不超过 3 句话的维度结论",
   "findings": [{"claim": "发现", "evidence": ["文件路径，可带 :起-止行"], "confidence": "high|medium|low"}],
   "claimCodeLinks": [{"claim": "论文/README 主张", "code": ["实现文件"], "experiments": ["实验/评测/配置文件"]}],
-  "askPoints": ["该维度最值得面试官追问的具体点（绑定文件）"],
+  "askPoints": ["该维度最值得深挖的设计决策或风险点，写成'为什么这么做 / 有什么取舍 / 什么时候会失败'式的思路追问，不要写'由哪些部分组成'这类复述点"],
   "openQuestions": ["看完现有文件仍回答不了的问题"],
   "requestedFiles": ["需要补读的文件路径，必须出现在目录结构中，最多 3 个"]
 }
 
 要求：
 - findings 3-7 条，每条必须有 evidence；没有证据的猜测不要写。
-- askPoints 3-6 条，写"问什么 + 为什么值得问"。
+- askPoints 3-6 条，每条聚焦一个值得深挖的设计选择 / 取舍 / 失败风险（用于后续出"为什么这么设计"式的思路题，不是"由哪些部分组成"这种复述点）。
 - 不需要补读文件时 requestedFiles 返回 []。`
       }
     ];
@@ -357,7 +357,7 @@ function buildKaomianBlock(matches: KaomianPromptItem[] | undefined): string {
 ${matches.map((item) => `- [${item.frequency}帖|${item.category}] ${item.question}`).join("\n")}
 
 高频题使用规则：
-- 仅当高频题与本仓库证据相关时，把它改写成绑定本仓库具体文件/模块的追问，该题输出 "source":"kaomian"。
+- 仅当高频题与本仓库相关时，把它改写成针对本仓库的口语追问（同样遵守出题铁律：思路题、面试官口语、题面不报文件路径，证据只进 evidence 字段），该题输出 "source":"kaomian"。
 - 不要照抄高频题题面；与仓库无关的高频题直接忽略。
 - questions 中 source=kaomian 的最多 4 道，其余必须从仓库证据出发（"source":"repo"）。`;
 }
@@ -379,13 +379,39 @@ ${askPoints.map((point) => `- ${point}`).join("\n") || "- 无"}
 
 ${buildKaomianBlock(args.kaomianMatches)}
 
-任务：生成项目考核点与分层面试题。
+任务：模拟一位资深面试官，当面拷打候选人这个项目。生成考核点和分层面试题。
 
-内容约束：
-- examPoints 5-8 个，questions 8-12 道。
-- 追问优先覆盖 method validity、baseline/ablation、data leakage、metric choice、config/hyperparameter、reproducibility、failure cases、论文主张和代码是否一致。
-- 不要输出 employability score、code quality score、部署能力评分。
-- 不要泛问"这个项目用了什么技术栈"，每道题必须落到具体文件证据。`;
+## 出题铁律（最重要，违反即废题）
+
+【铁律一·只出思路题，禁止复述题】
+绝不出"X 包含哪几部分 / 有哪些字段 / 由什么组成 / 分哪几个步骤"这种照着文件就能抄答案的清单题。
+每道题必须落在以下八类深度追问之一：
+- 设计动机：为什么这样设计，而不是更直接的替代方案
+- 权衡取舍：这个设计牺牲了什么、换来了什么，什么场景下不划算
+- 反事实：如果换一种实现（用 B 代替 A），会引入什么新问题
+- 本质抽象：这个设计本质上解决了什么根本问题，代价是什么
+- 失败边界：什么样的输入 / 规模 / 数据分布下，这个方案会退化或崩掉
+- 批判改进：现有实现最大的可靠性弱点在哪，你会怎么改
+- 扩展应用：要加某个新功能，现有架构哪里必须改、为什么
+- 横向对比：和业界类似方案的本质区别，各自适合什么场景
+（若是论文项目：把"方法为什么成立、实验是否真的支撑结论、baseline/消融/指标选择是否合理、有没有数据泄漏"也按上面八类的追问方式提出，而不是让候选人复述实验设置。）
+
+【铁律二·用面试官口语，不是书面考题】
+- 第二人称直接对候选人说话，自然口语、带一点压迫感，像真人面试当面发问。
+- 严禁在 question 文本里出现任何文件路径、函数签名、"请基于 xxx.md 说明"、"在 xxx 文件中"这类书面引用。文件证据是面试官的底牌，只写进 evidence 字段，候选人看不到，绝不写进题面。
+- 严禁考试腔（"请阐述""试分析""……包含哪些"）。
+
+正例 ✅："你把它拆成两层而不是一层——为什么？这么拆换来了什么、又牺牲了什么？"
+       "如果数据量涨十倍，你这套方案会先从哪儿开始扛不住？"
+反例 ❌（禁止）："X 的定义格式包含哪些核心部分？请基于 xxx.md 说明。"
+              "forward 方法的参数有哪些？"
+
+## 字段与数量
+- examPoints 5-8 个：面试官视角"该往哪儿挖"，title 写追问主题（如"两层结构的取舍与失效场景"），evidence 写文件路径。
+- questions 8-12 道，难度 warmup→medium→hard 递进；即使是 warmup 也必须是思路题（最浅可用"本质抽象"类，让候选人一句话讲清项目到底解决了什么）。
+- 每道 question 的 evidence 字段必须填真实文件路径（系统据此验证答案）；但重申：路径只进 evidence，不进 question 文本。
+- whyAsk 写这道题考察候选人哪种能力；expectedAnswer 写好回答该命中的点；redFlags 写什么回答暴露了没真懂。
+- 不要输出 employability score、code quality score、部署能力评分。`;
 }
 
 export async function generateExamAndQuestions(
@@ -401,7 +427,9 @@ export async function generateExamAndQuestions(
 {
   "examPoints": [{"title": "...", "riskLevel": "low|medium|high", "evidence": ["路径"], "whyAsk": "...", "followUps": ["..."]}],
   "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."], "source": "repo|kaomian"}]
-}`
+}
+
+最后再强调一次：每道 question 都是面试官当面说的一句口语追问（八类思路题之一），evidence 字段里才放文件路径，题面里绝不出现文件路径、函数签名或"请基于 xxx 说明"。`
     }
   ];
   return withRetry("questions", async () =>
@@ -426,7 +454,9 @@ export async function streamExamAndQuestions(
 先逐行输出 5-8 个考核点：
 {"kind":"examPoint","title":"...","riskLevel":"low|medium|high","evidence":["路径"],"whyAsk":"...","followUps":["..."]}
 再逐行输出 8-12 道面试题：
-{"kind":"question","question":"...","difficulty":"warmup|medium|hard","evidence":["路径"],"whyAsk":"...","expectedAnswer":["..."],"redFlags":["..."],"followUps":["..."],"source":"repo|kaomian"}`
+{"kind":"question","question":"...","difficulty":"warmup|medium|hard","evidence":["路径"],"whyAsk":"...","expectedAnswer":["..."],"redFlags":["..."],"followUps":["..."],"source":"repo|kaomian"}
+
+最后再强调一次：每道 question 都是面试官当面说的一句口语追问（八类思路题之一），evidence 字段里才放文件路径，题面里绝不出现文件路径、函数签名或"请基于 xxx 说明"。`
     }
   ];
 
@@ -614,7 +644,7 @@ ${args.answer.slice(0, 4000)}
 """
 
 任务：作为面试官评估这个回答。返回 JSON：
-{"score": 1到5的整数, "verdict": "strong|ok|weak", "feedback": "对候选人说的 2-3 句中文反馈，先肯定可取之处，再点出最关键缺口", "gaps": ["缺失的关键要点"], "followUpQuestion": "verdict 为 weak 时给一个针对缺口的追问，否则给空字符串"}
+{"score": 1到5的整数, "verdict": "strong|ok|weak", "feedback": "对候选人说的 2-3 句中文反馈，先肯定可取之处，再点出最关键缺口", "gaps": ["缺失的关键要点"], "followUpQuestion": "verdict 为 weak 时，用面试官当面说话的口语给一个追问（第二人称、往设计动机/取舍/失败场景方向挖、绝不出现文件路径或'请基于xxx说明'），否则给空字符串"}
 
 评分标准：
 - 5/strong：覆盖期望要点，能落到仓库具体文件/实现，无红旗回答。
