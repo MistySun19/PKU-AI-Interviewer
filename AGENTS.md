@@ -30,11 +30,11 @@ PKU AI Interviewer 不是通用模拟面试题库。
 
 不要把“手填项目描述”作为 V1.0.0 的主要入口。它只能作为兜底补充。
 
-V1.0.0 内部按 alpha / beta / rc 推进：先 GitHub repo paper-code 理解，再接 `kaomian`，再支持一句话自述。arXiv / 论文解析放到 v1.1.0，JD / 岗位描述放到 v1.2.0。
+V1.0.0 内部按 alpha / beta / rc 推进：alpha（repo 基础理解）和 alpha.1（paper-code 理解）已完成；beta（当前版本）落地了 Repo Deep Research Agent 四阶段管道、`kaomian` 快照接入和 Survey/Interactive 双模式（实时面试追问从 v1.3.0 提前）；rc 支持一句话自述。arXiv / 论文解析放到 v1.1.0，JD / 岗位描述放到 v1.2.0。架构见 `docs/ARCHITECTURE.md`，调研依据见 `docs/research/deep-research-agent-design.md`。
 
 ## V1.0.0 输出目标
 
-第一阶段先输出一份结构化的 **项目相关面试计划**，不急着做实时聊天。
+Survey 模式输出一份结构化的 **项目相关面试计划**（流式）；Interactive 模式在同一套仓库理解之上进行一问一答模拟面试（评估、追问、总结）。
 
 输出必须包含：
 
