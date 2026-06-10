@@ -57,6 +57,8 @@ export default function Home() {
   const [answerDraft, setAnswerDraft] = useState("");
   const [sending, setSending] = useState(false);
   const feedSeq = useRef(0);
+  const interviewReady = mode === "interview" && (sessionId || summary);
+  const interviewMissing = mode === "interview" && status === "done" && !sessionId && !summary;
 
   function pushFeed(kind: FeedItem["kind"], text: string) {
     feedSeq.current += 1;
@@ -273,38 +275,10 @@ export default function Home() {
           </div>
         )}
 
-        {feed.length > 0 && status !== "idle" && (
-          <div className="feedPanel" aria-live="polite">
-            <div className="feedHead">
-              <span className={status === "loading" ? "dot" : "dot idle"} />
-              {status === "loading" ? stageLabel : "分析完成"}
-            </div>
-            <ul className="feedList">
-              {feed.map((item) => (
-                <li key={item.id} className={`feedItem ${item.kind}`}>
-                  {item.text}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
         {status === "error" && <div className="error">{error}</div>}
 
-        {!result && reportDraft && !sessionId && (
-          <section className="report streamingReport" aria-label="理解报告生成中" aria-live="polite">
-            <div className="reportHead">
-              <div>
-                <p className="eyebrow">Streaming</p>
-                <h2>仓库理解报告（生成中）</h2>
-              </div>
-            </div>
-            <pre>{reportDraft}</pre>
-          </section>
-        )}
-
-        {(sessionId || summary) && (
-          <section className="chatPanel" aria-label="模拟面试">
+        {interviewReady && (
+          <section className="chatPanel priority" aria-label="模拟面试">
             <div className="chatHead">
               <div>
                 <p className="eyebrow">Mock Interview</p>
@@ -424,6 +398,38 @@ export default function Home() {
                 )}
               </div>
             )}
+          </section>
+        )}
+
+        {interviewMissing && (
+          <div className="error">分析已完成，但没有生成可用的模拟面试 session。请重试或切换到 Survey 模式查看已生成题目。</div>
+        )}
+
+        {feed.length > 0 && status !== "idle" && (
+          <div className={interviewReady ? "feedPanel compact" : "feedPanel"} aria-live="polite">
+            <div className="feedHead">
+              <span className={status === "loading" ? "dot" : "dot idle"} />
+              {interviewReady ? "面试已开始" : status === "loading" ? stageLabel : "分析完成"}
+            </div>
+            <ul className="feedList">
+              {feed.map((item) => (
+                <li key={item.id} className={`feedItem ${item.kind}`}>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {!result && reportDraft && !sessionId && (
+          <section className="report streamingReport" aria-label="理解报告生成中" aria-live="polite">
+            <div className="reportHead">
+              <div>
+                <p className="eyebrow">Streaming</p>
+                <h2>仓库理解报告（生成中）</h2>
+              </div>
+            </div>
+            <pre>{reportDraft}</pre>
           </section>
         )}
 

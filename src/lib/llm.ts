@@ -834,7 +834,7 @@ export function formatModelError(error: unknown): string {
 type ChatMessage = { role: "system" | "user"; content: string };
 type ModelRole = "research" | "final";
 const DEFAULT_TOKENDANCE_MODEL = "deepseek-v4-pro";
-const DEFAULT_TOKENDANCE_RESEARCH_MODEL = "DeepSeek-V4-Flash";
+const DEFAULT_TOKENDANCE_RESEARCH_MODEL = "deepseek-v4-flash";
 
 async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: ModelRole = "final"): Promise<string> {
   const apiKey = getApiKey();

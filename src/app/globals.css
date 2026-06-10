@@ -295,6 +295,10 @@ pre {
   overflow-y: auto;
 }
 
+.feedPanel.compact .feedList {
+  max-height: 150px;
+}
+
 .feedItem {
   color: var(--muted);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -505,6 +509,11 @@ pre {
   border: 1px solid var(--line);
   background: var(--panel);
   box-shadow: 0 16px 42px rgba(23, 26, 31, 0.07);
+}
+
+.chatPanel.priority {
+  border-color: rgba(15, 107, 87, 0.42);
+  box-shadow: 0 18px 54px rgba(15, 107, 87, 0.14);
 }
 
 .chatHead {
