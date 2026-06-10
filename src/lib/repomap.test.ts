@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildTreeSummary, computeCentrality, extractImports, skeletonizeFile } from "./repomap";
+import {
+  buildTreeSummary,
+  computeCentrality,
+  extractImports,
+  extractPaperSignalLines,
+  skeletonizeFile
+} from "./repomap";
 
 describe("extractImports", () => {
   it("extracts python imports", () => {
@@ -59,6 +65,49 @@ describe("skeletonizeFile", () => {
     expect(content).toContain('import { z } from "zod";');
     expect(content).toContain("export function run(a: number) {");
     expect(content).not.toContain("console.log");
+  });
+});
+
+describe("extractPaperSignalLines", () => {
+  const readme = `# DiT
+
+Official PyTorch implementation.
+
+Paper: https://arxiv.org/abs/2212.09748
+
+## Setup
+
+pip install -r requirements.txt
+
+## Citation
+
+\`\`\`bibtex
+@article{Peebles2022DiT,
+  title={Scalable Diffusion Models with Transformers},
+  author={William Peebles and Saining Xie},
+  journal={arXiv preprint arXiv:2212.09748},
+  year={2022}
+}
+\`\`\`
+
+Accepted to ICCV 2023 (Oral).
+`;
+
+  it("captures arxiv links, bibtex blocks and venue mentions", () => {
+    const lines = extractPaperSignalLines(readme);
+    expect(lines.some((line) => line.includes("https://arxiv.org/abs/2212.09748"))).toBe(true);
+    expect(lines.some((line) => line.includes("@article{Peebles2022DiT"))).toBe(true);
+    expect(lines.some((line) => line.includes("title={Scalable Diffusion Models with Transformers}"))).toBe(true);
+    expect(lines.some((line) => line.includes("ICCV 2023"))).toBe(true);
+  });
+
+  it("returns empty for a readme without paper signals", () => {
+    expect(extractPaperSignalLines("# tool\n\nA CLI for parsing logs.\n")).toEqual([]);
+  });
+
+  it("caps the number of captured lines", () => {
+    const noisy = Array.from({ length: 40 }, (_, i) => `see https://arxiv.org/abs/00${i}`).join("\n");
+    expect(extractPaperSignalLines(noisy, 14).length).toBeLessThanOrEqual(14);
   });
 });
 

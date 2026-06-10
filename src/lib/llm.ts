@@ -321,6 +321,7 @@ analysisMode, paperSignals{venues,paperLinks,citationFound,officialImplementatio
 
 要求：
 - 必须消解 digest 之间的冲突；不确定的地方在对应字段里写明"不确定"。
+- paperSignals 的 paperLinks/venues/citationFound 优先依据 repo map 中的「README 论文信号行」提取：paperLinks 写完整 URL，venues 写会议/期刊名，存在 bibtex 即 citationFound=true。
 - paperClaims 写论文/README/项目页声称解决什么、贡献是什么。
 - methodCodeMap 写"方法概念 -> 代码文件"的映射。
 - paperCodeMap 是面试视角的"主张 -> 代码证据 -> 实验证据 -> 追问风险"，3-8 条。

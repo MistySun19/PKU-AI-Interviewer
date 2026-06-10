@@ -111,6 +111,30 @@ export function skeletonizeFile(
   };
 }
 
+const paperSignalPattern =
+  /arxiv\.org|openreview\.net|doi\.org|aclanthology\.org|paperswithcode\.com|huggingface\.co\/papers|@(article|inproceedings|misc|phdthesis)\{|\bcitation\b|\bCVPR\b|\bICCV\b|\bECCV\b|\bNeurIPS\b|\bNIPS\b|\bICML\b|\bICLR\b|\bAAAI\b|\bIJCAI\b|\bEMNLP\b|\bNAACL\b|\bCOLM\b|\bTPAMI\b|\bJMLR\b/i;
+
+const bibtexEntryPattern = /@(article|inproceedings|misc|phdthesis)\{/i;
+
+export function extractPaperSignalLines(readme: string, maxLines = 14): string[] {
+  const lines = readme.split("\n");
+  const captured: string[] = [];
+  for (let i = 0; i < lines.length && captured.length < maxLines; i++) {
+    const line = lines[i].trim();
+    if (!line || !paperSignalPattern.test(line)) continue;
+    captured.push(line.slice(0, 200));
+    if (bibtexEntryPattern.test(line)) {
+      for (let j = i + 1; j < Math.min(i + 8, lines.length) && captured.length < maxLines; j++) {
+        const bibLine = lines[j].trim();
+        if (!bibLine) continue;
+        captured.push(bibLine.slice(0, 200));
+        if (bibLine.startsWith("}")) break;
+      }
+    }
+  }
+  return [...new Set(captured)];
+}
+
 export function buildTreeSummary(paths: string[], maxLines = 60): string {
   const dirCount = new Map<string, number>();
   for (const path of paths) {
@@ -136,6 +160,8 @@ export function buildRepoMapText(context: RepoContext, centrality: Map<string, n
     return `- ${file.path} [${file.category}] 被引用 ${refs} 次${file.truncated ? "（截断）" : ""} :: ${file.reason}`;
   });
 
+  const paperSignalLines = extractPaperSignalLines(context.readme);
+
   return [
     `仓库: ${context.repo.fullName}`,
     `描述: ${context.repo.description ?? "无"}`,
@@ -145,6 +171,9 @@ export function buildRepoMapText(context: RepoContext, centrality: Map<string, n
     buildTreeSummary(context.treeFiles.map((file) => file.path)),
     "",
     "已读取的证据文件（按重要性排序）:",
-    ...fileLines
+    ...fileLines,
+    ...(paperSignalLines.length > 0
+      ? ["", "README 论文信号行（原文摘录，含链接/citation/会议名）:", ...paperSignalLines.map((line) => `- ${line}`)]
+      : [])
   ].join("\n");
 }
