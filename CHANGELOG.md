@@ -31,6 +31,7 @@
 - 接入 `kaomian` 高频题快照（`data/kaomian/`，636 题），按技术标签检索并要求模型改写为绑定仓库证据的追问，来源标注"高频题改写"。
 - 新增 GitHub contents API 回退通道（raw CDN 不可用时自动切换）与 raw 路径段校验。
 - 新增架构文档 `docs/ARCHITECTURE.md` 与 deep research agent 调研 `docs/research/deep-research-agent-design.md`。
+- 新增项目开发记录 `docs/project-record.md`，记录从仓库理解优先到 V1.0.0-beta 真实测试的迭代过程。
 - 新增 repomap、事件通道、编排器、kaomian 检索、面试状态机的单元测试（40 项）。
 
 ### 调整

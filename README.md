@@ -83,6 +83,7 @@ npm run dev
 ## 文档
 
 - `docs/ARCHITECTURE.md`: Repo Deep Research Agent 系统架构图与阶段说明
+- `docs/project-record.md`: 项目开发流程记录与 V1.0.0-beta 测试反思
 - `V1.0.0_PLAN.md`: V1.0.0 架构和落地计划
 - `ROADMAP.md`: 从 GitHub repo 到 kaomian、一句话自述、arXiv、JD 的计划线
 - `VERSION_WORKLOG.md`: 版本演化工作日志，保留 v0.0.1 到 V1.0.0 的定位变化
