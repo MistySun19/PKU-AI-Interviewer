@@ -18,6 +18,8 @@ type ChatMessage =
   | { id: number; role: "system"; text: string };
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+type RiskLevel = ExamPoint["riskLevel"];
+type Difficulty = InterviewQuestion["difficulty"];
 
 async function consumeSse(body: ReadableStream<Uint8Array>, onEvent: (event: SseEvent) => void): Promise<void> {
   const reader = body.getReader();
@@ -433,7 +435,7 @@ export default function Home() {
           </section>
         )}
 
-        {mode === "survey" && examPoints.length > 0 && (
+        {mode === "survey" && examPoints.length > 0 && !result && (
           <section className="examPoints" aria-label="项目考核点">
             <h2>
               项目考核点 <span className="count">{examPoints.length}</span>
@@ -453,7 +455,7 @@ export default function Home() {
           </section>
         )}
 
-        {mode === "survey" && questions.length > 0 && (
+        {mode === "survey" && questions.length > 0 && !result && (
           <section className="questionsPanel" aria-label="分层面试题">
             <h2>
               分层面试题 <span className="count">{questions.length}</span>
@@ -508,69 +510,260 @@ export default function Home() {
           </section>
         )}
 
-        {mode === "survey" && result && (
-          <section className="resultGrid">
-            <aside className="sidebar" aria-label="仓库分析摘要">
-              <div className="metric">
-                <span>Mode</span>
-                <strong>{result.analysisMode}</strong>
-              </div>
-              <div className="metric">
-                <span>Repository</span>
-                <strong>{result.repo.fullName}</strong>
-              </div>
-              <div className="metric">
-                <span>Language</span>
-                <strong>{result.repo.language ?? "Unknown"}</strong>
-              </div>
-              <div className="metric">
-                <span>Evidence</span>
-                <strong>{result.evidenceFiles.length} files</strong>
-              </div>
-              <div className="metric">
-                <span>Questions</span>
-                <strong>{result.questions.length}</strong>
-              </div>
-
-              <div className="sideBlock">
-                <h2>证据文件</h2>
-                <ul>
-                  {result.evidenceFiles.slice(0, 12).map((file) => (
-                    <li key={file.path}>
-                      {file.path}
-                      <span> {file.category}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {result.warnings.length > 0 && (
-                <div className="sideBlock warning">
-                  <h2>Warnings</h2>
-                  <ul>
-                    {result.warnings.map((warning) => (
-                      <li key={warning}>{warning}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </aside>
-
-            <article className="report" aria-label="项目考核面试计划">
-              <div className="reportHead">
-                <div>
-                  <p className="eyebrow">Markdown Report</p>
-                  <h2>项目考核面试计划</h2>
-                </div>
-                <button className="copy" onClick={() => void copyReport()}>
-                  {copied ? "已复制" : "复制"}
-                </button>
-              </div>
-              <pre>{result.markdownReport}</pre>
-            </article>
-          </section>
-        )}
+        {mode === "survey" && result && <RenderedInterviewPlan result={result} copied={copied} onCopy={() => void copyReport()} />}
       </section>
     </main>
   );
+}
+
+function RenderedInterviewPlan({
+  result,
+  copied,
+  onCopy
+}: {
+  result: AnalyzeResponse;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  const priorityPoints = [
+    ...result.examPoints.filter((point) => point.riskLevel === "high"),
+    ...result.examPoints.filter((point) => point.riskLevel !== "high")
+  ].slice(0, 3);
+  const spotlightQuestions = uniqueByQuestion([
+    ...result.questions.filter((question) => question.difficulty === "hard"),
+    ...result.questions.filter((question) => question.source === "kaomian"),
+    ...result.questions
+  ]).slice(0, 3);
+  const primaryEvidence = uniqueStrings([
+    ...priorityPoints.flatMap((point) => point.evidence),
+    ...spotlightQuestions.flatMap((question) => question.evidence)
+  ]).slice(0, 8);
+  const supportSignals = [
+    ...result.understanding.entryPoints,
+    ...result.understanding.evaluationSignals,
+    ...result.understanding.reproductionRecipe
+  ].filter(Boolean);
+
+  return (
+    <section className="planCanvas" aria-label="项目考核面试计划">
+      <header className="planHero">
+        <div>
+          <p className="eyebrow">Interview Plan</p>
+          <h2>{result.repo.fullName}</h2>
+          <p className="planSummary">{result.understanding.summary}</p>
+        </div>
+        <div className="planScoreboard" aria-label="分析指标">
+          <div>
+            <span>考核点</span>
+            <strong>{result.examPoints.length}</strong>
+          </div>
+          <div>
+            <span>题目</span>
+            <strong>{result.questions.length}</strong>
+          </div>
+          <div>
+            <span>证据文件</span>
+            <strong>{result.evidenceFiles.length}</strong>
+          </div>
+        </div>
+      </header>
+
+      <section className="priorityBand" aria-label="优先准备">
+        <div className="bandTitle">
+          <p className="eyebrow">Start Here</p>
+          <h2>先准备这几处</h2>
+        </div>
+        <div className="priorityGrid">
+          {priorityPoints.map((point, index) => (
+            <article className="priorityCard" key={`${point.title}-${index}`}>
+              <span className={`chip risk-${point.riskLevel}`}>{riskText(point.riskLevel)}</span>
+              <h3>{point.title}</h3>
+              <p>{point.whyAsk || "这类问题最容易暴露候选人是否真的理解项目取舍。"}</p>
+              <EvidenceLine paths={point.evidence} />
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="focusLayout" aria-label="核心面试题">
+        <div className="focusMain">
+          <div className="sectionLead">
+            <p className="eyebrow">Questions</p>
+            <h2>最值得先练的题</h2>
+          </div>
+          <div className="spotlightList">
+            {spotlightQuestions.map((question, index) => (
+              <QuestionSpotlight question={question} index={index} key={`${question.question}-${index}`} />
+            ))}
+          </div>
+        </div>
+
+        <aside className="prepRail" aria-label="答题抓手">
+          <div className="railBlock">
+            <h3>一句话项目定位</h3>
+            <p>{result.understanding.problemSetting || result.understanding.summary}</p>
+          </div>
+          <div className="railBlock">
+            <h3>先打开这些证据</h3>
+            <CompactPathList paths={primaryEvidence.length > 0 ? primaryEvidence : result.evidenceFiles.map((file) => file.path).slice(0, 6)} />
+          </div>
+          {supportSignals.length > 0 && (
+            <div className="railBlock quiet">
+              <h3>复现/评测线索</h3>
+              <CompactPathList paths={supportSignals.slice(0, 6)} />
+            </div>
+          )}
+        </aside>
+      </section>
+
+      <section className="questionDeck" aria-label="完整分层题目">
+        <div className="sectionLead">
+          <p className="eyebrow">Full Set</p>
+          <h2>完整题组</h2>
+        </div>
+        <div className="questionDeckGrid">
+          {result.questions.map((question, index) => (
+            <article className="planQuestionCard" key={`${question.question}-${index}`}>
+              <header>
+                <span className={`chip diff-${question.difficulty}`}>{difficultyText(question.difficulty)}</span>
+                {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
+                <span className="qIndex">Q{String(index + 1).padStart(2, "0")}</span>
+              </header>
+              <p className="qText">{question.question}</p>
+              <div className="answerGrid">
+                <MiniList title="好回答要点" items={question.expectedAnswer.slice(0, 3)} />
+                <MiniList title="红旗回答" items={question.redFlags.slice(0, 3)} danger />
+              </div>
+              <details>
+                <summary>证据与追问</summary>
+                <EvidenceLine paths={question.evidence} />
+                <MiniList title="追问链" items={question.followUps} />
+              </details>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="secondaryReport" aria-label="低优先级信息">
+        <details>
+          <summary>仓库元信息、证据文件和原始 Markdown</summary>
+          <div className="secondaryGrid">
+            <div className="smallFacts">
+              <h3>仓库元信息</h3>
+              <dl>
+                <div>
+                  <dt>分析模式</dt>
+                  <dd>{result.analysisMode}</dd>
+                </div>
+                <div>
+                  <dt>语言</dt>
+                  <dd>{result.repo.language ?? "Unknown"}</dd>
+                </div>
+                <div>
+                  <dt>默认分支</dt>
+                  <dd>{result.repo.defaultBranch}</dd>
+                </div>
+                <div>
+                  <dt>Stars</dt>
+                  <dd>{result.repo.stars}</dd>
+                </div>
+              </dl>
+            </div>
+            <div className="smallFacts">
+              <h3>证据文件</h3>
+              <CompactPathList paths={result.evidenceFiles.map((file) => `${file.path} · ${file.category}`).slice(0, 18)} />
+            </div>
+            {result.warnings.length > 0 && (
+              <div className="smallFacts warning">
+                <h3>Warnings</h3>
+                <CompactPathList paths={result.warnings} />
+              </div>
+            )}
+          </div>
+          <div className="rawReportHead">
+            <h3>原始 Markdown</h3>
+            <button className="copy" onClick={onCopy}>
+              {copied ? "已复制" : "复制"}
+            </button>
+          </div>
+          <pre>{result.markdownReport}</pre>
+        </details>
+      </section>
+    </section>
+  );
+}
+
+function QuestionSpotlight({ question, index }: { question: InterviewQuestion; index: number }) {
+  return (
+    <article className="spotlightQuestion">
+      <header>
+        <span className="spotlightIndex">{String(index + 1).padStart(2, "0")}</span>
+        <div>
+          <span className={`chip diff-${question.difficulty}`}>{difficultyText(question.difficulty)}</span>
+          {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
+        </div>
+      </header>
+      <p>{question.question}</p>
+      {question.whyAsk && <small>{question.whyAsk}</small>}
+      <EvidenceLine paths={question.evidence} />
+    </article>
+  );
+}
+
+function MiniList({ title, items, danger = false }: { title: string; items: string[]; danger?: boolean }) {
+  if (items.length === 0) return null;
+  return (
+    <div className={danger ? "miniList danger" : "miniList"}>
+      <h3>{title}</h3>
+      <ul>
+        {items.map((item) => (
+          <li key={item}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function EvidenceLine({ paths }: { paths: string[] }) {
+  if (paths.length === 0) return <p className="cardEvidence">证据：—</p>;
+  return (
+    <p className="cardEvidence">
+      证据：{paths.slice(0, 4).join("、")}
+      {paths.length > 4 ? ` 等 ${paths.length} 处` : ""}
+    </p>
+  );
+}
+
+function CompactPathList({ paths }: { paths: string[] }) {
+  if (paths.length === 0) return <p className="emptySmall">未明确识别</p>;
+  return (
+    <ul className="compactPathList">
+      {paths.map((path) => (
+        <li key={path}>{path}</li>
+      ))}
+    </ul>
+  );
+}
+
+function uniqueByQuestion(questions: InterviewQuestion[]): InterviewQuestion[] {
+  const seen = new Set<string>();
+  return questions.filter((question) => {
+    if (seen.has(question.question)) return false;
+    seen.add(question.question);
+    return true;
+  });
+}
+
+function uniqueStrings(items: string[]): string[] {
+  return [...new Set(items.filter(Boolean))];
+}
+
+function riskText(risk: RiskLevel): string {
+  const labels: Record<RiskLevel, string> = { low: "低风险", medium: "中风险", high: "高风险" };
+  return labels[risk];
+}
+
+function difficultyText(difficulty: Difficulty): string {
+  const labels: Record<Difficulty, string> = { warmup: "热身", medium: "中等", hard: "强压" };
+  return labels[difficulty];
 }
