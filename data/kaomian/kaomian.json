@@ -1,0 +1,6502 @@
+{
+  "sourceRepo": "smile-struggler/kaomian",
+  "branch": "main",
+  "count": 636,
+  "items": [
+    {
+      "id": "k001",
+      "question": "怎么评估 Agent 效果好不好？",
+      "category": "knowledge_qa",
+      "frequency": 9,
+      "companies": [
+        "OPPO",
+        "京东",
+        "千问",
+        "字节",
+        "阿里",
+        "阿里云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k002",
+      "question": "说说Agent的难点",
+      "category": "knowledge_qa",
+      "frequency": 9,
+      "companies": [
+        "京东",
+        "淘天",
+        "美团",
+        "腾讯",
+        "阿里云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k003",
+      "question": "你详细讲讲如何构建模型指标的",
+      "category": "knowledge_qa",
+      "frequency": 8,
+      "companies": [
+        "京东",
+        "字节跳动",
+        "小红书",
+        "某书",
+        "百度",
+        "阿里巴巴"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k004",
+      "question": "如果要做某个功能，你会怎么设计 Agent流程？",
+      "category": "knowledge_qa",
+      "frequency": 8,
+      "companies": [
+        "京东",
+        "千问",
+        "字节跳动",
+        "小红书",
+        "某书",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k005",
+      "question": "上下文窗口不够用，对话太长怎么办？",
+      "category": "knowledge_qa",
+      "frequency": 7,
+      "companies": [
+        "京东",
+        "喜马拉雅",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k006",
+      "question": "多智能体怎么协作？比如一个写代码一个审查",
+      "category": "knowledge_qa",
+      "frequency": 7,
+      "companies": [
+        "京东",
+        "字节",
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k007",
+      "question": "Agent 的记忆怎么搞？长期短期分别怎么存？",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k008",
+      "question": "之前有用过ai工具吗",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "千问",
+        "某书",
+        "百度",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k009",
+      "question": "你觉得现阶段做 Agent，做重要的是什么？",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "Minimax",
+        "字节跳动",
+        "腾讯",
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k010",
+      "question": "工具调用失败、超时了怎么办？",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "喜马拉雅"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k011",
+      "question": "怎么让模型老老实实调用工具，不瞎编参数？",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "京东",
+        "喜马拉雅"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k012",
+      "question": "是否了解SKILLS，SKILL的本质是什么，怎么写",
+      "category": "knowledge_qa",
+      "frequency": 6,
+      "companies": [
+        "京东",
+        "字节",
+        "美团",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k013",
+      "question": "使用了哪些ai，介绍一下在哪些场景用的",
+      "category": "knowledge_qa",
+      "frequency": 5,
+      "companies": [
+        "京东",
+        "点点互动",
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k014",
+      "question": "有使用过吗你这个agent项目就是四个智能体 用langchain也可以实现啊 你用了langGraph 有哪些是用langchain不能实现的吗--langgraph更使用任务分解和流程编排--但你这个用langchain也能做吧--（无法反驳..",
+      "category": "knowledge_qa",
+      "frequency": 5,
+      "companies": [
+        "淘天",
+        "顺丰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k015",
+      "question": "LLM部分是怎么设计的？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "OpenAI",
+        "字节",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k016",
+      "question": "RAG检索遇到召回bad case怎么处理",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "淘天",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k017",
+      "question": "Reward是如何设计的？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "喜马拉雅",
+        "字节",
+        "小米",
+        "网易"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k018",
+      "question": "了解ai吗？知道什么是agent吗",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "字节跳动",
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k019",
+      "question": "你有了解openclaw的设计实现吗？openclaw和传统的agent实现有什么大的区别？或是说openclaw有什么新设计？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "字节",
+        "快手",
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k020",
+      "question": "你的代码能力怎么样？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "喜马拉雅",
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k021",
+      "question": "假如一个Agent 推理链路包含3个工具+高频请求，系统整体延迟较高，你会如何优化？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "字节",
+        "快手",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k022",
+      "question": "强化学习在Agent中的挑战",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "千问",
+        "小米",
+        "美团",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k023",
+      "question": "现在给你一个RAG系统，你怎么设计一套评估方案来判断它‘好用’？",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k024",
+      "question": "详细介绍项目",
+      "category": "knowledge_qa",
+      "frequency": 4,
+      "companies": [
+        "喜马拉雅",
+        "小米",
+        "小红书",
+        "网易"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k025",
+      "question": "agent 训练过程中 工具调用本身 和 基于工具调用结果的后续内容生成，哪个对于 SFT 的依赖更大",
+      "category": "agent_rag_tool_memory",
+      "frequency": 3,
+      "companies": [
+        "小红书",
+        "淘天",
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k026",
+      "question": "off-policy和on-policy如何理解",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "TeleAI",
+        "快手",
+        "阿里国际"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k027",
+      "question": "openclaw的记忆系统是怎么设计的？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "快手",
+        "智谱",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k028",
+      "question": "prompt你会怎么考量去写",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "淘天",
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k029",
+      "question": "Transformer 中 Attention 的本质是什么？你能从数学角度简要解释一下吗？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "OpenAI",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k030",
+      "question": "transformers架构",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k031",
+      "question": "workflow，agent，skill区别",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "淘天",
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k032",
+      "question": "为什么选择GRPO而不是PPO/DPO？介绍一下PPO和DPO",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "千问",
+        "小米",
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k033",
+      "question": "了解Agent吗？说一下你做过的Agent workflow的具体流程",
+      "category": "agent_rag_tool_memory",
+      "frequency": 3,
+      "companies": [
+        "字节跳动",
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k034",
+      "question": "会Java吗",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "小红书",
+        "某书",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k035",
+      "question": "你们是怎么解决大模型幻觉问题的？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "京东",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k036",
+      "question": "你对大模型Agent的核心技术模块怎么理解？每个模块的功能、难点，以及它们之间怎么联动？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k037",
+      "question": "你的agent是怎么做的，这里我一直没get到点，面试官让说你的这些agent具体是负责干嘛的，输入输出是什么讲明白。",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "某书",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k038",
+      "question": "最近看了些什么新的内容可以分享？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "京东",
+        "字节"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k039",
+      "question": "多工具冲突时产品上怎么定义优先级？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k040",
+      "question": "如何给AI Coding助手设计合理的优化指令？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "淘天",
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k041",
+      "question": "如果让你来设计一个基于Agent的自动给数据标注的系统，你会怎么设计，你认为关键点在哪里",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k042",
+      "question": "如果让现在的你回到第一段实习你会继续做什么？（很考验复盘能力！）",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "喜马拉雅",
+        "字节",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k043",
+      "question": "对ai hr的理解",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "京东零售",
+        "百度",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k044",
+      "question": "微调的数据集从哪里来",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "智谱",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k045",
+      "question": "有实际用过dropout吗？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "京东",
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k046",
+      "question": "现在的Agent是多Agent吗？具体是怎么设计的？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "小红书"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k047",
+      "question": "用户说“帮我整理会议并分发邮件”，凭什么规则决定先转录还是先拆分？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k048",
+      "question": "用的哪些embedding模型",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "智谱",
+        "腾讯",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k049",
+      "question": "短期记忆和长期记忆相比作用是什么",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k050",
+      "question": "索引失效的场景",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "京东",
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k051",
+      "question": "说一下LoRA的原理；怎么理解“低秩”（r为什么远小于d）",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "快手",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k052",
+      "question": "这个AI平台是怎么部署的？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "小红书",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k053",
+      "question": "这个意图识别你怎么理解的？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "小红书",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k054",
+      "question": "选型时为什么选这个框架？对比过其他方案吗？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "字节",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k055",
+      "question": "问了解agent吗？skills喝mcp区别？",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "抖音",
+        "淘天",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k056",
+      "question": "问安全： 权限还停在“谁能不能用”，根本防不住用户诱导 Agent 越权操作——真上线怕是要出大事故！",
+      "category": "knowledge_qa",
+      "frequency": 3,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k057",
+      "question": "（项目）LoRA的数据怎么来的，结构长啥样？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节",
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k058",
+      "question": "Agent vs Workflow",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k059",
+      "question": "Agent 做多轮工具调用 和单轮，可能有什么挑战？（我答的，过程的重要性，以及信用分配；接着问那为什么单轮 过程 就不重要呢？）",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k060",
+      "question": "Agent的记忆怎么设计",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k061",
+      "question": "B+树范围查询的优势",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k062",
+      "question": "claude和codex和openclaw的使用区别、设计区别？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯",
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k063",
+      "question": "dpo相比别的强化学习算法的劣势是什么",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "筋斗云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k064",
+      "question": "dpo训练是同时打压好坏样例的生成概率问题（dpop 加入生成正例与参考模型概率高惩罚 正例采样下poly与reference对数比，嘴瓢了，dap",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "高德"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k065",
+      "question": "KV Cache 是什么？为什么能极大地提升推理速度？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节",
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k066",
+      "question": "leetcode 快排（选主元 分左右 再递归）",
+      "category": "leetcode_algo",
+      "frequency": 2,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k067",
+      "question": "Lora的调参经验？有没有遇到什么难度？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k068",
+      "question": "MCP底层协议是什么",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k069",
+      "question": "MySQL索引底层数据结构",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k070",
+      "question": "SFT数据来源，是否包含人工标注？数据质量如何保证？输入输出格式？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小米",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k071",
+      "question": "sql如何进行的优化性能",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k072",
+      "question": "为什么moe架构相比于dense架构更容易出现GPU负载不均衡",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "千问",
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k073",
+      "question": "为什么想做hr",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k074",
+      "question": "为什么要去这个公司（小公司）实习？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k075",
+      "question": "为什么要用向量检索（RAG）？不用其他方式？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "千问",
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k076",
+      "question": "了不了解MIMO",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k077",
+      "question": "什么是 RAG，它是怎么提升生成质量的？与传统检索 + 模型生成的流程有何不同？你是如何评估一个RAG系统是否work的？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k078",
+      "question": "介绍下你的DeepResearch的架构",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k079",
+      "question": "从产品能力和技术角度分别讲一个cursor的缺点",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "千问",
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k080",
+      "question": "你从哪些渠道获取AI的咨询",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "某书",
+        "美团"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k081",
+      "question": "你们用的 Agent 框架是什么？ReAct 还是 Plan-and-Execute？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k082",
+      "question": "你们项目的知识库是怎么建设的？文档清洗、分段策略是什么？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k083",
+      "question": "你怎么看待openclaw？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k084",
+      "question": "你怎么看待算法和Agent应用的区别？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k085",
+      "question": "你有没有遇到过比较难以完成的任务，最后是怎么克服的？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "喜马拉雅",
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k086",
+      "question": "你用的切分策略是什么？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k087",
+      "question": "你的coze agent项目基于什么样的目的去搭建的？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "百度",
+        "网易"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k088",
+      "question": "你觉得AI IDE设计的时候怎么防止类似数据库的幻读情况？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k089",
+      "question": "你觉得做AI产品的过程中，和传统产品经理有哪些区别？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k090",
+      "question": "你觉得在这个项目中结合RAG的必要性是什么",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k091",
+      "question": "具体怎么做的？数据啥样？现在准确度在什么水位？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k092",
+      "question": "最近做的项目是哪一个",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k093",
+      "question": "反问",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "智谱",
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k094",
+      "question": "反问：如果我有幸进入，会负责什么样的工作",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯",
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k095",
+      "question": "在 Agent 多轮对话任务中，你觉得 Attention 的局限性体现在哪些方面？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k096",
+      "question": "多agent协作，如何做上下文管理？怎么共享上下文？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k097",
+      "question": "大模型出现复读机现象的原因是什么？有哪些解决方法？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k098",
+      "question": "大模型幻觉导致胡说八道，产品上怎么设计兜底话术？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k099",
+      "question": "如何判断你的agent的准确率，用了哪些指标",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k100",
+      "question": "如何提升Agent长程任务的能力？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "字节跳动"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k101",
+      "question": "如何设计多智能体系统？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "智谱",
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k102",
+      "question": "实习的这个项目还有哪些需要优化的",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "百度",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k103",
+      "question": "家是哪里的，实习时间，到岗时间，最近学校还有什么事情吗",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节",
+        "字节跳动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k104",
+      "question": "对Agent整体的微调（包含RL）是否了解",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k105",
+      "question": "工作流理解",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东零售",
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k106",
+      "question": "当前我们这个岗位主要面向什么行业去提供解决方案？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "百度"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k107",
+      "question": "微调为啥用Lora，为啥不用QLora或其他？（项目）",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "OpenAI",
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k108",
+      "question": "手撕二维矩阵里的二分查找",
+      "category": "leetcode_algo",
+      "frequency": 2,
+      "companies": [
+        "腾讯",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k109",
+      "question": "手撕代码-顺序拼链表",
+      "category": "leetcode",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "腾讯"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k110",
+      "question": "拆错了怎么回滚、用户改目标怎么处理？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k111",
+      "question": "描述多模态大模型与文本模型对比而言是怎么训练的",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "OPPO",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k112",
+      "question": "日常ai使用中如何判断答案的准确性？哪一点最看重？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节跳动",
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k113",
+      "question": "是否了解dpo,dpo的原理是什么",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "筋斗云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k114",
+      "question": "有 n 阶台阶，每次可以爬 1 阶或 2 阶，求爬法总数（算法题）",
+      "category": "leetcode",
+      "frequency": 2,
+      "companies": [
+        "京东",
+        "米哈游"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k115",
+      "question": "有没有部署过大模型？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k116",
+      "question": "消息积压问题如何处理",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k117",
+      "question": "独立负责某场景Agent从0到1怎么做？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "美团",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k118",
+      "question": "用两到三个关键词总结一下自己身上的缺点",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k119",
+      "question": "用户反馈数据有看过吗，说说想法，怎么定的三种意图？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书",
+        "淘天"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k120",
+      "question": "用户在使用这个agent的时候是一个什么效果",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "某书"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k121",
+      "question": "由于任务表述并不清晰，不同 agent 对于同一任务的表现并不完全一致，如何处理这个问题？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k122",
+      "question": "简要介绍一下 SFT的核心流程，以及数据集的构建策略，SFT之后常见的 Post-Training 还有哪些？它们之间的目的有何区别？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k123",
+      "question": "算法：二叉树的层序遍历",
+      "category": "leetcode",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k124",
+      "question": "给了一个场景，就是设计一个全自动化的agent进行AI漫剧创作，你会怎么设计？（给了一个限制，就是我们提一个场景，例如校园剧等，然后AI自动进行创作，然后AI再根据创作的节点进行自我反馈，然后迭代）",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k125",
+      "question": "聊聊记忆系统模块设计是怎么设计的？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k126",
+      "question": "职业规划",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k127",
+      "question": "讲一下PPO和GRPO的区别",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k128",
+      "question": "讲一下VLLM的原理",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k129",
+      "question": "讲一下主流大模型的结构",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "淘天",
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k130",
+      "question": "讲一下异步同步和并发并行的区别",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k131",
+      "question": "讲一下过去实习中最印象深刻/有用的经历",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k132",
+      "question": "说说上下文工程是什么？都解决了什么问题？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k133",
+      "question": "请对比工作流与自主智能体的优劣？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k134",
+      "question": "调参调了哪些 Reward hacking怎么解决",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "筋斗云",
+        "蚂蚁国际"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k135",
+      "question": "这个项目是否上线，是否投入使用",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书",
+        "某书"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k136",
+      "question": "这个项目里头你主要担任了什么角色？你们团队是怎么分工配合的？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k137",
+      "question": "这些项目哪个更适合使用模型再训练，哪些适合用rag",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "美团",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k138",
+      "question": "选一个项目介绍一下react机制是怎么设计的，在实际应用场景表现如何",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "网易",
+        "腾讯"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k139",
+      "question": "那么上下文窗口当中都包含哪些内容？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小红书",
+        "快手"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k140",
+      "question": "那在做上下文管理策略的触发时机一般怎么设置？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "快手",
+        "网易"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k141",
+      "question": "长上下文Agent场景下，上下文压缩与卸载策略有哪些？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 2,
+      "companies": [
+        "美团",
+        "阿里"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k142",
+      "question": "除了Cursor你还用哪些AI CODING软件，体验怎么样",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "某书",
+        "网易"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k143",
+      "question": "项目中对话流程是什么？",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "腾讯",
+        "阿里云"
+      ],
+      "sourceFile": "题库/01_Top100_高频题.md"
+    },
+    {
+      "id": "k144",
+      "question": "项目都是自己练手的吗--对",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k145",
+      "question": "预训练和后训练的区别",
+      "category": "knowledge_qa",
+      "frequency": 2,
+      "companies": [
+        "小米",
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k146",
+      "question": "10min介绍你的作业",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k147",
+      "question": "12 层Bert base参数量（0.1b）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k148",
+      "question": "4B的模型部署需要多少显存？怎么算的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k149",
+      "question": "Advangates 怎么算的，在整个训练中起什么作用，为什么需要A",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k150",
+      "question": "agent skill做ui自动化实现细节？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k151",
+      "question": "Agent 的记忆可能存在偏见（Bias）或事实性错误，如何发现并纠正它们？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k152",
+      "question": "Agent 训练的数据如何获得？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k153",
+      "question": "agent 通过 SFT 如何训练？SFT 和 RL 能使用一套数据集吗？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k154",
+      "question": "Agentic RL 是面试官非常希望我掌握的一个技术",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k155",
+      "question": "agent怎么使用skills的（渐进式披露）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k156",
+      "question": "Agent搜索有遇到什么问题，怎么解决",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k157",
+      "question": "agent是什么？agent和workflow区别？优缺点是什么？为什么用workflow做不用agent？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k158",
+      "question": "Agent概念以及两种运行模式",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k159",
+      "question": "Agent长上下文",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k160",
+      "question": "agent长任务怎么优化",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k161",
+      "question": "AI Agent 有哪些模型？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k162",
+      "question": "AI Coding生成的代码不是你想要的你怎么办？有什么提效方式",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k163",
+      "question": "ai coding题目，讲讲思路，分为哪几个部分",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k164",
+      "question": "AI Safety怎么落地?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OpenAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k165",
+      "question": "AI在搜索推荐中有哪些应用",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k166",
+      "question": "ai如何自动化数据仓库搭建",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k167",
+      "question": "ATPO算法的核心特性、工作原理是什么？其与RLEP的差异有哪些？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k168",
+      "question": "Attention的QKV怎么计算，WQ/WK/WV的形状",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k169",
+      "question": "badcase主要集中在哪些部分？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k170",
+      "question": "BatchNorm和LayerNorm",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k171",
+      "question": "chatgpt和claude对比",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k172",
+      "question": "chunk的窗口怎么选定",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k173",
+      "question": "claude为什么要设计agent loop和query loop两层结构",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k174",
+      "question": "Claude为啥能刷榜又强，实测又好？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k175",
+      "question": "clip 知道多少？写一下 loss 函数",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k176",
+      "question": "code：x 的平方根（只保留整数部分）（二分法写出来之后，要求我用梯度下降方法解）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k177",
+      "question": "cuda算子写过吗（没写过）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k178",
+      "question": "DeepSeek这个模型了解吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k179",
+      "question": "diffusion 的 loss 是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k180",
+      "question": "DIN模型相比传统推荐模型有什么改进？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k181",
+      "question": "docker linux python",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k182",
+      "question": "Dpop的全称是什么（的确没关注过，dpo Positive是全称）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k183",
+      "question": "DPO损失函数的潜在问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k184",
+      "question": "DPO训练中模型输出变长是什么原因？如何解决？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k185",
+      "question": "embedding是怎么分chunk的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k186",
+      "question": "embedding的本质是什么，维度中每一个参数有什么含义？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k187",
+      "question": "fastapi相关",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k188",
+      "question": "few-shot具体考量？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k189",
+      "question": "file system 是什么？它起到什么作用？使用它相比其他传统的 agent 好在哪里？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k190",
+      "question": "function call到mcp到skills区别与优缺点",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k191",
+      "question": "google的TurboQuant kv cache",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k192",
+      "question": "GRPO 奖励常规有哪些，做了哪些改进，改进指标提升多少？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k193",
+      "question": "grpo 的 loss 讲讲",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k194",
+      "question": "grpo和ppo的区别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "筋斗云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k195",
+      "question": "grpo的kl散度和ppo的kl散度是一模一样的吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k196",
+      "question": "GRPO的不足之处，后续改进的工作介绍一下（介绍了DAPO、GSPO）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k197",
+      "question": "grpo的重要性采样公式是什么，如何理解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k198",
+      "question": "grpo训练中观察什么指标（我说主要是奖励，奖励的std，熵，kl；然后又问熵变得很小，如何改善）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k199",
+      "question": "grpo这种group机制对稳定性有什么影响",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k200",
+      "question": "GRPO里group size设成1会怎样",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k201",
+      "question": "GRPO阶段数据比例如何设计，与SFT阶段数据的区别?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k202",
+      "question": "hi how many men and women are there in california",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "Snowflake"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k203",
+      "question": "KL散度在模型对齐里的作用",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k204",
+      "question": "L1正则和L2正则的区别是什么？从数学角度解释为什么L1能产生稀疏性？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k205",
+      "question": "LangChain 的核心概念是什么？Agent 和 Chain 的区别？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k206",
+      "question": "LangChain和LlamaIndex的区别？实际开发中怎么选？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k207",
+      "question": "LangChain真的已经“死亡”，还是仅仅是热度褪去？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k208",
+      "question": "langgraph过时了吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k209",
+      "question": "layer normalization和rms normalization什么区别，后者什么优点",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k210",
+      "question": "LeetCode 15 三数之和",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k211",
+      "question": "like会不会失效",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k212",
+      "question": "LLM Agent本质上是'收到消息→处理→回复'的循环。回复完毕，session就idle了。它不会像人一样'答应了就去干'。说'我今晚执行'跟真的执行是两回事——没有新消息触发，它就是个睡着的进程。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k213",
+      "question": "LLM 如何后接 mask 模型，最近看了哪些LLM 做 mask 的论文？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k214",
+      "question": "LLM图像/视频生成理解如何统一？有什么劣势？ （特别有意思，我们还讨论了有什么劣势，为什么不行，结果第二天 qwen-image 就出了）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k215",
+      "question": "lora模块的代码实现思路",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k216",
+      "question": "M-RoPE比原来的RoPE有什么改进？有什么优点？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k217",
+      "question": "mha进化论（mha到mqa到gqa）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k218",
+      "question": "ml模型和regression的区别及优劣",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k219",
+      "question": "mvcc细说，详细追问，问你这种情况会创造几个readview",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k220",
+      "question": "MySQL事物隔离一致性讲一下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k221",
+      "question": "MySQL锁讲一下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k222",
+      "question": "position embedding作用",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k223",
+      "question": "ppo中advantages是怎么得到的？（我不知道，只说和TD有关；然后接着追问TD和MC有的区别，我说确实不知道）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k224",
+      "question": "Prompt自动推荐模块用了哪些优化策略？有没有尝试过Prompt压缩或embedding表示的方式？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k225",
+      "question": "Python 的 *args 和 **kwargs 是什么？什么时候用？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k226",
+      "question": "Python 的上下文管理器（Context Manager）是怎么实现的？能举个实际例子吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k227",
+      "question": "Python 的装饰器是怎么工作的？能举一个实际应用的例子吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k228",
+      "question": "Python 里的生成器（Generator）和迭代器（Iterator）有什么区别？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k229",
+      "question": "python也是最近才学的吗-之前就会",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k230",
+      "question": "python虚拟内存不够咋办，python是多线程吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k231",
+      "question": "Python语言用的多吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k232",
+      "question": "qclaw和openclaw底层上下文管理特点",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k233",
+      "question": "Query和agent打分时如何解决浅表语义匹配打压实际技能相关性（例如简单agent system promt粗糙但与高频query接近，优质agent system 步骤详细复杂但与高频query语义差距大？我回复在agent理解时会综合system prompt总结核心技能用作相关性，但的确存在简单浅表语义匹配问题，或许用大模型prompt+工具技能+sft+蒸馏方案更优匹配技能相关性）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "bigo"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k234",
+      "question": "Query多个一级分类问题解决（目前线上的确只有一个一级分类，回答的并不好，工作中没想过）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k235",
+      "question": "Qwen 2.5 VL相对Qwen 2 VL做了哪些改进？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k236",
+      "question": "r1蒸馏是怎么做的，提高了哪些指标，有副作用吗（通用问答下降，acc指标）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k237",
+      "question": "RAG 完整流程，构建向量检索库时如何处理时间衰减对召回的影响？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k238",
+      "question": "rag使用场景，有什么优缺点",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k239",
+      "question": "rag和微调的区别和使用场景",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k240",
+      "question": "Rag和普通的大模型回答有什么区别？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k241",
+      "question": "RAG有哪些分类；多模态RAG有哪些实现框架；伪多模态RAG和多模态RAG分别怎么实现，有什么区别；CLIP可以用于哪一类多模态RAG，为什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k242",
+      "question": "RAG检索这种外挂的知识库有什么缺点，有没有其他办法来进行优化",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k243",
+      "question": "rag的信息是怎么存储的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k244",
+      "question": "RAG的理解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k245",
+      "question": "RAG知识库是用英雄名分块然后FAISS向量检索，这个场景是不是用图数据库更好?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "喜马拉雅"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k246",
+      "question": "RAG系统包含哪些模块？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k247",
+      "question": "RAG项目和Agent的大模型选型是怎么定的？为什么不选择本地部署模型？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k248",
+      "question": "ReAct（Reason + Act）Agent 的工作原理是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k249",
+      "question": "Redis 的发布订阅机制",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k250",
+      "question": "redis熟悉不熟悉",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k251",
+      "question": "rerank后返回几个块，有没有做一些验证",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k252",
+      "question": "reward hacking遇到过吗怎么处理",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k253",
+      "question": "reward 设计如何强化思维链的细粒度？加强对话的拟人性？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k254",
+      "question": "RLEP算法的核心特性与工作原理是什么？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k255",
+      "question": "RLHF三步法讲清楚?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OpenAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k256",
+      "question": "RPC 和 Http分别有什么用？两者有什么区别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k257",
+      "question": "Scaling Law懂多少?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OpenAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k258",
+      "question": "self-attention",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k259",
+      "question": "self-evolve 在智能 NPC 上的应用，行为树有了解吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k260",
+      "question": "SFT够用 vs 必须上DPO/RL怎么判断",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k261",
+      "question": "SFT微调后模型的通用能力出现遗忘，你会如何处理？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k262",
+      "question": "sft是什么？（面试官没做过training，所以问这个）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k263",
+      "question": "Skills了解吗？如何管理各个skills？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k264",
+      "question": "skills和MCP各自的应用场景，哪些是不能互相替代的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k265",
+      "question": "skills和tools有什么区别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k266",
+      "question": "SQL：统计每个商家的评论数并去重",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k267",
+      "question": "sql题",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "京东零售"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k268",
+      "question": "TCP 和 UDP 有什么区别？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k269",
+      "question": "Think-Execute循环机制的prompt工程设计是你自己写的吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k270",
+      "question": "Think和Execute的方法是框架里自带的，还是你自己实现的？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k271",
+      "question": "ThreadLocal怎么使用的+相关的八股",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k272",
+      "question": "Token 流式输出瓶颈和服务商 Rate Limit 怎么优雅控制。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k273",
+      "question": "Transformer 的 tokenzie 是如何实现的，训练和推理分开讲",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k274",
+      "question": "transformer用的什么normalization",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k275",
+      "question": "UI-TARS-2怎么做的，冷启动数据怎么采集的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k276",
+      "question": "vision encoder 如何训练，你的多模态有分阶段训练 encoder 吗？为什么需要分阶段？模型做了交叉验证吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k277",
+      "question": "Vue3 的 Composition API 相比 Vue2 的 Options API 解决了什么问题？ 讲讲 setup 函数的执行时机。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k278",
+      "question": "What is the population of Los Angeles County?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "Snowflake"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k279",
+      "question": "What was California’s total population in 2020?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "Snowflake"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k280",
+      "question": "Wide&Deep模型的原理是什么？Wide部分和Deep部分分别解决什么问题？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k281",
+      "question": "一道sql题 row number",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k282",
+      "question": "一问道个人项目，表面上流光溢彩，实际上一旦深挖一点问一些为什么这么做之类的问题就卡壳了",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k283",
+      "question": "万亿模型怎么训?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OpenAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k284",
+      "question": "三款近年成功的新游，国内或者海外，结合用户群体特征去分析他们的创新点。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "点点互动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k285",
+      "question": "上万流量场景下高并发怎么设计",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k286",
+      "question": "上下游是怎么样的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k287",
+      "question": "上来先手撕交叉熵，手撕MHA",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "抖音"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k288",
+      "question": "上述极大依赖于 model routing (or 主 agent 能力) ，目前工程上是否真的做的足够好？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k289",
+      "question": "不只问准确率，还会问Faithfulness、Recall@k、P95延迟、单次成本，考你是否会做多目标优化。",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k290",
+      "question": "不同 agent 使用体感差别在哪里，有哪些优势和不足",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k291",
+      "question": "专有领域数据方面有什么经验（通用和专有数据配比）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k292",
+      "question": "两个有序列表合并区间（非常规leetcode）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k293",
+      "question": "两段实习让你学到了什么？（需要总结提炼）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k294",
+      "question": "为什么RAG会有幻觉问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k295",
+      "question": "为什么不用agent，学校作业用不到吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k296",
+      "question": "为什么引入父子索引，为什么引入BM25，比例是怎样的，具体流程是什么，有没有rerank",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k297",
+      "question": "为什么想加入，怎么看待这个岗位？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k298",
+      "question": "为什么用coze不用更先进的工具",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k299",
+      "question": "为什么要做xxx项目，有用到定量分析方法吗，有什么成果",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k300",
+      "question": "为什么要在 Agent 中加入状态机（State Machine）机制？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k301",
+      "question": "为什么选择grpo不用sft，技术选型，什么时候用sft，什么时候用蒸馏，什么时候用grpo",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k302",
+      "question": "为何不用轻量级大模型reranker模型（难以回复，推理平台支持限制和业务进度要求，后续的确要切到轻量级大模型，不满意）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k303",
+      "question": "之前是做底软，为什么换方向--兴趣",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k304",
+      "question": "了不了解推荐系统",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k305",
+      "question": "了解Rag吗？它是干什么的？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k306",
+      "question": "了解计算机网络吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k307",
+      "question": "二叉搜索树的构建、遍历、格式化打印；然后纯文本编辑器手写删除node。",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k308",
+      "question": "五分钟思考一下做一个用户购物的Agent，问了有要规定什么方式？让自己编排。",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k309",
+      "question": "什么情况下用单Agent，什么时候用Multi-Agent？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k310",
+      "question": "什么是“工具态记忆”（Tool-state Memory）？它在 Agent 工作流中如何发挥作用？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k311",
+      "question": "什么是大模型 Agent？它与普通 LLM 应用的区别是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k312",
+      "question": "什么是记忆的 Reflection 机制？它与简单的 Summarization 有何不同？请举例说明。",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k313",
+      "question": "什么是记忆的幻觉问题？它和 LLM 本身的幻觉有何区别？如何缓解？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k314",
+      "question": "今年是apply RL热火朝天的一年，在智能体这个领域如何apply的更好可以从三个方面分析：创造更贴合人类实际操作环境的训练场，更精确的奖励函数，更高效的强化学习算法。目前PPO/GRPO算法是否能够支撑智能体达到生产级的水平",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OPPO"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k315",
+      "question": "介绍RAG流程；介绍对编码模型的了解、原理、优缺点；如何评估编码模型的能力",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k316",
+      "question": "介绍RAG项目，整体架构和实现思路",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k317",
+      "question": "介绍react思路",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k318",
+      "question": "介绍一下function calling和MCP",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k319",
+      "question": "介绍微调负责的工作；大模型微调最重要的是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k320",
+      "question": "介绍某段实习",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k321",
+      "question": "介绍某篇论文，核心贡献",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k322",
+      "question": "介绍检索做的优化；实体提取怎么做的，提取的实体不对怎么办，怎么评估实体提取准不准确；子问题分解怎么做，有没有做意图识别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k323",
+      "question": "从 transformer 问到计算机网络问到数据库底层实现",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k324",
+      "question": "会根据不同问题切换不同模型吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k325",
+      "question": "会读研吗 有什么职业规划",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k326",
+      "question": "传统RAG有什么痛点；介绍GraphRAG，GraphRAG的难点是什么；GraphRAG如何应对增量场景",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k327",
+      "question": "传统推荐 vs 大模型生成式推荐的区别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k328",
+      "question": "作为产品，你怎么推动研发、算法、数据团队对齐目标？遇到分歧怎么处理？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k329",
+      "question": "你RAG的知识库用的是哪个能力",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "某书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k330",
+      "question": "你为什么会想要做这个方向，选择这个岗位",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "某书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k331",
+      "question": "你了解 MySQL 的多表 Update 吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k332",
+      "question": "你们 RAG 系统上线后，用户最主要的抱怨是什么？你怎么迭代优化？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k333",
+      "question": "你们post-training是怎么做的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k334",
+      "question": "你们的RAG/Agent系统的整体架构是怎样的？从用户（业务）提问到回答经历了哪些步骤？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k335",
+      "question": "你做图像质量评估用的指标是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k336",
+      "question": "你刚刚提到了很多约束方面，也就是Harness Engineering，那你有阅读过OpenAI的论文吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k337",
+      "question": "你参与/负责的产品在市面上有哪些竞品?你们的竞争优势是什么?你更看好哪款产品?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k338",
+      "question": "你在提到过 Modular Agent，你能讲讲它是如何实现多步规划的吗？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k339",
+      "question": "你实习里用 JMeter 做压测时，主要关注什么指标？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k340",
+      "question": "你对于AI模型工作的兴趣点具体在哪个模块",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节跳动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k341",
+      "question": "你对大语言模型有什么了解和接触吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节跳动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k342",
+      "question": "你平时喜欢玩什么游戏？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k343",
+      "question": "你怎么和团队讨论的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k344",
+      "question": "你提到了多个工具调用链路，调度策略是如何设计的？是否有异常 fallback 策略？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k345",
+      "question": "你提到的错误存到上下文中，会不会污染了上下文导致执行出错？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "喜马拉雅"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k346",
+      "question": "你有了了解最新的一些工作吗？比如miromind,Qwen3-Next，deepseek的mHC流形约束超连接.",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k347",
+      "question": "你构建的 Agent 评估体系包括哪些维度？如何衡量 planning 能力 vs hallucination rate？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k348",
+      "question": "你的RAG怎么做评测？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k349",
+      "question": "你的界面是怎么实现的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "某书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k350",
+      "question": "你的训练平台和显卡配置是多少",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k351",
+      "question": "你知道Flash Attention原理吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k352",
+      "question": "你编写了哪些MCP工具，介绍一下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k353",
+      "question": "你编写的功能脚本主要解决了什么问题？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k354",
+      "question": "你觉得现阶段 Agent 落地最大的瓶颈是什么？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k355",
+      "question": "你觉得长轨迹的奖励应该怎么给（过程奖励/稀疏奖励）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k356",
+      "question": "你认为AI开发工具的未来走向如何？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k357",
+      "question": "你认为设计的过程中最大的三个问题是哪三个？你准备怎么解决",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k358",
+      "question": "你论文 sft 统一训练还是分开的？我看你是分开的为什么分开？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k359",
+      "question": "你还微调过Qwen，选择的训练阶段和Loss函数是如何决定的？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k360",
+      "question": "信用分配，grpo中，比如一个采样结果，是序列级别的，如果这个序列的最终奖励高，那么是如何分配到每个token的（我答的就是平均）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k361",
+      "question": "假设矩阵是M x N, 那复杂度是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k362",
+      "question": "假设要解决上下文爆炸的问题，你觉得有什么解决方案？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k363",
+      "question": "做咨询问题分析的时候怎么打标签的，是纯手工吗，用了AI吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k364",
+      "question": "做线上长轨迹模型数据采集的难点是什么（VM、沙盒），沙盒环境怎么做同步（我哪知道）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k365",
+      "question": "全量抽取和增量抽取",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东零售"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k366",
+      "question": "八股只问了ffn+react。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k367",
+      "question": "共享状态模式的反应式循环问题如何解决？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k368",
+      "question": "关键技术难点",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k369",
+      "question": "关键问题：创新点在哪（数据胶囊），与其他企业做的东西相比有什么优势？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k370",
+      "question": "关键问题：浏览器插件只能在单机上运行，用户换到不同的电脑，无法得到原来本地存的数据。我重复一遍面试官的问题之后，如实告诉面试官没有考虑到这个问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k371",
+      "question": "再追问“优先级怎么来？要不要考虑耗时、成本、成功率”，直接卡壳。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k372",
+      "question": "最大字典序的子序列",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "筋斗云"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k373",
+      "question": "最少会议室（最小堆）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k374",
+      "question": "最近还有其他公司的流程吗，问了一下我的意愿",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k375",
+      "question": "写题，Leetcode 的 比较版本号，非常简单",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k376",
+      "question": "分布式令牌桶限流讲一下，漏桶讲一下，滑动窗口算法限流讲一下，如果用滑动窗口结构体会包含什么字段，滑动窗口和令牌桶相比有什么确定，用redis的什么数据结构实现",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k377",
+      "question": "分析型和沟通型有机会转岗吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k378",
+      "question": "分析过claude code的源码吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k379",
+      "question": "刚才也提到了token策略，那你说说这里压缩上下文的策略，压缩的具体是那部分message？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k380",
+      "question": "判断链表是否有回路",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k381",
+      "question": "前沿技术视野：多 Agent 协作框架 (AutoGen)、结构化推理 (ToT/GoT)、具身智能、Meta 的 CICERO 模型。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k382",
+      "question": "力扣：封闭岛屿数量",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k383",
+      "question": "加入过程奖励会更容易导致reward hacking吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k384",
+      "question": "单词拆分",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k385",
+      "question": "原来的RoPE在升级成M-RoPE之前，它是怎么处理视频的？具体来说，对于每一个每一帧或者说每一个patch，是怎么处理的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k386",
+      "question": "反转二叉树（包括实现二叉树和list转二叉树以及递归print）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k387",
+      "question": "口述两道题，排序的应用和字典的应用，时空复杂度",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k388",
+      "question": "可“用户连续纠正3次意图，该坚持还是切换？切换阈值咋定”，集体懵圈。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k389",
+      "question": "可以共享一下你的IDE，实现Think-Execute的伪代码类和方法吗？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k390",
+      "question": "后续如果做实习或者研究 最感兴趣的技术方向是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k391",
+      "question": "后训练提升swe能力的关键是？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k392",
+      "question": "后训练有哪些方式；微调有哪些方式，分别是怎么做的；LoRA原理及参数量",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k393",
+      "question": "向量检索的召回率怎么优化？混合检索了解吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k394",
+      "question": "图像算法主要做的什么方面，讲讲",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k395",
+      "question": "在 RAG+知识图谱的 Agent 系统中，知识图谱更新的机制是怎样的？如何保证实时性？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k396",
+      "question": "在你的Modular Agent里，多步规划具体是怎么做的？是ReAct、Plan-and-Execute，还是你们自己设计的调度方式？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k397",
+      "question": "在实现长期记忆时，你会在什么情况下选择向量数据库，什么情况下选择传统的 KV 或关系数据库？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k398",
+      "question": "在生产环境中部署 Agent 时，如何防御 Prompt Injection 攻击？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k399",
+      "question": "场景题，agent如何做排序",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k400",
+      "question": "场景题：客户输入一个软件或网页界面截图，如何通过RAG的方式帮助用户了解界面的每一个组件的作用（？？？说实话没太听懂），输入输出自己定义；相似的组件如图片框和视频框如何区分",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k401",
+      "question": "场景题:百万行那种级别的代码纠错agent的设计思路",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k402",
+      "question": "场景题是JD中的智能排障agent",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k403",
+      "question": "基座模型是通过API方式调用的吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k404",
+      "question": "基本全在拷打rag",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k405",
+      "question": "多工具冲突除了硬写 if-else 还有什么动态调度？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k406",
+      "question": "多智能体架构怎么选？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k407",
+      "question": "多模态项目介绍",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k408",
+      "question": "多轮工具调用上下文丢失 第一轮调用“查天气”，第二轮问“那明天呢？” 模型忘了前面查的城市，又让用户重新说",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k409",
+      "question": "大模型Agent的Skill渐进式披露机制如何设计？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k410",
+      "question": "大模型Agent自动化评测的Reward体系该如何设计？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k411",
+      "question": "大模型SFT冷启动对Agent工具调用能力的提升效果如何？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k412",
+      "question": "大模型加速有了解吗？ 一般用多少尺寸的模型做强化？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k413",
+      "question": "大模型基本结构，大模型如何避免过拟合（dropout，resnet，mha-gqa，数据多样化，正则）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k414",
+      "question": "大模型的能力的评测指标有哪些你了解吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "百度"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k415",
+      "question": "大模型能替代推荐系统哪个阶段？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k416",
+      "question": "大规模 Agent 系统在多线程/多进程场景下的资源调度策略如何设计？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k417",
+      "question": "如何从头做harness？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k418",
+      "question": "如何优化大模型推理速度（模型结构优化，节省kV cache，mtp这些）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k419",
+      "question": "如何做 reject sampling？给你3M 的图和视频，只有 16 张卡，设计一下 rs 的方案。（选 cot 最短的数据）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k420",
+      "question": "如何做一个专有领域大模型（sft）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k421",
+      "question": "如何分布式地采集RL的rollout",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k422",
+      "question": "如何区分LLM Agent的'计划行为'和'实际执行行为'？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k423",
+      "question": "如何处理记忆的“新鲜度”与“重要性”之间的冲突？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k424",
+      "question": "如何实现前端权限控制？（路由权限 + 按钮权限）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k425",
+      "question": "如何提升搜索的速度",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k426",
+      "question": "如何理解dapo中的clip-higher",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k427",
+      "question": "如何用k8s管理大量docker",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k428",
+      "question": "如何看待Ai的发展？如何不被Ai淘汰？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k429",
+      "question": "如何让 Agent 在执行任务时具备可解释性（Explainability）？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k430",
+      "question": "如何降低 Transformer 的计算复杂度？常见的稀疏注意力变体有哪些？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k431",
+      "question": "如果中心化状态管理出现性能瓶颈，你们有考虑过去中心化方案吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k432",
+      "question": "如果你设计的这个全流程要先发行一版，你准备保留哪些重要的功能（节点）",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k433",
+      "question": "如果你需要向不懂ml的pm简单解释这个模型，能不能讲讲你会怎么讲",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k434",
+      "question": "如果在 GPU 资源有限的条件下同时提供推理和微调服务，如何做资源分配和任务调度以保证时延和吞吐？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k435",
+      "question": "如果将项目升级为虚拟对话可以怎么改",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k436",
+      "question": "如果给你一个包含1000条数据的JSON文件，请你用Python读取它，并统计其中某个字段（如label）的分布，你会怎么做？",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k437",
+      "question": "如果要用强化学习实现DeepResearch的优化搜索工具调用可以怎么实现，从数据构造成到损失函数到奖励设置",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k438",
+      "question": "如果让你测试《原神》“充月卡”这个场景，你会怎么设计测试用例？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k439",
+      "question": "如果轨迹模型部署在线上，怎么判断最终轨迹完成了",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k440",
+      "question": "如果面试官和AI对话生成的问题冲突怎么办？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k441",
+      "question": "字符串的回文子串数量",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k442",
+      "question": "实习主要干的哪些工作？除了数据处理最大的困难是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k443",
+      "question": "实现一个简单的ReAct Agent",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k444",
+      "question": "对vibe coding的理解？你个人做vibe coding时候的感受呢？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k445",
+      "question": "对于 agent 未来 to C 和 to B 在技术和架构上觉得未来可能会有什么发展",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k446",
+      "question": "对于一个输入范围为 1～100 的输入框，测试输入 2 和 98，这两个是不是等价类？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k447",
+      "question": "对当前学术界刷benchmark，但是大部分方法是在某个benchmark上刷的很高但是实际遇到一些bench之外的case就效果很差的现象？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OPPO"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k448",
+      "question": "展开说说cc哪些方面优秀",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k449",
+      "question": "工业界应用 vs 科研的差异？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k450",
+      "question": "工作地点，北京or杭州",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k451",
+      "question": "工作流的项目是怎么部署的，单体应用还是微服务架构？对 K8S 的了解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k452",
+      "question": "工具调用失败怎么兜底？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k453",
+      "question": "布隆过滤器讲一下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k454",
+      "question": "常见的大模型，或者说VLM这块的模型，了解过哪些？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k455",
+      "question": "平常怎么用AI Coding的？",
+      "category": "ml_llm_coding",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/05_机器学习_大模型手撕.md"
+    },
+    {
+      "id": "k456",
+      "question": "平常追星吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k457",
+      "question": "平时面对压力怎么解决的，举一个具体的例子",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k458",
+      "question": "开发 Agent 时踩过什么坑？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k459",
+      "question": "开始手撕：找出数组中和最大的连续子数组。",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k460",
+      "question": "开放场景下，如何保障大模型Agent的泛化性与工具调用鲁棒性？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k461",
+      "question": "开放问题：大模型的未来发展，可能会影响什么，工作范式会如何改变",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k462",
+      "question": "微调项目里面，二级缓存和你的微调项目有什么关系呢，看起来没啥关系吧--个人也觉得没啥关系 二级缓存更适用于rag或者agent里上下文太多 响应延迟的情况，可以衍生过去",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k463",
+      "question": "怎么去看待ai，最近有没有正在用的工具或者说 Agent，你所关注的AI相关的信息、模型等等，讲一讲你在这方面的一些实际的具体的事情",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k464",
+      "question": "怎么处理实体歧义问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "千问"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k465",
+      "question": "怎么训练一个大模型？分别用了哪些loss？（pretrain的ppl、sft的交叉墒、grpo、dpo的公式，讲了很多）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k466",
+      "question": "怎么过滤低质量数据 多模型投票怎么做的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k467",
+      "question": "您在gemini工作过很长时间，我认为目前gemini2.5-pro，veo3.1,nano banana在多模态，视频生成，图像编辑和生成都是顶级水平，您认为目前国内和国外的差距在哪？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OPPO"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k468",
+      "question": "我对agent（对未来生活工作），rag，LLM的理解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k469",
+      "question": "我正在做“赛博摆摊”的项目，需要每天完成摆摊任务，包括优化产品、产品推广、过程复盘，还需要将赛博摆摊的工作整理出来，作为传播素材，我应该怎么设计工作流？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k470",
+      "question": "手上还有哪些 offer？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k471",
+      "question": "手撕：aicoding 实现一个简易的计费引擎。需要支持add，cancel，query，使时间复杂度最低。操作按顺序到达，timestamp不一定单调递增。",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k472",
+      "question": "手撕：AI算法：...手撕softmax交叉熵",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k473",
+      "question": "手撕:一个以cv为背景的图形题",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k474",
+      "question": "手撕：力扣算法：找实习，力扣hot100够了",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k475",
+      "question": "手撕：岛屿数量（hot100原题）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k476",
+      "question": "手撕：我说我最近实习，很久没刷过题了，出了一道反转链表",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k477",
+      "question": "手撕：滑动窗口最大值",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k478",
+      "question": "手撕NMS",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "筋斗云"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k479",
+      "question": "手撕二叉树的奇数节点个数",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k480",
+      "question": "手撕代码：多头注意力；约瑟夫环",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k481",
+      "question": "手撕打家劫舍2⃣️",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "抖音"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k482",
+      "question": "找数组中第K大的数",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k483",
+      "question": "找零问题（强制python）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k484",
+      "question": "拆错的子任务怎么修正、状态怎么像事务一样回滚",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k485",
+      "question": "拉链表",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东零售"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k486",
+      "question": "掌握rag、langchain、mcp基本可以应付面试",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k487",
+      "question": "推理优化相关工作（量化，剪枝和知识蒸馏等）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "bigo"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k488",
+      "question": "推理延迟怎么压?",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "OpenAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k489",
+      "question": "推理时batch size",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "高德"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k490",
+      "question": "搜索的ReAct过程是怎么样的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k491",
+      "question": "搭建的智能体输出的内容具体让你不满意的点和出现问题的原因是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k492",
+      "question": "数仓建模",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东零售"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k493",
+      "question": "数据倾斜",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东零售"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k494",
+      "question": "数据库同步项目如何实现断点续传的，可以了解一下mysql的binlog？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k495",
+      "question": "是你一个人在完全负责这个模块吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k496",
+      "question": "智能 NPC 设计思路以及如何应对行为链路失效",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k497",
+      "question": "智能体团队模式中如何避免资源冲突？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k498",
+      "question": "有什么你印象深刻的游戏广告？所在媒体、广告形式以及你如何记住这个广告的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "点点互动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k499",
+      "question": "有使用http暴露接口吗，有做过正式的 HTTP service 开发吗--fastapi有暴露， mcp里sse协议也是基于http实现--那你是调api呢还是自己实现--调api..",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k500",
+      "question": "有做过rag吗（没做过），讲一下基本流程",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k501",
+      "question": "有没有了解一些多agent的框架",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k502",
+      "question": "有没有测试过不同模型的效果",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k503",
+      "question": "机器学习和深度学习的区别",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k504",
+      "question": "查数Agent进一步设计数据分析Agent的话怎么设计",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "蚂蚁国际"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k505",
+      "question": "树的最大路径和。要求两种做法",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k506",
+      "question": "核心 Prompt 被截断会直接让 Agent 变智障。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k507",
+      "question": "模型参数乱传 用户说“帮我订个餐厅”，模型传参{city:“上海”, date:“明天”} 但工具要求{address:“上海某某路”, time:“2024-XX-XX”} 字段名对不上 → 调用失败",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k508",
+      "question": "模型死活不调用工具 明明该调用，它非要自己编答案",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k509",
+      "question": "沟通型hr在工作中能达成的成果是什么，自我价值感正反馈体现在哪儿",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k510",
+      "question": "没写出来leetcode",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k511",
+      "question": "测试case的覆盖度如何，通过率大概多少",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k512",
+      "question": "游戏一般更偏向用 TCP 还是 UDP？为什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k513",
+      "question": "游戏测试和软件测试有什么区别？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k514",
+      "question": "滑动窗口实现最小大于等于tar的连续子数组",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k515",
+      "question": "灾难性遗忘怎么解决",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k516",
+      "question": "熟悉linux命令吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k517",
+      "question": "玩游戏吗（老玩家，ieg经典面试题）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k518",
+      "question": "现在ai coding多还是手写",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k519",
+      "question": "现在为什么不用 q-former 了？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k520",
+      "question": "现在有一个开放场景，我们想要在抖音上设计一个agent,能够自动的给用户一键发布视频，问怎么设计这个agent",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "筋斗云"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k521",
+      "question": "现在面试上来先问有没有agent 模型训练经验？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k522",
+      "question": "生成-验证模式的隐藏陷阱是什么？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k523",
+      "question": "用了多少卡",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k524",
+      "question": "用了多少资源跑轨迹模型训练",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k525",
+      "question": "用过云服务吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯青云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k526",
+      "question": "用过哪些coding agent，从技术上讲讲他们有什么区别（不要从业务流程上讲）。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k527",
+      "question": "目前我的skillset都可以被AI替代，所以对自己的定位是什么以及有哪些AI无法替代的能力特质",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k528",
+      "question": "看你用vlm，vlm可以暴露接口你知道吧--不知道..",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "顺丰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k529",
+      "question": "看起来你很喜欢Anthropic这家公司啊，为什么呢？怎么不投他们公司？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k530",
+      "question": "知不知道hive，spark",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k531",
+      "question": "知不知道最近的 harness engineering？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k532",
+      "question": "知不知道数仓的分层",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k533",
+      "question": "知道限流吗？限流怎么做？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k534",
+      "question": "硬切分在实践中有哪些弊端吗，有没有实际的例子",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k535",
+      "question": "空间O(1)时间O(n)找数组中重复数据",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k536",
+      "question": "端到端的piprline是什么 沙箱怎么做安全的隔离 怎么实现多模型自动化评测 输出什么指标",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k537",
+      "question": "笔试一道sql，一道数据结构。",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k538",
+      "question": "简历上说会意大利语和德语，说几句看看。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k539",
+      "question": "简历深挖（投流方向，画像如何构建，ctr如何提升，金融特征如何生成的、具体聊一下）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节跳动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k540",
+      "question": "算法题：2n+1个数，两两成对，找出单独的那个数",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k541",
+      "question": "算法题：字符串最小编辑次数问题(动态规划问题)",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k542",
+      "question": "算法题：给定两个数列a b  求a b的最长公共子序列（不连续）",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k543",
+      "question": "系统用的基座模型是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k544",
+      "question": "线上延迟怎么压？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k545",
+      "question": "组里显卡资源？因为看你的论文是免训练方法",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k546",
+      "question": "结果怎么定的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k547",
+      "question": "给一个线上故障现象，让你判断是检索错、Prompt错、工具错，还是状态管理错。",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k548",
+      "question": "给我建议",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k549",
+      "question": "编排-子智能体模式存在什么信息丢失问题？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k550",
+      "question": "聊需求模糊，“安排下周会议”没给时间/参会人，只会说“反问用户”，没人提“基于历史习惯、日历空闲做默认补全”。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k551",
+      "question": "能简单说一下Think-Executor的prompt是怎么设计的吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k552",
+      "question": "自动化测试和人工功能测试各自的优缺点是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k553",
+      "question": "自我介绍",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阶跃星辰"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k554",
+      "question": "觉得自己和其他人相比有哪些优势",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k555",
+      "question": "计算机网络用户输入网址后都发生了什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k556",
+      "question": "计算机网络链路",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k557",
+      "question": "让你画RAG/Agent架构，问你为什么这样拆、瓶颈在哪、如何扩展。",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k558",
+      "question": "让设计“用户说‘帮我整理竞品动态并预警’”的Agent流程，立马支支吾吾。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k559",
+      "question": "训练 LoRA 模型时，你是如何选择冻结层的？依据是什么？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k560",
+      "question": "记忆的分层架构",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k561",
+      "question": "记忆的容量规划需要考虑哪些因素？如何估算存储成本？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k562",
+      "question": "讲一下Advantage Actor-Critic",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k563",
+      "question": "讲一下GRPO容易出现的偏置问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k564",
+      "question": "讲一下PPO的clip函数，clip是梯度裁剪吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k565",
+      "question": "讲一下你说的这个R1-V的Qwen2.5VL多模态几何问题优化过程",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k566",
+      "question": "讲一下重要性采样",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k567",
+      "question": "讲一个你觉得市面上做的不错的AI产品（功能、市场、用户、场景等）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k568",
+      "question": "讲一个做的最好的项目。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k569",
+      "question": "讲下AI Coding笔试",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k570",
+      "question": "讲解一下你了解到的不同基座模型都用了什么不同的训练范式",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k571",
+      "question": "讲解一下图片的评测集是如何设计的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k572",
+      "question": "讲讲 Python 的 GIL（全局解释器锁）是什么？对多线程有什么影响？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k573",
+      "question": "讲讲open claw有什么技术上的创新。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k574",
+      "question": "讲讲一些不常见的设计模式，你是怎么理解和使用的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k575",
+      "question": "讲讲开源项目的贡献经历",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k576",
+      "question": "讲讲第二个实习项目当中消息会话中断的后端是怎么实现的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k577",
+      "question": "论文简单问了下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k578",
+      "question": "论文进一步做后续有什么方案？ （细粒度 RL）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k579",
+      "question": "设计一个能支持亿级用户、千亿级记忆条目的 Agent 记忆系统，你会如何进行技术选型和架构设计？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k580",
+      "question": "评测执行中，有哪些自动化提效的部分",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k581",
+      "question": "详细拷打实习",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "TeleAI"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k582",
+      "question": "详细讲讲你做过的一个AI Agent项目？技术栈是啥？",
+      "category": "project_deep_dive",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/06_项目拷打题.md"
+    },
+    {
+      "id": "k583",
+      "question": "说一下LSTM的原理；其中门控机制提出是为了解决什么问题？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k584",
+      "question": "说三个跟你进行项目合作的人对你的评价的关键词",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "字节"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k585",
+      "question": "说说了解哪些LoRA的变体",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "美团"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k586",
+      "question": "说说虚拟 DOM 的 Diff 算法流程，Vue3 的静态提升（Static Hoisting）做了哪些优化？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k587",
+      "question": "请你从0到1，设计一个企业级知识问答AI Agent。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k588",
+      "question": "请借鉴dan koe的框架，设计一个以“赛博摆摊（网络摆摊）赚小钱”为核心理念的框架体系",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k589",
+      "question": "请简述你的游戏经历，并从中列出你认为最喜欢的三款游戏。基本信息：平台/持续时间/充值。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "点点互动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k590",
+      "question": "请表达你对游戏行业的看法，以及为何想要从事游戏行业。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "点点互动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k591",
+      "question": "谈谈你对 DDD 的理解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里云"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k592",
+      "question": "谈谈你对前端工程化的理解，在项目中是如何落地 ESLint + Prettier + Husky 的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k593",
+      "question": "谈谈多Agent是怎么协作的？",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k594",
+      "question": "轨迹模型GRPO微调的奖励怎么设计的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k595",
+      "question": "轨迹模型动作空间",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k596",
+      "question": "还有最近比较火的skills需要了解",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k597",
+      "question": "这个Deep Research是多轮检索，那你会进行到什么程度才停止？用什么判断？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k598",
+      "question": "这个RAG项目为什么要选择自己开发不选择市面上成熟的第三方产品呢？你是怎么考虑的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k599",
+      "question": "这个岗位虽然是设计方向，但他们更希望候选人能够参与到 AI 产品的探索中。所以相对来说，会更看重计算机相关的背景，比如编程能力，以及是否具备一定的理工科基础。这也是为什么面试中会重点问到我的编程能力和专业背景。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里巴巴"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k600",
+      "question": "这个平台只是内部员工用的，会需要这么复杂的架构吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小红书"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k601",
+      "question": "这道“爬楼梯”题的时间复杂度和空间复杂度是多少？",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k602",
+      "question": "这道递归题有没有什么优化方法？",
+      "category": "leetcode",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/04_LeetCode_算法手撕.md"
+    },
+    {
+      "id": "k603",
+      "question": "这里有很多任务有重复，比如每天产品传播的内容与整个项目传播的内容，我应该怎么向你分配任务，防止你混乱",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k604",
+      "question": "这里还有人正在生产环境中使用它吗？还是大家已经悄悄地转投他处了？很想听听大家的实际经验。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k605",
+      "question": "追问“用户意图冲突（查订单又退货）咋处理”，大多愣一下：“按顺序执行就行”。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k606",
+      "question": "追问日志、监控、回滚、灰度、限流、重试策略。不是“能跑”就行，而是“线上出事能不能扛住”。",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k607",
+      "question": "选择1段科研经历进行详细描述，过程中遇到的相关困难，解决方法",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k608",
+      "question": "选择一款你较了解的游戏类型，如果此类游戏在美国去寻找付费能力强的用户，在不限制预算和资源的情况下，你会在哪些渠道和媒体上进行如何的宣传和推广来获取用户？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "点点互动"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k609",
+      "question": "遇到模型输出格式不对、解析失败怎么兜底？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "京东"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k610",
+      "question": "那么token的阈值该怎么设计？那对于一个agent应用，用户可以配置自己任意的大模型的apikey，那么这里token上下文窗口的大小该怎么设置设计是最合适的？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k611",
+      "question": "那长期记忆是怎么检索的？长期记忆除了存在本地的文件系统当中还存在哪里？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k612",
+      "question": "重要性采样，为什么需要。如果一次新策略和旧策略差别很大，那重要性采样还有用吗",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k613",
+      "question": "针对一段代码，黑盒测试和白盒测试分别怎么测？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "米哈游"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k614",
+      "question": "针对我现场设计的全流程进行拷打，例如我说要保证人物前后一致，他问用什么方法保证前后一致。我还说要进行片段的评估，他问我评估方法等",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "网易"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k615",
+      "question": "问“意图拆解阈值、步骤依赖失败咋回退”，直接沉默。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k616",
+      "question": "问为什么选postgre，特点是什么",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k617",
+      "question": "问了不了解优化器，讲解adam，还问了深度学习中loss除以10和学习率除以10等价吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "抖音"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k618",
+      "question": "问了对我面试表现的建议和期待实习生有哪些能力",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k619",
+      "question": "问了对比学习，强化学习，transformer相关的问题（因为我简历里面有体现）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里国际"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k620",
+      "question": "问了解生成式推荐，onerec了解吗？它里面有哪些需要优化的问题。回答了sid，并且讲了讲最近看到的论文。最后面试官问我为什么转推荐算法？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "抖音"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k621",
+      "question": "问到了不了解最近业界精排模型，回答rankmixer，tokenmixer-large，hyfomer。被问rankmixer和tokenmixer-large比最大的区别，回答特征交叉不一样，稀疏moe实现不一样，然后再细问了很多论文细节。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "抖音"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k622",
+      "question": "问我用cursor遇到的问题",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k623",
+      "question": "问数据量与数据格式，具体到字段的格式（范式），这些字段怎么生成的（数据蒸馏）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k624",
+      "question": "问现在都学过哪些课",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k625",
+      "question": "问自己做的项目，lru讲一下",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "快手"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k626",
+      "question": "问题背景（为什么要做这个东西，解决了什么问题），项目的具体实现相关的问题（怎么拿到数据，数据存本地吗等）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "蚂蚁"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k627",
+      "question": "除了bad case study，还有哪些方法找问题？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k628",
+      "question": "除去根号dk作用",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "阿里淘天"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k629",
+      "question": "难点1：压缩的信息损失",
+      "category": "agent_rag_tool_memory",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/03_Agent_RAG_Tool_Memory.md"
+    },
+    {
+      "id": "k630",
+      "question": "面向代码的agent考虑怎么设计，提到了有一些类是不是可以做关键词",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k631",
+      "question": "项目做了什么优化的点（提到了上下文和切分，所以对这两点又问了很多）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "智谱"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k632",
+      "question": "项目是怎么实现human in loop的",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k633",
+      "question": "项目经验如何表述（无实际经验可套用）：使用 AutoGPT+SerPAPI 实现竞品数据自动采集与分析，准确率较手动提升 40%；基于 LangChain+RAG 构建企业知识库智能体，解决内部文档检索低效问题。",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k634",
+      "question": "预训练如何融入swe能力？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "小米"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k635",
+      "question": "额外出一个智力题（给几百列超长用户数据你会如何分析这些数据中包含异常行为数据，没答出来）",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "腾讯"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    },
+    {
+      "id": "k636",
+      "question": "龙虾是什么？你用过龙虾吗？",
+      "category": "knowledge_qa",
+      "frequency": 1,
+      "companies": [
+        "暂无"
+      ],
+      "sourceFile": "题库/02_知识问答题.md"
+    }
+  ]
+}
