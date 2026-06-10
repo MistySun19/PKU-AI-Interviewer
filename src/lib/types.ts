@@ -215,6 +215,19 @@ export type InterviewSummary = {
   weaknesses: string[];
   reviewPlan: string[];
   scores: Array<{ question: string; score: number }>;
+  questionReviews: Array<{
+    question: string;
+    answer: string;
+    score: number;
+    verdict: AnswerVerdict;
+    whatWorked: string[];
+    missingPoints: string[];
+    betterAnswer: string;
+    followUpAdvice: string[];
+  }>;
+  evidenceReview: string[];
+  priorityFixes: string[];
+  practiceDrills: string[];
 };
 
 export type InterviewSession = {

@@ -3,7 +3,7 @@
 输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式深度理解仓库，再结合 kaomian 高频题库生成面试题。支持三种模式：
 
 - **Survey 版**：一次读懂整个项目，流式输出理解报告和全量面试题。
-- **交互版**：模拟真实面试，一问一答，按回答质量决定追问或推进，结束后给总结反馈。
+- **交互版**：模拟真实面试，一问一答，按回答质量决定追问或推进，结束后给逐题复盘反馈。
 - **练习版**：沿用同一套题目和追问链，但允许用户请求 AI 生成提示或参考答案，用于学习如何回答。
 
 架构决策依据见 `docs/research/deep-research-agent-design.md`（核心结论：仓库是有界输入，不做自由 agent swarm；并行只用于只读分析，写作单次合成保证自洽；不用 embedding，agentic 按需读取）。
@@ -34,7 +34,7 @@ flowchart TD
         P2["Phase 2 Research<br/>维度 worker 并发≤3，≤2 轮<br/>gap 队列 + 预算 + beast mode"]
         P3["Phase 3 Synthesize（流式）<br/>digests → 自洽理解报告"]
         P4A["Phase 4a Survey<br/>报告 + kaomian 匹配题<br/>→ 全量题逐题流式"]
-        P4B["Phase 4b Interview / Practice<br/>出题计划 → 会话循环<br/>问→答→评估→追问/下一题→总结"]
+        P4B["Phase 4b Interview / Practice<br/>出题计划 → 会话循环<br/>问→答→评估→追问/下一题→复盘"]
     end
 
     subgraph EXT["外部依赖"]
@@ -79,7 +79,7 @@ flowchart TD
 | Phase 2 Research | ≤10 | 每维度：repoMap + 分配文件全文（超限骨架化） | DimensionDigest（findings/claimCodeLinks/askPoints/openQuestions） | 原文不进主线程；digest ≤300 token/条；预算耗尽 → beast mode |
 | Phase 3 Synthesize | 1 | 全部 digests + repoMap | 理解报告（流式 Markdown） | 单次合成保证自洽 |
 | Phase 4a Survey | 1 | 报告 + kaomian 匹配题 | 全量面试题（逐题流式） | 主追问链必须绑仓库证据；八股标注来源 |
-| Phase 4b Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/总结 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
+| Phase 4b Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/复盘 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
 
 ## 持久化与续接
 

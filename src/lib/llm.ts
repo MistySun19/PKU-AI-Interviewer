@@ -610,7 +610,27 @@ const interviewSummarySchema = z.object({
   scores: z.preprocess(
     (value) => (Array.isArray(value) ? value : []),
     z.array(z.object({ question: z.string(), score: scoreSchema }))
-  )
+  ),
+  questionReviews: z
+    .preprocess(
+      (value) => (Array.isArray(value) ? value : []),
+      z.array(
+        z.object({
+          question: z.string().default(""),
+          answer: z.string().default(""),
+          score: scoreSchema,
+          verdict: lenientEnum(["strong", "ok", "weak"], "ok"),
+          whatWorked: stringArraySchema,
+          missingPoints: stringArraySchema,
+          betterAnswer: z.string().default(""),
+          followUpAdvice: stringArraySchema
+        })
+      )
+    )
+    .default([]),
+  evidenceReview: stringArraySchema,
+  priorityFixes: stringArraySchema,
+  practiceDrills: stringArraySchema
 });
 
 const practiceHelpSchema = z.object({
@@ -681,12 +701,35 @@ export async function summarizeInterview(args: {
 完整面试记录（按时间顺序）：
 ${JSON.stringify(args.rounds, null, 2)}
 
-任务：生成面试总结。返回 JSON：
-{"overall": "3-5 句总体评价，中文，直接对候选人说", "strengths": ["表现好的点"], "weaknesses": ["薄弱点"], "reviewPlan": ["面试前补坑动作，必须具体可执行，结合本仓库"], "scores": [{"question": "题目", "score": 1到5}]}
+任务：生成非常详尽的面试复盘。返回 JSON：
+{
+  "overall": "8-12 句总体复盘，中文，直接对候选人说。要说明本场最大优势、最大短板、哪些问题暴露出项目理解断层，以及下一轮最应该补什么。",
+  "strengths": ["表现好的点，每条都要落到具体题目、回答动作或仓库理解"],
+  "weaknesses": ["薄弱点，每条都要说明为什么会在真实项目考核里被继续追问"],
+  "reviewPlan": ["面试前补坑动作，必须具体可执行，结合本仓库"],
+  "scores": [{"question": "题目", "score": 1到5}],
+  "questionReviews": [
+    {
+      "question": "题目",
+      "answer": "候选人回答的简短摘录",
+      "score": 1到5,
+      "verdict": "strong|ok|weak",
+      "whatWorked": ["已经答到的点"],
+      "missingPoints": ["漏掉的关键点、证据链或原理连接"],
+      "betterAnswer": "一段更好的参考回答，必须像候选人口头复盘一样自然，结合仓库证据、设计理由、风险和替代方案，不要只列点。",
+      "followUpAdvice": ["下一轮被追问时应该准备的说法或材料"]
+    }
+  ],
+  "evidenceReview": ["本场回答中证据链是否充分，例如哪些题需要补文件路径、模块职责、训练/评测/数据流证据"],
+  "priorityFixes": ["优先级最高的 3-6 个补坑项，按真实面试杀伤力排序"],
+  "practiceDrills": ["可直接练习的复述任务，例如用 90 秒解释某模块、画出数据流、准备一个失败 case"]
+}
 
 要求：
-- weaknesses 和 reviewPlan 要落到具体题目和仓库模块，不要空泛建议。
-- scores 覆盖每道主考题。`
+- questionReviews 必须覆盖每一轮候选人回答；如果同一主问题有追问，也要分别复盘。
+- betterAnswer 不要照抄 expectedAnswer，也不要拼接字段；要基于候选人实际回答、仓库理解和评估缺口生成一段可学习的示范回答。
+- weaknesses、evidenceReview、priorityFixes 和 reviewPlan 要落到具体题目和仓库模块，不要空泛建议。
+- scores 覆盖每道主考题或追问轮。`
     }
   ];
   return withRetry("summary", async () =>

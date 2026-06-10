@@ -622,7 +622,7 @@ export default function Home() {
               </div>
               {!summary && (
                 <button className="endBtn" disabled={sending} onClick={() => void sendAnswer(true)}>
-                  {practiceMode ? "结束练习出总结" : "提前结束出总结"}
+                  {practiceMode ? "结束练习出复盘" : "提前结束出复盘"}
                 </button>
               )}
             </div>
@@ -704,7 +704,7 @@ export default function Home() {
 
             {summary && (
               <div className="summaryCard">
-                <h2>面试总结</h2>
+                <h2>面试复盘</h2>
                 <p className="summaryOverall">{summary.overall}</p>
                 {summary.scores.length > 0 && (
                   <div className="summaryBlock">
@@ -716,6 +716,61 @@ export default function Home() {
                         </li>
                       ))}
                     </ul>
+                  </div>
+                )}
+                {(summary.questionReviews ?? []).length > 0 && (
+                  <div className="summaryBlock primaryReviewBlock">
+                    <h3>逐题复盘</h3>
+                    <div className="questionReviewList">
+                      {(summary.questionReviews ?? []).map((item, index) => (
+                        <article className={`questionReviewCard verdict-${item.verdict}`} key={`${item.question}-${index}`}>
+                          <div className="questionReviewHead">
+                            <span className="scoreChip">{item.score}/5</span>
+                            <span className="evalVerdict">{item.verdict}</span>
+                          </div>
+                          <h4>{item.question}</h4>
+                          {item.answer && <p className="answerExcerpt">你的回答：{item.answer}</p>}
+                          <div className="reviewColumns">
+                            {item.whatWorked.length > 0 && (
+                              <div>
+                                <strong>已经答到</strong>
+                                <ul>
+                                  {item.whatWorked.map((point) => (
+                                    <li key={point}>{point}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {item.missingPoints.length > 0 && (
+                              <div>
+                                <strong>需要补齐</strong>
+                                <ul>
+                                  {item.missingPoints.map((point) => (
+                                    <li key={point}>{point}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                          {item.betterAnswer && (
+                            <div className="betterAnswer">
+                              <strong>更好的回答方式</strong>
+                              <p>{item.betterAnswer}</p>
+                            </div>
+                          )}
+                          {item.followUpAdvice.length > 0 && (
+                            <div className="followUpAdvice">
+                              <strong>下一轮追问准备</strong>
+                              <ul>
+                                {item.followUpAdvice.map((point) => (
+                                  <li key={point}>{point}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+                        </article>
+                      ))}
+                    </div>
                   </div>
                 )}
                 {summary.strengths.length > 0 && (
@@ -738,11 +793,41 @@ export default function Home() {
                     </ul>
                   </div>
                 )}
+                {(summary.evidenceReview ?? []).length > 0 && (
+                  <div className="summaryBlock">
+                    <h3>证据链复盘</h3>
+                    <ul>
+                      {(summary.evidenceReview ?? []).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(summary.priorityFixes ?? []).length > 0 && (
+                  <div className="summaryBlock">
+                    <h3>优先补坑</h3>
+                    <ul>
+                      {(summary.priorityFixes ?? []).map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 {summary.reviewPlan.length > 0 && (
                   <div className="summaryBlock">
                     <h3>面试前补坑计划</h3>
                     <ul>
                       {summary.reviewPlan.map((item) => (
+                        <li key={item}>{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {(summary.practiceDrills ?? []).length > 0 && (
+                  <div className="summaryBlock">
+                    <h3>专项练习</h3>
+                    <ul>
+                      {(summary.practiceDrills ?? []).map((item) => (
                         <li key={item}>{item}</li>
                       ))}
                     </ul>

@@ -1038,6 +1038,83 @@ pre {
   line-height: 1.7;
 }
 
+.primaryReviewBlock {
+  margin-top: 18px;
+}
+
+.questionReviewList {
+  display: grid;
+  gap: 12px;
+}
+
+.questionReviewCard {
+  border: 1px solid var(--line);
+  background: #fffdf8;
+  padding: 14px;
+}
+
+.questionReviewCard.verdict-strong {
+  border-left: 4px solid #2d7d46;
+}
+
+.questionReviewCard.verdict-ok {
+  border-left: 4px solid #b9822d;
+}
+
+.questionReviewCard.verdict-weak {
+  border-left: 4px solid #b64b4b;
+}
+
+.questionReviewHead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.questionReviewCard h4 {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.answerExcerpt {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.reviewColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.reviewColumns strong,
+.betterAnswer strong,
+.followUpAdvice strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
+.betterAnswer,
+.followUpAdvice {
+  margin-top: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+}
+
+.betterAnswer p {
+  margin: 0;
+  color: #252821;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
 .scoreChip {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   font-weight: 800;
@@ -1412,6 +1489,7 @@ pre {
   .focusLayout,
   .questionDeckGrid,
   .answerGrid,
+  .reviewColumns,
   .secondaryGrid {
     grid-template-columns: 1fr;
   }
