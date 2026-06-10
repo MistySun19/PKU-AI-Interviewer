@@ -172,6 +172,59 @@ export type SseEvent =
   | { type: "question"; question: InterviewQuestion; index: number; total?: number; source: "repo" | "kaomian" }
   | { type: "result"; result: AnalyzeResponse }
   | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number }
+  | {
+      type: "evaluation";
+      questionIndex: number;
+      evaluation: { score: number; verdict: AnswerVerdict; feedback: string; gaps: string[] };
+    }
+  | {
+      type: "interview_question";
+      question: string;
+      kind: "main" | "follow_up";
+      index: number;
+      total: number;
+      evidence: string[];
+    }
+  | { type: "summary"; summary: InterviewSummary }
   | { type: "warning"; message: string }
   | { type: "error"; message: string }
   | { type: "done" };
+
+export type AnswerVerdict = "strong" | "ok" | "weak";
+
+export type AnswerEvaluation = {
+  score: number;
+  verdict: AnswerVerdict;
+  feedback: string;
+  gaps: string[];
+  followUpQuestion?: string;
+};
+
+export type InterviewTurn = {
+  role: "interviewer" | "candidate";
+  kind: "question" | "follow_up" | "answer";
+  content: string;
+  questionIndex: number;
+};
+
+export type InterviewSummary = {
+  overall: string;
+  strengths: string[];
+  weaknesses: string[];
+  reviewPlan: string[];
+  scores: Array<{ question: string; score: number }>;
+};
+
+export type InterviewSession = {
+  id: string;
+  createdAt: number;
+  repoFullName: string;
+  understanding: Understanding;
+  questions: InterviewQuestion[];
+  currentIndex: number;
+  followUpDepth: number;
+  transcript: InterviewTurn[];
+  evaluations: Array<AnswerEvaluation & { questionIndex: number }>;
+  finished: boolean;
+  busy: boolean;
+};

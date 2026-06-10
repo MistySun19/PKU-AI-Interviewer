@@ -12,6 +12,7 @@ import {
   streamExamAndQuestions,
   synthesizeUnderstanding
 } from "./llm";
+import { createInterviewSession } from "./interview";
 import { matchKaomianQuestions } from "./kaomian";
 import { buildRepoMapText, computeCentrality, skeletonizeFile } from "./repomap";
 import { buildUnderstandingMarkdown } from "./report";
@@ -39,9 +40,9 @@ type DimensionAssignment = {
   openQuestions?: string[];
 };
 
-export function runAnalysisPipeline(repositoryUrl: string, _mode: AnalyzeMode): AsyncGenerator<SseEvent> {
+export function runAnalysisPipeline(repositoryUrl: string, mode: AnalyzeMode): AsyncGenerator<SseEvent> {
   const channel = createEventChannel();
-  void run(repositoryUrl, channel)
+  void run(repositoryUrl, mode, channel)
     .catch((error) => {
       channel.emit({ type: "error", message: error instanceof Error ? error.message : "分析失败。" });
     })
@@ -49,7 +50,7 @@ export function runAnalysisPipeline(repositoryUrl: string, _mode: AnalyzeMode): 
   return channel.iterate();
 }
 
-async function run(repositoryUrl: string, channel: EventChannel): Promise<void> {
+async function run(repositoryUrl: string, mode: AnalyzeMode, channel: EventChannel): Promise<void> {
   channel.emit({ type: "stage", stage: "scout", detail: "读取仓库元数据、文件树并抓取证据文件" });
   const context = await fetchRepoContext(repositoryUrl, {
     onFileFetched: (path) => channel.emit({ type: "file_read", path })
@@ -58,6 +59,9 @@ async function run(repositoryUrl: string, channel: EventChannel): Promise<void> 
 
   if (!getApiKey()) {
     warnings.push("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY，已使用仓库结构生成降级报告。");
+    if (mode === "interview") {
+      warnings.push("交互面试需要可用的模型，已降级为 survey 报告。");
+    }
     finish(channel, buildFallbackResponse(context, warnings));
     return;
   }
@@ -147,6 +151,25 @@ async function run(repositoryUrl: string, channel: EventChannel): Promise<void> 
   }
 
   const result = assembleResponse(context, { understanding, paperCodeMap, examPoints, questions }, warnings);
+
+  if (mode === "interview") {
+    const session = createInterviewSession({
+      repoFullName: context.repo.fullName,
+      understanding,
+      questions: result.questions
+    });
+    if (session.questions.length > 0) {
+      channel.emit({ type: "stage", stage: "interview_ready", detail: "面试官准备完毕，开始模拟面试" });
+      channel.emit({
+        type: "session",
+        sessionId: session.id,
+        question: session.questions[0],
+        index: 0,
+        total: session.questions.length
+      });
+    }
+  }
+
   finish(channel, result);
 }
 
