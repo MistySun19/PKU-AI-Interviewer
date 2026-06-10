@@ -7,7 +7,7 @@
 | # | 交付物 | 要求要点 | 当前状态 |
 |---|---|---|---|
 | 1 | Demo 视频 ≤ 3 分钟 | 前 30 秒展示 wow moment；之后用一页介绍页讲清痛点、设计取舍和 agent 架构 | 脚本已更新为 Traceback 版：`docs/demo-video-script.md` |
-| 2 | 公网可访问 URL | 可访问 Demo；演示时建议使用固定结果或快速模型，保证 1 分钟内出结果 | 部署指南见 `docs/DEPLOYMENT.md` |
+| 2 | 公网可访问 URL | 可访问 Demo；公网默认走真实分析 pipeline，使用快速模型和清晰进度反馈 | 部署指南见 `docs/DEPLOYMENT.md` |
 | 3 | Product Memo 1-2 页 | 目标用户与痛点、产品设计、刻意不做什么、版本迭代、下一步 | 已更新为 Traceback：`PRODUCT_MEMO.md` |
 | 4 | GitHub 公开仓库 | README 含项目简介、运行方式、技术栈、当前取舍；commit history 清晰 | README 已更新为 Traceback：`README.md` |
 
@@ -24,14 +24,14 @@
 
 - [ ] 说明代码为 AI 辅助生成 + 人工审查迭代。
 - [ ] 演示使用公开仓库，不使用真人隐私数据。
-- [ ] 如果使用固定 demo 结果，需要说明这是为了演示稳定性，真实模式仍可跑完整 pipeline。
+- [ ] 公网 `/api/analyze` 不返回固定 demo snapshot。
 - [ ] API key、GitHub token 不提交到公开仓库。
 
 ## 提交前最后一小时检查
 
 - [ ] 公网 URL 可打开。
 - [ ] Demo / 介绍切换正常。
-- [ ] 演示 repo 能在 1 分钟内展示稳定结果。
+- [ ] 演示 repo 能看到真实 pipeline 进度，并最终返回风险点。
 - [ ] 视频时长 < 3 分钟。
 - [ ] Product Memo 无旧产品名、无 Survey / Practice / Test 主入口描述。
 - [ ] README 和架构图描述一致。

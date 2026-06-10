@@ -1,8 +1,19 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { POST } from "./route";
 
 describe("POST /api/analyze", () => {
-  it("returns the fixed Traceback demo snapshot for the PKU-AI-Interviewer repo", async () => {
+  const originalDemoSnapshot = process.env.TRACEBACK_DEMO_SNAPSHOT;
+
+  afterEach(() => {
+    if (originalDemoSnapshot === undefined) {
+      delete process.env.TRACEBACK_DEMO_SNAPSHOT;
+    } else {
+      process.env.TRACEBACK_DEMO_SNAPSHOT = originalDemoSnapshot;
+    }
+  });
+
+  it("returns the fixed Traceback demo snapshot only when explicitly enabled", async () => {
+    process.env.TRACEBACK_DEMO_SNAPSHOT = "enabled";
     const response = await POST(
       new Request("http://localhost/api/analyze", {
         method: "POST",

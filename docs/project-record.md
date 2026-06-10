@@ -111,7 +111,7 @@ repo 证据 -> 面试风险点 -> 代码定位 -> 参考答案 / 红旗回答 ->
 
 最需要补的不是大功能，而是稳定性和证据质量：
 
-- 为演示 repo 固定结果，保证 1 分钟内展示。
+- 稳定真实公网 pipeline，确保进度反馈清楚、失败兜底明确。
 - 建立 golden repo 回归集。
 - 继续降低 import-only、README-only、泛相关 evidence 误入最终结果的概率。
 - 打磨右侧 Evidence Viewer。

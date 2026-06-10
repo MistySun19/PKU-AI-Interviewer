@@ -40,7 +40,7 @@ docker run -d --name traceback --restart unless-stopped \
   -p 3000:3000 --env-file .env.local traceback
 ```
 
-注意：完整分析一个仓库仍可能较慢，演示建议使用固定 demo 结果或 `deepseek-v4-flash` + non-thinking。SSE 已内置心跳避免公网链路空闲断连；如果前面挂 nginx 等反向代理，仍建议把 `proxy_read_timeout` 调到 1200s 以上并关闭 `proxy_buffering`；直接用「公网 IP:3000」则无此问题。
+注意：公网默认走真实分析 pipeline，不返回固定 demo snapshot。演示建议使用 `deepseek-v4-flash` + non-thinking，并依赖 Agent Dashboard 解释等待过程。SSE 已内置心跳避免公网链路空闲断连；如果前面挂 nginx 等反向代理，仍建议把 `proxy_read_timeout` 调到 1200s 以上并关闭 `proxy_buffering`；直接用「公网 IP:3000」则无此问题。
 
 ## 4. 部署方式 B：pm2（不装 Docker）
 

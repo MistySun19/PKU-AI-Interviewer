@@ -69,7 +69,7 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
-    if (isDemoSnapshotRepo(parsedRepo.owner, parsedRepo.repo)) {
+    if (isDemoSnapshotEnabled() && isDemoSnapshotRepo(parsedRepo.owner, parsedRepo.repo)) {
       return createDemoSnapshotStream();
     }
     run = createAnalysisRun(body.repositoryUrl, body.mode);
@@ -120,6 +120,10 @@ export async function POST(request: Request) {
 
 function isDemoSnapshotRepo(owner: string, repo: string): boolean {
   return owner.toLowerCase() === "mistysun19" && repo.toLowerCase() === "pku-ai-interviewer";
+}
+
+function isDemoSnapshotEnabled(): boolean {
+  return process.env.TRACEBACK_DEMO_SNAPSHOT === "enabled";
 }
 
 function createDemoSnapshotStream(): Response {

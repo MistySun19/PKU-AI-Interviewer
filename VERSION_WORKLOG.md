@@ -191,7 +191,7 @@ SWE-bench / distributed attention 自测暴露出证据问题：
 
 当前优先级：
 
-1. 固定 demo 结果，保证 1 分钟内展示。
+1. 稳定真实公网 pipeline，保证等待过程可解释，避免公网返回固定 demo。
 2. 提高 Evidence Check 准确性。
 3. 打磨双栏 viewer。
 4. 打磨单风险点持续追问。

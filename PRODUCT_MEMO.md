@@ -149,8 +149,8 @@ Turnitin for GitHub 项目面试
 
 会做：
 
-1. **固定 demo repo 的稳定结果**
-   保证演示时 1 分钟内出现完整风险审查结果。真实 pipeline 可以慢，但 demo 必须稳定。
+1. **真实公网 pipeline 稳定化**
+   公网入口默认跑真实分析，不返回固定 demo 结果；重点优化 fast model、进度反馈和失败兜底。
 
 2. **建立 golden repo 评测集**
    选 3-5 个代表性仓库，人工标注哪些问题是真的好问题、哪些 evidence 是硬证据，用来回归 Evidence Check。

@@ -146,4 +146,4 @@ TOKENDANCE_THINKING_TYPE=disabled
 - 右侧 evidence viewer 第一版展示分析时打包的 snippets，不做完整 IDE。
 - `kaomian` 只作为真实面经问题素材，不作为泛八股题库。
 - 不做整场评分和复盘，避免主线从“证据风险审查”漂移到“模拟考试平台”。
-- 分析 run 仍以单进程内存为主；演示场景建议增加固定 demo 快照，避免等待完整 pipeline。
+- 分析 run 仍以单进程内存为主；公网默认走真实 pipeline，固定 demo snapshot 只能通过显式环境变量用于本地调试。

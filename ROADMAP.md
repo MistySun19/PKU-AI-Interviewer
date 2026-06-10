@@ -54,14 +54,15 @@ repo -> 最可能被问穿的风险点 -> 证据原文 -> 回答与追问
 7. 用户点击风险点后，右侧 evidence viewer 正确切换。
 8. 用户能在风险点下持续追问。
 
-## Phase 0：演示稳定化
+## Phase 0：真实公网演示稳定化
 
-目标：让路演时 1 分钟内拿到结果。
+目标：公网入口默认走真实 pipeline，同时尽量缩短等待并让进度可解释。
 
 任务：
 
-- 为指定 demo repo 固定一份稳定结果。
-- 保留真实 pipeline，但 demo 模式可直接返回快照。
+- 公网 `/api/analyze` 默认不返回固定快照。
+- 本地如需演示快照，必须显式设置 `TRACEBACK_DEMO_SNAPSHOT=enabled`。
+- 真实 pipeline 使用 fast model + non-thinking 提速。
 - 首页保留 `Demo / 介绍` 切换。
 - 演示配置使用 `deepseek-v4-flash` + non-thinking。
 
