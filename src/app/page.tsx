@@ -109,8 +109,10 @@ export default function Home() {
   const feedSeq = useRef(0);
   const hydrated = useRef(false);
   const reconnectingRun = useRef(false);
-  const interviewReady = mode === "interview" && (sessionId || summary);
-  const interviewMissing = mode === "interview" && status === "done" && !sessionId && !summary;
+  const interactiveMode = mode === "interview" || mode === "practice";
+  const practiceMode = mode === "practice";
+  const interviewReady = interactiveMode && (sessionId || summary);
+  const interviewMissing = interactiveMode && status === "done" && !sessionId && !summary;
 
   useEffect(() => {
     const saved = readPersistedRun();
@@ -466,6 +468,18 @@ export default function Home() {
     window.setTimeout(() => setCopied(false), 1600);
   }
 
+  function showPracticeHint() {
+    const question = currentPracticeQuestion(interviewSession);
+    if (!question) return;
+    pushChat({ role: "system", text: buildPracticeHint(question, currentPromptText(chat)) });
+  }
+
+  function showReferenceAnswer() {
+    const question = currentPracticeQuestion(interviewSession);
+    if (!question) return;
+    pushChat({ role: "system", text: buildReferenceAnswer(question, currentPromptText(chat)) });
+  }
+
   function clearPersistedRun() {
     try {
       window.localStorage.removeItem(PERSISTENCE_KEY);
@@ -530,6 +544,15 @@ export default function Home() {
           >
             Interactive · 模拟面试
           </button>
+          <button
+            role="tab"
+            aria-selected={mode === "practice"}
+            className={mode === "practice" ? "modeBtn active" : "modeBtn"}
+            disabled={status === "loading"}
+            onClick={() => setMode("practice")}
+          >
+            Practice · 练习
+          </button>
         </div>
 
         <div className="inputRow" role="search">
@@ -543,7 +566,7 @@ export default function Home() {
             placeholder="https://github.com/owner/repo"
           />
           <button disabled={status === "loading" || !repositoryUrl.trim()} onClick={() => void submit()}>
-            {status === "loading" ? "分析中" : mode === "survey" ? "生成报告" : "开始面试"}
+            {status === "loading" ? "分析中" : mode === "survey" ? "生成报告" : practiceMode ? "开始练习" : "开始面试"}
           </button>
         </div>
 
@@ -582,13 +605,13 @@ export default function Home() {
               <div>
                 <p className="eyebrow">Mock Interview</p>
                 <h2>
-                  模拟面试
+                  {practiceMode ? "练习模式" : "模拟面试"}
                   {interviewTotal > 0 && <span className="count"> {interviewTotal} 道主问题链</span>}
                 </h2>
               </div>
               {!summary && (
                 <button className="endBtn" disabled={sending} onClick={() => void sendAnswer(true)}>
-                  提前结束出总结
+                  {practiceMode ? "结束练习出总结" : "提前结束出总结"}
                 </button>
               )}
             </div>
@@ -629,6 +652,17 @@ export default function Home() {
               })}
               {sending && <div className="chatSystem">面试官思考中…</div>}
             </div>
+
+            {practiceMode && !summary && sessionId && (
+              <div className="practiceTools" aria-label="练习辅助">
+                <button type="button" disabled={sending || !interviewSession} onClick={showPracticeHint}>
+                  给我提示
+                </button>
+                <button type="button" disabled={sending || !interviewSession} onClick={showReferenceAnswer}>
+                  看参考答案
+                </button>
+              </div>
+            )}
 
             {!summary && sessionId && (
               <div className="chatInput">
@@ -701,7 +735,7 @@ export default function Home() {
         )}
 
         {interviewMissing && (
-          <div className="error">分析已完成，但没有生成可用的模拟面试 session。请重试或切换到 Survey 模式查看已生成题目。</div>
+          <div className="error">分析已完成，但没有生成可用的面试/练习 session。请重试或切换到 Survey 模式查看已生成题目。</div>
         )}
 
         {feed.length > 0 && status !== "idle" && (
@@ -849,6 +883,15 @@ const INTERVIEW_ROADMAP: RoadmapStep[] = [
   { stage: "interview_ready", label: "开面", caption: "进入一问一答 session" }
 ];
 
+const PRACTICE_ROADMAP: RoadmapStep[] = [
+  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
+  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
+  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
+  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
+  { stage: "questions", label: "备题", caption: "生成练习题和追问链" },
+  { stage: "interview_ready", label: "开练", caption: "支持提示和参考答案" }
+];
+
 function ProgressDashboard({
   status,
   mode,
@@ -872,7 +915,7 @@ function ProgressDashboard({
   questionCount: number;
   latestReadPath: string;
 }) {
-  const steps = mode === "interview" ? INTERVIEW_ROADMAP : SURVEY_ROADMAP;
+  const steps = mode === "practice" ? PRACTICE_ROADMAP : mode === "interview" ? INTERVIEW_ROADMAP : SURVEY_ROADMAP;
   const activeStage: RoadmapStage = status === "done" && mode === "survey" ? "complete" : currentStage ?? "scout";
   const activeIndex = Math.max(
     0,
@@ -885,6 +928,8 @@ function ProgressDashboard({
     ? `${plan.analysisMode} · ${plan.dimensions.length} 个维度`
     : mode === "interview"
       ? "Interactive"
+      : mode === "practice"
+        ? "Practice"
       : "Survey";
 
   return (
@@ -1068,7 +1113,7 @@ function hasPersistableContent({
 }
 
 function isAnalyzeMode(value: unknown): value is AnalyzeMode {
-  return value === "survey" || value === "interview";
+  return value === "survey" || value === "interview" || value === "practice";
 }
 
 function isStatus(value: unknown): value is Status {
@@ -1092,6 +1137,47 @@ function formatSavedAt(savedAt: number): string {
     minute: "2-digit",
     second: "2-digit"
   }).format(savedAt);
+}
+
+function currentPracticeQuestion(session: InterviewSession | null): InterviewQuestion | null {
+  if (!session || session.questions.length === 0) return null;
+  return session.questions[Math.min(session.currentIndex, session.questions.length - 1)] ?? null;
+}
+
+function currentPromptText(chat: ChatMessage[]): string {
+  for (let i = chat.length - 1; i >= 0; i--) {
+    const message = chat[i];
+    if (message.role === "interviewer") return message.text;
+  }
+  return "";
+}
+
+function buildPracticeHint(question: InterviewQuestion, promptText: string): string {
+  const clues = [
+    question.whyAsk ? `先说明为什么问：${question.whyAsk}` : "",
+    question.evidence.length > 0 ? `回到证据：${question.evidence.slice(0, 3).join("、")}` : "",
+    question.expectedAnswer.length > 0 ? `至少覆盖：${question.expectedAnswer.slice(0, 2).join("；")}` : "",
+    question.followUps.length > 0 ? `留意追问方向：${question.followUps[0]}` : ""
+  ].filter(Boolean);
+  return [`提示：${promptText || question.question}`, ...clues.map((item) => `- ${item}`)].join("\n");
+}
+
+function buildReferenceAnswer(question: InterviewQuestion, promptText: string): string {
+  const answerPoints =
+    question.expectedAnswer.length > 0
+      ? question.expectedAnswer
+      : ["先描述项目事实，再解释设计理由，最后主动补充限制、风险和可改进点。"];
+  const redFlags = question.redFlags.length > 0 ? `\n\n需要避免：\n${question.redFlags.map((item) => `- ${item}`).join("\n")}` : "";
+  const evidence = question.evidence.length > 0 ? `\n\n可引用证据：${question.evidence.slice(0, 4).join("、")}` : "";
+  return [
+    `参考答案：${promptText || question.question}`,
+    "",
+    ...answerPoints.map((item) => `- ${item}`),
+    evidence,
+    redFlags
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 function RenderedInterviewPlan({

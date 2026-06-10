@@ -67,8 +67,8 @@ async function run(repositoryUrl: string, mode: AnalyzeMode, channel: EventChann
 
   if (!getApiKey()) {
     warnings.push("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY，已使用仓库结构生成降级报告。");
-    if (mode === "interview") {
-      warnings.push("交互面试需要可用的模型，已降级为 survey 报告。");
+    if (mode !== "survey") {
+      warnings.push("交互面试/练习需要可用的模型，已降级为 survey 报告。");
     }
     finish(channel, buildFallbackResponse(context, warnings));
     return;
@@ -160,7 +160,7 @@ async function run(repositoryUrl: string, mode: AnalyzeMode, channel: EventChann
 
   const result = assembleResponse(context, { understanding, paperCodeMap, examPoints, questions }, warnings);
 
-  if (mode === "interview") {
+  if (mode !== "survey") {
     const session = createInterviewSession({
       repoFullName: context.repo.fullName,
       understanding,

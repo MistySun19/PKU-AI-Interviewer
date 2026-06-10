@@ -132,7 +132,7 @@ export type AnalyzeResponse = {
   warnings: string[];
 };
 
-export type AnalyzeMode = "survey" | "interview";
+export type AnalyzeMode = "survey" | "interview" | "practice";
 
 export type PipelineStage =
   | "scout"

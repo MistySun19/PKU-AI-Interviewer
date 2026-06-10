@@ -9,7 +9,7 @@ export const maxDuration = 1200;
 const requestSchema = z.object({
   repositoryUrl: z.string().optional(),
   runId: z.string().optional(),
-  mode: z.enum(["survey", "interview"]).default("survey")
+  mode: z.enum(["survey", "interview", "practice"]).default("survey")
 });
 
 export async function POST(request: Request) {

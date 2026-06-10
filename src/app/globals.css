@@ -784,6 +784,7 @@ pre {
 
 .modeRow {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 10px;
 }
@@ -936,8 +937,39 @@ pre {
 
 .chatSystem {
   justify-self: center;
+  max-width: min(760px, 92%);
   color: var(--muted);
   font-size: 13px;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.practiceTools {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 18px 14px;
+}
+
+.practiceTools button {
+  border: 1px solid var(--line);
+  background: #fdfaf3;
+  color: var(--accent-dark);
+  cursor: pointer;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.practiceTools button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.practiceTools button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .chatInput {

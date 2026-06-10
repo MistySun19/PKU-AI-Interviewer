@@ -115,6 +115,12 @@ async function collectEvents(repositoryUrl: string): Promise<SseEvent[]> {
   return events;
 }
 
+async function collectEventsForMode(repositoryUrl: string, mode: "survey" | "interview" | "practice"): Promise<SseEvent[]> {
+  const events: SseEvent[] = [];
+  for await (const event of runAnalysisPipeline(repositoryUrl, mode)) events.push(event);
+  return events;
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
 });
@@ -181,6 +187,40 @@ describe("runAnalysisPipeline", () => {
 
     const result = events.find((event) => event.type === "result");
     expect(result && result.type === "result" && result.result.analysisMode).toBe("paper-code");
+  });
+
+  it("creates an interview session for practice mode", async () => {
+    const context = fakeContext();
+    vi.mocked(fetchRepoContext).mockResolvedValue(context);
+    vi.mocked(getApiKey).mockReturnValue("key");
+    vi.mocked(generateResearchPlan).mockResolvedValue({
+      analysisMode: "general-code",
+      techTags: [],
+      dimensions: [{ key: "overview", goal: "项目目标", files: ["README.md"] }]
+    });
+    vi.mocked(generateDimensionDigest).mockResolvedValue(digestFor("overview"));
+    vi.mocked(synthesizeUnderstanding).mockResolvedValue({
+      understanding: fallbackUnderstanding(context),
+      paperCodeMap: []
+    });
+    vi.mocked(streamExamAndQuestions).mockResolvedValue({
+      examPoints: [{ title: "t", riskLevel: "medium", evidence: ["README.md"], whyAsk: "w", followUps: [] }],
+      questions: [
+        {
+          question: "q",
+          difficulty: "warmup",
+          evidence: ["README.md"],
+          whyAsk: "w",
+          expectedAnswer: ["a"],
+          redFlags: [],
+          followUps: []
+        }
+      ]
+    });
+
+    const events = await collectEventsForMode("https://github.com/o/r", "practice");
+
+    expect(events.some((event) => event.type === "session")).toBe(true);
   });
 
   it("grants requested files and runs a second research round", async () => {
