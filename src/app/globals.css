@@ -456,6 +456,35 @@ h2 {
   background: var(--panel2);
 }
 
+.panelSummary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.panelSummary::-webkit-details-marker {
+  display: none;
+}
+
+.panelSummary::after {
+  content: "收起";
+  margin-left: auto;
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.collapsiblePanel:not([open]) > .panelSummary {
+  border-bottom: 0;
+}
+
+.collapsiblePanel:not([open]) > .panelSummary::after {
+  content: "展开";
+  color: var(--accent-dark);
+}
+
 .copy {
   min-width: 82px;
   height: 38px;
@@ -482,6 +511,7 @@ pre {
 
 .feedHead {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding: 14px 16px;
   border-bottom: 1px solid var(--line);
@@ -489,8 +519,16 @@ pre {
   font-weight: 700;
 }
 
+.feedHead > span:first-child {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .feedHead .dot {
   display: inline-block;
+  flex: 0 0 auto;
   width: 11px;
   height: 11px;
   margin-right: 10px;
@@ -548,7 +586,6 @@ pre {
   border: 1px solid var(--line);
   background: var(--panel);
   box-shadow: 0 16px 42px rgba(23, 26, 31, 0.07);
-  padding: 18px;
 }
 
 .examPoints h2,
@@ -558,6 +595,16 @@ pre {
   gap: 10px;
 }
 
+.sectionSummary {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel2);
+}
+
 .count {
   color: var(--accent);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -565,8 +612,8 @@ pre {
 }
 
 .examPoints ul {
-  margin: 14px 0 0;
-  padding: 0;
+  margin: 0;
+  padding: 18px;
   list-style: none;
   display: grid;
   gap: 12px;
@@ -626,7 +673,7 @@ pre {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
-  margin-top: 14px;
+  padding: 18px;
 }
 
 .questionCard {

@@ -463,11 +463,17 @@ export default function Home() {
         )}
 
         {feed.length > 0 && status !== "idle" && (
-          <div className={interviewReady ? "feedPanel compact" : "feedPanel"} aria-live="polite">
-            <div className="feedHead">
-              <span className={status === "loading" ? "dot" : "dot idle"} />
-              {interviewReady ? "面试已开始" : status === "loading" ? stageLabel : "分析完成"}
-            </div>
+          <details
+            className={interviewReady ? "feedPanel compact collapsiblePanel" : "feedPanel collapsiblePanel"}
+            aria-live="polite"
+            open
+          >
+            <summary className="feedHead panelSummary">
+              <span>
+                <span className={status === "loading" ? "dot" : "dot idle"} />
+                {interviewReady ? "面试已开始" : status === "loading" ? stageLabel : "分析完成"}
+              </span>
+            </summary>
             <ul className="feedList">
               {feed.map((item) => (
                 <li key={item.id} className={`feedItem ${item.kind}`}>
@@ -475,26 +481,28 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-          </div>
+          </details>
         )}
 
         {!result && reportDraft && !sessionId && (
-          <section className="report streamingReport" aria-label="理解报告生成中" aria-live="polite">
-            <div className="reportHead">
+          <details className="report streamingReport collapsiblePanel" aria-label="理解报告生成中" aria-live="polite" open>
+            <summary className="reportHead panelSummary">
               <div>
                 <p className="eyebrow">Streaming</p>
                 <h2>仓库理解报告（生成中）</h2>
               </div>
-            </div>
+            </summary>
             <pre>{reportDraft}</pre>
-          </section>
+          </details>
         )}
 
         {mode === "survey" && examPoints.length > 0 && !result && (
-          <section className="examPoints" aria-label="项目考核点">
-            <h2>
-              项目考核点 <span className="count">{examPoints.length}</span>
-            </h2>
+          <details className="examPoints collapsiblePanel" aria-label="项目考核点" open>
+            <summary className="sectionSummary panelSummary">
+              <h2>
+                项目考核点 <span className="count">{examPoints.length}</span>
+              </h2>
+            </summary>
             <ul>
               {examPoints.map((point, index) => (
                 <li key={index}>
@@ -507,14 +515,16 @@ export default function Home() {
                 </li>
               ))}
             </ul>
-          </section>
+          </details>
         )}
 
         {mode === "survey" && questions.length > 0 && !result && (
-          <section className="questionsPanel" aria-label="分层面试题">
-            <h2>
-              分层面试题 <span className="count">{questions.length}</span>
-            </h2>
+          <details className="questionsPanel collapsiblePanel" aria-label="分层面试题" open>
+            <summary className="sectionSummary panelSummary">
+              <h2>
+                分层面试题 <span className="count">{questions.length}</span>
+              </h2>
+            </summary>
             <div className="questionGrid">
               {questions.map((question, index) => (
                 <article className="questionCard" key={index}>
@@ -562,7 +572,7 @@ export default function Home() {
                 </article>
               ))}
             </div>
-          </section>
+          </details>
         )}
 
         {mode === "survey" && result && <RenderedInterviewPlan result={result} copied={copied} onCopy={() => void copyReport()} />}
