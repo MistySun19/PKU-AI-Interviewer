@@ -1,9 +1,10 @@
 # 系统架构：Repo Deep Research Agent
 
-输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式深度理解仓库，再结合 kaomian 高频题库生成面试题。支持两种模式：
+输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式深度理解仓库，再结合 kaomian 高频题库生成面试题。支持三种模式：
 
 - **Survey 版**：一次读懂整个项目，流式输出理解报告和全量面试题。
 - **交互版**：模拟真实面试，一问一答，按回答质量决定追问或推进，结束后给总结反馈。
+- **练习版**：沿用同一套题目和追问链，但允许用户请求 AI 生成提示或参考答案，用于学习如何回答。
 
 架构决策依据见 `docs/research/deep-research-agent-design.md`（核心结论：仓库是有界输入，不做自由 agent swarm；并行只用于只读分析，写作单次合成保证自洽；不用 embedding，agentic 按需读取）。
 
@@ -14,14 +15,17 @@ flowchart TD
     subgraph FE["前端 src/app/page.tsx"]
         INPUT["输入 GitHub URL + 模式选择"]
         FEED["进度 Feed<br/>(阶段 / 读文件 / 发现)"]
+        DASH["Run Dashboard<br/>Roadmap + 产出计数"]
         REPORT["流式报告 (Markdown 增量)"]
         CARDS["题目卡片流 (Survey)"]
-        CHAT["面试聊天面板 (交互版)"]
+        CHAT["面试/练习聊天面板"]
+        LOCAL["localStorage<br/>runId + 草稿 + session 快照"]
     end
 
     subgraph API["API 层"]
-        ANALYZE["POST /api/analyze (SSE)<br/>{url, mode}"]
+        ANALYZE["POST /api/analyze (SSE)<br/>{url, mode} 或 {runId}"]
         INTERVIEW["POST /api/interview (SSE)<br/>{sessionId, answer}"]
+        HELP["POST /api/practice-help<br/>{sessionId, kind}"]
     end
 
     subgraph ORCH["编排器 src/lib/orchestrator.ts（单线程主循环）"]
@@ -30,22 +34,25 @@ flowchart TD
         P2["Phase 2 Research<br/>维度 worker 并发≤3，≤2 轮<br/>gap 队列 + 预算 + beast mode"]
         P3["Phase 3 Synthesize（流式）<br/>digests → 自洽理解报告"]
         P4A["Phase 4a Survey<br/>报告 + kaomian 匹配题<br/>→ 全量题逐题流式"]
-        P4B["Phase 4b Interview<br/>出题计划 → 会话循环<br/>问→答→评估→追问/下一题→总结"]
+        P4B["Phase 4b Interview / Practice<br/>出题计划 → 会话循环<br/>问→答→评估→追问/下一题→总结"]
     end
 
     subgraph EXT["外部依赖"]
         GH["GitHub REST API<br/>tree / raw，并发≤5"]
         LLM["Tokendance deepseek-v4-pro<br/>稳定前缀（prefix cache 实测可用）<br/>Zod 校验 + 降级兜底"]
         KAOMIAN["kaomian 快照<br/>src/data/kaomian.json<br/>948 题带标签"]
-        SESS["InterviewSession<br/>内存会话表 Map"]
+        RUNS["AnalysisRun<br/>runId + SSE 事件历史"]
+        SESS["InterviewSession<br/>内存会话表 Map + 前端快照恢复"]
     end
 
     INPUT --> ANALYZE
-    ANALYZE --> P0 --> P1 --> P2 --> P3
+    ANALYZE --> RUNS
+    RUNS --> P0 --> P1 --> P2 --> P3
     P3 --> P4A
     P3 --> P4B
     P4B <--> SESS
     CHAT --> INTERVIEW --> P4B
+    CHAT --> HELP --> LLM
     P0 <--> GH
     P1 <--> LLM
     P2 <--> LLM
@@ -54,10 +61,13 @@ flowchart TD
     P4B <--> LLM
     P4A <--> KAOMIAN
     P4B <--> KAOMIAN
-    ANALYZE -. "SSE: stage / plan / file_read /<br/>finding / report_delta / question / session" .-> FEED
+    ANALYZE -. "SSE: run / stage / plan / file_read /<br/>finding / report_delta / question / session" .-> FEED
+    FEED --> DASH
     ANALYZE -.-> REPORT
     ANALYZE -.-> CARDS
     INTERVIEW -. "SSE: evaluation / next_question / summary" .-> CHAT
+    LOCAL -. "刷新后用 runId 续接；session 失效时用快照恢复" .-> ANALYZE
+    LOCAL -.-> INTERVIEW
 ```
 
 ## 阶段说明
@@ -69,7 +79,15 @@ flowchart TD
 | Phase 2 Research | ≤10 | 每维度：repoMap + 分配文件全文（超限骨架化） | DimensionDigest（findings/claimCodeLinks/askPoints/openQuestions） | 原文不进主线程；digest ≤300 token/条；预算耗尽 → beast mode |
 | Phase 3 Synthesize | 1 | 全部 digests + repoMap | 理解报告（流式 Markdown） | 单次合成保证自洽 |
 | Phase 4a Survey | 1 | 报告 + kaomian 匹配题 | 全量面试题（逐题流式） | 主追问链必须绑仓库证据；八股标注来源 |
-| Phase 4b Interview | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/总结 | 弱回答追问、强回答推进（DevContext.AI 模式） |
+| Phase 4b Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/总结 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
+
+## 持久化与续接
+
+- `/api/analyze` 新建分析时生成 `runId`，服务端后台继续消费 pipeline；浏览器 SSE 连接只负责订阅事件。
+- `AnalysisRun` 保存该 run 的 SSE 事件历史。刷新后前端用本地保存的 `runId` 重新请求 `/api/analyze`，服务端先回放历史事件，再继续推送后续事件。
+- 前端使用 `localStorage` 保存仓库链接、模式、runId、阶段计数、日志、报告草稿、考核点、题目、聊天记录和 `InterviewSession` 快照。
+- `/api/interview` 和 `/api/practice-help` 在服务端 session 过期但前端有快照时，可用快照恢复单进程内存 session 后继续。
+- 当前持久化是 beta 轻量实现：刷新可续接；服务重启或重新部署后，服务端后台任务不会继续，但前端仍保留已生成内容。
 
 ## 上下文管理硬规则
 
@@ -82,6 +100,6 @@ flowchart TD
 
 ## 已知取舍
 
-- 交互版会话存进程内存，重启丢失（demo 取舍，未来换持久化存储）。
+- 分析 run 和交互 session 以进程内存为主；刷新靠 `runId` / session 快照续接，服务重启后仍需要重新开始后台任务。
 - kaomian 按 ADR-0002 以快照消费，关键词/标签检索，不做 embedding。
 - 文件骨架化用正则而非 tree-sitter（24h 预算取舍，效果覆盖主要语言的签名提取）。

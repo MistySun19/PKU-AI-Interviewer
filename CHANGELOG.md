@@ -27,11 +27,16 @@
 - 实现 v1.0.0-beta：Repo Deep Research Agent 四阶段管道（scout 元数据抓取 / plan 维度规划 / 并行 digest worker 深读 / 单次合成），替换单轮全量喂入。
 - 新增 repo map（import 引用计数中心度 + 目录骨架）与大文件骨架化；原始文件内容只进 worker 上下文，不进主合成上下文。
 - 新增 SSE 流式输出：阶段进度、读文件、维度发现、报告增量、考核点与面试题逐条推送。
-- 新增 Survey / Interactive 双模式：Survey 一次读懂全仓库并流式出全量题；Interactive 一问一答模拟真实面试，回答按 1-5 分评估，弱回答触发追问，结束生成总结与补坑计划。
+- 新增 Survey / Interactive / Practice 三模式：Survey 一次读懂全仓库并流式出全量题；Interactive 一问一答模拟真实面试；Practice 支持提示与参考答案辅助练习。
 - 接入 `kaomian` 高频题快照（`data/kaomian/`，636 题），按技术标签检索并要求模型改写为绑定仓库证据的追问，来源标注"高频题改写"。
 - 新增 GitHub contents API 回退通道（raw CDN 不可用时自动切换）与 raw 路径段校验。
 - 新增架构文档 `docs/ARCHITECTURE.md` 与 deep research agent 调研 `docs/research/deep-research-agent-design.md`。
 - 新增项目开发记录 `docs/project-record.md`，记录从仓库理解优先到 V1.0.0-beta 真实测试的迭代过程。
+- 新增分析进度 Dashboard，以 Roadmap 高亮 Scout / Plan / Research / Synthesize / Questions / Interview Ready 当前阶段。
+- 新增浏览器本地持久化，保存分析进度、报告草稿、题目、面试聊天记录和 session 快照。
+- 新增 `runId` 分析任务续接：服务端保存 SSE 事件历史，刷新后可回放历史事件并继续接收后续事件。
+- 新增 Practice 练习模式：在模拟追问基础上支持 AI 生成提示和参考答案。
+- 新增 `/api/practice-help`，根据当前题目、仓库理解和面试上下文生成练习提示 / 参考答案。
 - 新增 repomap、事件通道、编排器、kaomian 检索、面试状态机的单元测试（40 项）。
 
 ### 调整
@@ -39,7 +44,9 @@
 - 将 V1.0.0 范围调整为 GitHub 仓库理解优先。
 - 将路线调整为 GitHub repo -> `kaomian` -> 一句话自述 -> arXiv -> JD。
 - 将 alpha 主线从通用软件工程审查调整为 AI 算法岗项目考核，重点覆盖方法、训练、评测、配置、数据和复现。
-- `/api/analyze` 从一次性 JSON 改为 SSE 流式；新增 `/api/interview` 面试会话接口（内存会话，重启丢失）。
+- `/api/analyze` 从一次性 JSON 改为 SSE 流式；新增 `/api/interview` 面试会话接口，并通过 session 快照支持刷新后恢复。
+- `/api/analyze` 支持用 `runId` 续接已有分析任务；非法 GitHub URL 在前端和 API 层直接报错，不进入降级报告。
+- Practice 的提示 / 参考答案从前端字段拼接改为 AI 生成。
 - 模型 JSON 解析全面宽容化：枚举非法值回退、字符串数组对象提取、嵌套结构解包、校验失败自动重试一次。
 - 依赖版本从 `latest` 固定为明确版本号。
 - 将实时面试追问从 v1.3.0 提前到 v1.0.0-beta（交互版），原计划位置由后续增强接替。

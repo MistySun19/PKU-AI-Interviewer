@@ -2,10 +2,11 @@
 
 AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 
-当前 v1.0.0-beta：用户输入公开 GitHub 仓库，Repo Deep Research Agent 深度理解整个项目（方法 claim、核心代码、训练配置、数据处理、评测逻辑和复现路线），再结合 `kaomian` 高频题库，流式生成有证据来源的算法岗项目考核面试。支持两种模式：
+当前 v1.0.0-beta：用户输入公开 GitHub 仓库，Repo Deep Research Agent 深度理解整个项目（方法 claim、核心代码、训练配置、数据处理、评测逻辑和复现路线），再结合 `kaomian` 高频题库，流式生成有证据来源的算法岗项目考核面试。支持三种模式：
 
 - **Survey 全量报告**：一次读懂整个项目，流式输出理解报告 + 考核点 + 全量分层面试题。
 - **Interactive 模拟面试**：一问一答模拟真实面试，回答按 1-5 分实时评估，弱回答触发追问，结束后生成总结与补坑计划。
+- **Practice 练习模式**：复用同一套仓库理解和题目进行练习，支持模拟追问，并可让 AI 生成提示或参考答案，帮助用户学习如何回答。
 
 一句话定位：
 
@@ -13,14 +14,15 @@ AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 
 ## v1.0.0-beta 闭环
 
-1. 输入 GitHub 仓库链接，选择 Survey 或 Interactive 模式。
+1. 输入 GitHub 仓库链接，选择 Survey、Interactive 或 Practice 模式。
 2. **Scout**：抓取仓库元数据、文件树和关键证据文件，构建 repo map（import 引用计数中心度 + 目录骨架）。
 3. **Plan**：模型规划研究维度（overview/method/training/evaluation/data）、分配文件、判断 `paper-code` / `general-code`、产出题库检索标签。
 4. **Research**：每个维度一个独立上下文的 digest worker 并行深读（并发 3，最多 2 轮，可主动申请补读文件），原始代码不进主线程。
 5. **Synthesize**：全部 digest 单次合成自洽的理解报告（流式输出）。
-6. **Questions**：结合 `kaomian` 高频题匹配，流式逐条生成考核点和分层面试题；Interactive 模式则进入一问一答面试循环。
+6. **Questions**：结合 `kaomian` 高频题匹配，流式逐条生成考核点和分层面试题；Interactive / Practice 模式则进入一问一答循环。
+7. **Resume / Practice Help**：分析任务使用 `runId` 保存服务端事件历史，刷新后可续接；Practice 中的提示和参考答案由 AI 根据当前题目、仓库理解和面试上下文生成。
 
-全程 SSE 流式：实时看到系统读了哪个文件、发现了什么、题目逐条出现。架构详见 `docs/ARCHITECTURE.md`。
+全程 SSE 流式：实时看到系统读了哪个文件、发现了什么、题目逐条出现。前端会把当前进度、报告草稿、题目、面试记录和 session 快照保存到浏览器本地；刷新后优先用 `runId` 续接服务端任务，若任务过期则保留本地已生成内容。架构详见 `docs/ARCHITECTURE.md`。
 
 ## 本地运行
 
@@ -66,7 +68,7 @@ npm run dev
 
 - v1.0.0-alpha：GitHub repo 基础理解。已完成。
 - v1.0.0-alpha.1：GitHub repo paper-code 理解。已完成。
-- v1.0.0-beta：Repo Deep Research Agent + `kaomian` + Survey/Interactive 双模式。当前版本（实时面试追问从 v1.3.0 提前落地为交互版）。
+- v1.0.0-beta：Repo Deep Research Agent + `kaomian` + Survey/Interactive/Practice 三模式。当前版本（实时面试追问从 v1.3.0 提前落地为交互版，并新增练习辅助）。
 - v1.0.0-rc：支持 GitHub repo + 一句话自述。
 - v1.1.0：接入 arXiv / 论文项目理解。
 - v1.2.0：接入 JD / 岗位描述偏置。
@@ -75,7 +77,7 @@ npm run dev
 
 ## 已知限制
 
-- 交互面试会话保存在进程内存，服务重启后会话丢失（demo 取舍）。
+- 分析 run 和面试 session 仍以单进程内存为主，刷新可续接；服务重启或重新部署后，前端会保留本地已生成内容，但服务端后台任务需要重新开始。
 - `kaomian` 检索为关键词/标签级，不做 embedding。
 - 完整分析一个仓库约 5-10 分钟（受模型输出速度限制），全程有流式进度。
 - 深度理解质量的 golden repo 回归评测集尚未建立，列入下一步。
