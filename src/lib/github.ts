@@ -246,7 +246,14 @@ export function selectCandidateFiles(files: Array<{ path: string; size?: number 
   return selected;
 }
 
-export async function fetchRepoContext(repositoryUrl: string): Promise<RepoContext> {
+export type FetchRepoContextOptions = {
+  onFileFetched?: (path: string) => void;
+};
+
+export async function fetchRepoContext(
+  repositoryUrl: string,
+  options: FetchRepoContextOptions = {}
+): Promise<RepoContext> {
   const parsed = parseGitHubUrl(repositoryUrl);
   const headers = githubHeaders();
   const repoApi = await githubFetch<GitHubRepoApi>(
@@ -274,7 +281,7 @@ export async function fetchRepoContext(repositoryUrl: string): Promise<RepoConte
     warnings.push("未发现明显测试或评测文件，面试官可能追问评测可信度。");
   }
 
-  const files = await fetchSelectedFiles(parsed.owner, parsed.repo, branch, candidates, headers, warnings);
+  const files = await fetchSelectedFiles(parsed.owner, parsed.repo, branch, candidates, headers, warnings, options.onFileFetched);
   const readme = files.find((file) => file.path.toLowerCase().includes("readme"))?.content ?? "";
   const researchArtifacts = collectResearchArtifacts(candidates);
   const paperSignals = emptyPaperSignals();
@@ -309,21 +316,41 @@ export function buildCodeContext(files: RepoFileContent[]): { context: string; w
   return { context: blocks.join("\n"), warnings };
 }
 
+const RAW_FETCH_CONCURRENCY = 5;
+
+export async function mapWithConcurrency<T, R>(
+  items: T[],
+  limit: number,
+  fn: (item: T, index: number) => Promise<R>
+): Promise<R[]> {
+  const results = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (true) {
+      const index = next++;
+      if (index >= items.length) return;
+      results[index] = await fn(items[index], index);
+    }
+  });
+  await Promise.all(workers);
+  return results;
+}
+
 async function fetchSelectedFiles(
   owner: string,
   repo: string,
   branch: string,
   candidates: EvidenceFile[],
   headers: HeadersInit,
-  warnings: string[]
+  warnings: string[],
+  onFileFetched?: (path: string) => void
 ): Promise<RepoFileContent[]> {
-  const files: RepoFileContent[] = [];
-  for (const candidate of candidates) {
+  const fetched = await mapWithConcurrency(candidates, RAW_FETCH_CONCURRENCY, async (candidate) => {
     const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${encodeURIComponent(branch)}/${candidate.path}`;
     const response = await fetch(rawUrl, { headers });
     if (!response.ok) {
       warnings.push(`读取文件失败：${candidate.path} (${response.status})`);
-      continue;
+      return null;
     }
     let content = await response.text();
     let truncated = false;
@@ -332,9 +359,10 @@ async function fetchSelectedFiles(
       truncated = true;
       warnings.push(`文件过大已截断：${candidate.path}`);
     }
-    files.push({ ...candidate, content, truncated });
-  }
-  return files;
+    onFileFetched?.(candidate.path);
+    return { ...candidate, content, truncated };
+  });
+  return fetched.filter((file): file is RepoFileContent => file !== null);
 }
 
 function getExtension(path: string): string {

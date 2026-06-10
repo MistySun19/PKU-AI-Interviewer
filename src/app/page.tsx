@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import type { AnalyzeResponse } from "@/lib/types";
+import { useRef, useState } from "react";
+import type { AnalyzeResponse, SseEvent } from "@/lib/types";
 
 type Status = "idle" | "loading" | "done" | "error";
+
+type FeedItem = {
+  id: number;
+  kind: "stage" | "file" | "warning";
+  text: string;
+};
 
 export default function Home() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
@@ -11,24 +17,81 @@ export default function Home() {
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [feed, setFeed] = useState<FeedItem[]>([]);
+  const [stageLabel, setStageLabel] = useState("");
+  const feedSeq = useRef(0);
+
+  function pushFeed(kind: FeedItem["kind"], text: string) {
+    feedSeq.current += 1;
+    const item = { id: feedSeq.current, kind, text };
+    setFeed((prev) => [item, ...prev].slice(0, 120));
+  }
+
+  function handleEvent(event: SseEvent) {
+    switch (event.type) {
+      case "stage":
+        setStageLabel(event.detail ?? event.stage);
+        pushFeed("stage", event.detail ?? event.stage);
+        break;
+      case "file_read":
+        pushFeed("file", `读取 ${event.path}`);
+        break;
+      case "warning":
+        pushFeed("warning", event.message);
+        break;
+      case "result":
+        setResult(event.result);
+        break;
+      case "error":
+        setError(event.message);
+        setStatus("error");
+        break;
+      case "done":
+        setStatus("done");
+        break;
+      default:
+        break;
+    }
+  }
 
   async function submit() {
-    if (!repositoryUrl.trim()) return;
+    if (!repositoryUrl.trim() || status === "loading") return;
     setStatus("loading");
     setError("");
     setResult(null);
     setCopied(false);
+    setFeed([]);
+    setStageLabel("连接分析服务");
 
     try {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repositoryUrl: repositoryUrl.trim() })
+        body: JSON.stringify({ repositoryUrl: repositoryUrl.trim(), mode: "survey" })
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "分析失败。");
-      setResult(data as AnalyzeResponse);
-      setStatus("done");
+
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? `分析失败 (${response.status})。`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let frameEnd = buffer.indexOf("\n\n");
+        while (frameEnd !== -1) {
+          const frame = buffer.slice(0, frameEnd);
+          buffer = buffer.slice(frameEnd + 2);
+          const dataLine = frame.split("\n").find((line) => line.startsWith("data: "));
+          if (dataLine) handleEvent(JSON.parse(dataLine.slice(6)) as SseEvent);
+          frameEnd = buffer.indexOf("\n\n");
+        }
+      }
+      setStatus((prev) => (prev === "loading" ? "done" : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : "分析失败。");
       setStatus("error");
@@ -59,7 +122,7 @@ export default function Home() {
             value={repositoryUrl}
             onChange={(event) => setRepositoryUrl(event.target.value)}
             onKeyDown={(event) => {
-              if (event.key === "Enter") void submit();
+              if (event.key === "Enter" && !event.nativeEvent.isComposing) void submit();
             }}
             placeholder="https://github.com/owner/repo"
           />
@@ -68,10 +131,26 @@ export default function Home() {
           </button>
         </div>
 
-        {status === "loading" && (
+        {status === "loading" && feed.length === 0 && (
           <div className="progress" aria-live="polite">
             <span />
-            正在读取仓库、筛选关键文件并生成项目考核问题。
+            正在连接仓库分析服务。
+          </div>
+        )}
+
+        {feed.length > 0 && status !== "idle" && (
+          <div className="feedPanel" aria-live="polite">
+            <div className="feedHead">
+              <span className={status === "loading" ? "dot" : "dot idle"} />
+              {status === "loading" ? stageLabel : "分析完成"}
+            </div>
+            <ul className="feedList">
+              {feed.map((item) => (
+                <li key={item.id} className={`feedItem ${item.kind}`}>
+                  {item.text}
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 

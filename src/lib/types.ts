@@ -120,3 +120,36 @@ export type AnalyzeResponse = {
   evidenceFiles: EvidenceFile[];
   warnings: string[];
 };
+
+export type AnalyzeMode = "survey" | "interview";
+
+export type PipelineStage =
+  | "scout"
+  | "plan"
+  | "research"
+  | "synthesize"
+  | "questions"
+  | "interview_ready";
+
+export type Confidence = "high" | "medium" | "low";
+
+export type ResearchDimensionKey = "overview" | "method" | "training" | "evaluation" | "data";
+
+export type ResearchPlanSummary = {
+  analysisMode: AnalysisMode;
+  techTags: string[];
+  dimensions: Array<{ key: ResearchDimensionKey; goal: string; files: string[] }>;
+};
+
+export type SseEvent =
+  | { type: "stage"; stage: PipelineStage; detail?: string }
+  | { type: "plan"; plan: ResearchPlanSummary }
+  | { type: "file_read"; path: string; dimension?: string }
+  | { type: "finding"; dimension: string; claim: string; evidence: string[]; confidence: Confidence }
+  | { type: "report_delta"; delta: string }
+  | { type: "question"; question: InterviewQuestion; index: number; total?: number; source: "repo" | "kaomian" }
+  | { type: "result"; result: AnalyzeResponse }
+  | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number }
+  | { type: "warning"; message: string }
+  | { type: "error"; message: string }
+  | { type: "done" };
