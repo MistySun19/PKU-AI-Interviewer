@@ -191,7 +191,8 @@ const questionSchema = z.object({
   whyAsk: z.string().default(""),
   expectedAnswer: stringArraySchema,
   redFlags: stringArraySchema,
-  followUps: stringArraySchema
+  followUps: stringArraySchema,
+  source: lenientEnum(["repo", "kaomian"], "repo")
 });
 
 const interrogationSchema = z.object({
@@ -331,47 +332,223 @@ analysisMode, paperSignals{venues,paperLinks,citationFound,officialImplementatio
   return { understanding, paperCodeMap };
 }
 
-export async function generateExamAndQuestions(
-  repoMapText: string,
-  understanding: Understanding,
-  paperCodeMap: PaperCodeMapItem[],
-  digests: DimensionDigest[]
-): Promise<{ examPoints: ExamPoint[]; questions: InterviewQuestion[] }> {
-  const askPoints = digests.flatMap((digest) =>
+export type KaomianPromptItem = {
+  question: string;
+  category: string;
+  frequency: number;
+};
+
+type InterrogationArgs = {
+  repoMapText: string;
+  understanding: Understanding;
+  paperCodeMap: PaperCodeMapItem[];
+  digests: DimensionDigest[];
+  kaomianMatches?: KaomianPromptItem[];
+};
+
+function buildKaomianBlock(matches: KaomianPromptItem[] | undefined): string {
+  if (!matches || matches.length === 0) {
+    return "真实面经高频题：本仓库没有匹配到相关高频题，全部题目从仓库证据出发，source 一律为 repo。";
+  }
+  return `真实面经高频题（kaomian 题库按技术标签匹配，按出现频次排序）：
+${matches.map((item) => `- [${item.frequency}帖|${item.category}] ${item.question}`).join("\n")}
+
+高频题使用规则：
+- 仅当高频题与本仓库证据相关时，把它改写成绑定本仓库具体文件/模块的追问，该题输出 "source":"kaomian"。
+- 不要照抄高频题题面；与仓库无关的高频题直接忽略。
+- questions 中 source=kaomian 的最多 4 道，其余必须从仓库证据出发（"source":"repo"）。`;
+}
+
+function buildInterrogationContext(args: InterrogationArgs): string {
+  const askPoints = args.digests.flatMap((digest) =>
     digest.askPoints.map((point) => `[${digest.dimension}] ${point}`)
   );
-
-  const messages: ChatMessage[] = [
-      { role: "system", content: SYSTEM_PROMPT },
-      {
-        role: "user",
-        content: `${repoMapText}
+  return `${args.repoMapText}
 
 仓库理解：
-${JSON.stringify(understanding, null, 2)}
+${JSON.stringify(args.understanding, null, 2)}
 
 Paper claim -> 代码/实验证据映射：
-${JSON.stringify(paperCodeMap, null, 2)}
+${JSON.stringify(args.paperCodeMap, null, 2)}
 
 各维度可出题点：
 ${askPoints.map((point) => `- ${point}`).join("\n") || "- 无"}
 
-任务：生成项目考核点与分层面试题。返回 JSON：
-{
-  "examPoints": [{"title": "...", "riskLevel": "low|medium|high", "evidence": ["路径"], "whyAsk": "...", "followUps": ["..."]}],
-  "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."]}]
-}
+${buildKaomianBlock(args.kaomianMatches)}
 
-约束：
+任务：生成项目考核点与分层面试题。
+
+内容约束：
 - examPoints 5-8 个，questions 8-12 道。
 - 追问优先覆盖 method validity、baseline/ablation、data leakage、metric choice、config/hyperparameter、reproducibility、failure cases、论文主张和代码是否一致。
 - 不要输出 employability score、code quality score、部署能力评分。
-- 不要泛问"这个项目用了什么技术栈"，每道题必须落到具体文件证据。`
-      }
-    ];
+- 不要泛问"这个项目用了什么技术栈"，每道题必须落到具体文件证据。`;
+}
+
+export async function generateExamAndQuestions(
+  args: InterrogationArgs
+): Promise<{ examPoints: ExamPoint[]; questions: InterviewQuestion[] }> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `${buildInterrogationContext(args)}
+
+返回 JSON：
+{
+  "examPoints": [{"title": "...", "riskLevel": "low|medium|high", "evidence": ["路径"], "whyAsk": "...", "followUps": ["..."]}],
+  "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."], "source": "repo|kaomian"}]
+}`
+    }
+  ];
   return withRetry("questions", async () =>
     parseModelJson(interrogationSchema, await chatJson(messages, 240_000), "questions")
   );
+}
+
+export async function streamExamAndQuestions(
+  args: InterrogationArgs,
+  handlers: {
+    onExamPoint?: (point: ExamPoint, index: number) => void;
+    onQuestion?: (question: InterviewQuestion, index: number) => void;
+  } = {}
+): Promise<{ examPoints: ExamPoint[]; questions: InterviewQuestion[] }> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `${buildInterrogationContext(args)}
+
+输出格式：NDJSON——每行一个独立完整的 JSON 对象。不要数组包装，不要 markdown 代码块，不要任何解释文本。
+先逐行输出 5-8 个考核点：
+{"kind":"examPoint","title":"...","riskLevel":"low|medium|high","evidence":["路径"],"whyAsk":"...","followUps":["..."]}
+再逐行输出 8-12 道面试题：
+{"kind":"question","question":"...","difficulty":"warmup|medium|hard","evidence":["路径"],"whyAsk":"...","expectedAnswer":["..."],"redFlags":["..."],"followUps":["..."],"source":"repo|kaomian"}`
+    }
+  ];
+
+  const examPoints: ExamPoint[] = [];
+  const questions: InterviewQuestion[] = [];
+  let rejectedLines = 0;
+
+  for await (const item of chatNdjson(messages, 300_000)) {
+    for (const candidate of Array.isArray(item) ? item : [item]) {
+      if (!candidate || typeof candidate !== "object") continue;
+      const record = candidate as Record<string, unknown>;
+      if (record.kind === "question" || typeof record.question === "string") {
+        const parsed = questionSchema.safeParse(record);
+        if (parsed.success) {
+          questions.push(parsed.data);
+          handlers.onQuestion?.(parsed.data, questions.length - 1);
+        } else {
+          rejectedLines += 1;
+        }
+      } else if (record.kind === "examPoint" || typeof record.title === "string") {
+        const parsed = examPointSchema.safeParse(record);
+        if (parsed.success) {
+          examPoints.push(parsed.data);
+          handlers.onExamPoint?.(parsed.data, examPoints.length - 1);
+        } else {
+          rejectedLines += 1;
+        }
+      }
+    }
+  }
+
+  if (rejectedLines > 0) {
+    console.error(`[llm] 流式出题有 ${rejectedLines} 行未通过校验，已跳过。`);
+  }
+  if (questions.length === 0) {
+    throw new Error("流式出题没有产生有效题目。");
+  }
+  return { examPoints, questions };
+}
+
+async function* chatNdjson(messages: ChatMessage[], timeoutMs: number): AsyncGenerator<unknown> {
+  const apiKey = getApiKey();
+  if (!apiKey) throw new Error("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY。");
+
+  const chatCompletionsUrl =
+    process.env.TOKENDANCE_CHAT_COMPLETIONS_URL ??
+    `${(process.env.OPENAI_BASE_URL ?? process.env.TOKENDANCE_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
+  const response = await fetch(chatCompletionsUrl, {
+    method: "POST",
+    signal: AbortSignal.timeout(timeoutMs),
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      model: getModelName(),
+      messages,
+      temperature: 0.2,
+      stream: true
+    })
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`模型流式请求失败 (${response.status}): ${await response.text()}`);
+  }
+
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let sseBuffer = "";
+  let contentBuffer = "";
+
+  const drainLines = function* (flush: boolean) {
+    let newlineIndex = contentBuffer.indexOf("\n");
+    while (newlineIndex !== -1) {
+      const line = contentBuffer.slice(0, newlineIndex);
+      contentBuffer = contentBuffer.slice(newlineIndex + 1);
+      const parsed = tryParseNdjsonLine(line);
+      if (parsed !== undefined) yield parsed;
+      newlineIndex = contentBuffer.indexOf("\n");
+    }
+    if (flush) {
+      const parsed = tryParseNdjsonLine(contentBuffer);
+      contentBuffer = "";
+      if (parsed !== undefined) yield parsed;
+    }
+  };
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    sseBuffer += decoder.decode(value, { stream: true });
+
+    let frameEnd = sseBuffer.indexOf("\n\n");
+    while (frameEnd !== -1) {
+      const frame = sseBuffer.slice(0, frameEnd);
+      sseBuffer = sseBuffer.slice(frameEnd + 2);
+      frameEnd = sseBuffer.indexOf("\n\n");
+
+      for (const rawLine of frame.split("\n")) {
+        if (!rawLine.startsWith("data:")) continue;
+        const payload = rawLine.slice(5).trim();
+        if (payload === "[DONE]") continue;
+        try {
+          const chunk = JSON.parse(payload) as {
+            choices?: Array<{ delta?: { content?: string } }>;
+          };
+          contentBuffer += chunk.choices?.[0]?.delta?.content ?? "";
+        } catch {
+          /* 忽略无法解析的 SSE 帧 */
+        }
+      }
+      yield* drainLines(false);
+    }
+  }
+  yield* drainLines(true);
+}
+
+function tryParseNdjsonLine(line: string): unknown {
+  const trimmed = line.trim().replace(/^```(?:json)?$/, "").replace(/^```$/, "");
+  if (!trimmed || !(trimmed.startsWith("{") || trimmed.startsWith("["))) return undefined;
+  try {
+    return JSON.parse(trimmed);
+  } catch {
+    return undefined;
+  }
 }
 
 export function assembleResponse(

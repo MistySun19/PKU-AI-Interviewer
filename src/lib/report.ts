@@ -107,6 +107,7 @@ export function buildInterrogationMarkdown(result: ReportBase): string {
     lines.push(`### ${index + 1}. ${question.question}`);
     lines.push("");
     lines.push(`- 难度：${question.difficulty}`);
+    if (question.source === "kaomian") lines.push("- 来源：kaomian 高频题改写");
     lines.push(`- 证据：${question.evidence.join("、") || "未提供"}`);
     lines.push(`- 为什么问：${question.whyAsk}`);
     lines.push("- 期望回答要点：");

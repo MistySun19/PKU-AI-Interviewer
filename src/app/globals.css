@@ -316,6 +316,175 @@ pre {
   color: var(--ink);
 }
 
+.streamingReport {
+  margin-top: 18px;
+}
+
+.examPoints,
+.questionsPanel {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(23, 26, 31, 0.07);
+  padding: 18px;
+}
+
+.examPoints h2,
+.questionsPanel h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.count {
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 14px;
+}
+
+.examPoints ul {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.examPoints li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.examPoints li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.examPoints p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.chip {
+  flex-shrink: 0;
+  padding: 3px 8px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: white;
+  background: var(--muted);
+}
+
+.chip.risk-low,
+.chip.diff-warmup {
+  background: var(--accent);
+}
+
+.chip.risk-medium,
+.chip.diff-medium {
+  background: var(--warn);
+}
+
+.chip.risk-high,
+.chip.diff-hard {
+  background: var(--danger);
+}
+
+.chip.kaomian {
+  background: var(--accent-dark);
+}
+
+.questionGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.questionCard {
+  border: 1px solid var(--line);
+  background: #fdfaf3;
+  padding: 14px 16px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  animation: cardIn 0.35s ease-out;
+}
+
+.questionCard header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.qIndex {
+  color: var(--muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.qText {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.qWhy {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.cardEvidence {
+  color: var(--accent-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.questionCard details {
+  border-top: 1px solid var(--line);
+  padding-top: 8px;
+}
+
+.questionCard summary {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.qBlock h3 {
+  margin: 10px 0 4px;
+  font-size: 13px;
+  color: var(--accent-dark);
+}
+
+.qBlock ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 @keyframes pulse {
   0%,
   100% {
@@ -334,7 +503,8 @@ pre {
   }
 
   .inputRow,
-  .resultGrid {
+  .resultGrid,
+  .questionGrid {
     grid-template-columns: 1fr;
   }
 

@@ -106,6 +106,16 @@ export type InterviewQuestion = {
   expectedAnswer: string[];
   redFlags: string[];
   followUps: string[];
+  source?: "repo" | "kaomian";
+};
+
+export type KaomianItem = {
+  id: string;
+  question: string;
+  category: string;
+  frequency: number;
+  companies: string[];
+  sourceFile: string;
 };
 
 export type AnalyzeResponse = {
@@ -158,6 +168,7 @@ export type SseEvent =
   | { type: "file_read"; path: string; dimension?: string }
   | { type: "finding"; dimension: string; claim: string; evidence: string[]; confidence: Confidence }
   | { type: "report_delta"; delta: string }
+  | { type: "exam_point"; point: ExamPoint; index: number }
   | { type: "question"; question: InterviewQuestion; index: number; total?: number; source: "repo" | "kaomian" }
   | { type: "result"; result: AnalyzeResponse }
   | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number }

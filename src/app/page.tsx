@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { AnalyzeResponse, SseEvent } from "@/lib/types";
+import type { AnalyzeResponse, ExamPoint, InterviewQuestion, SseEvent } from "@/lib/types";
 
 type Status = "idle" | "loading" | "done" | "error";
 
@@ -19,6 +19,9 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [stageLabel, setStageLabel] = useState("");
+  const [reportDraft, setReportDraft] = useState("");
+  const [examPoints, setExamPoints] = useState<ExamPoint[]>([]);
+  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
   const feedSeq = useRef(0);
 
   function pushFeed(kind: FeedItem["kind"], text: string) {
@@ -47,6 +50,15 @@ export default function Home() {
       case "finding":
         pushFeed("finding", `[${event.dimension}] ${event.claim}（${event.evidence.join("、") || "无证据"}）`);
         break;
+      case "report_delta":
+        setReportDraft((prev) => prev + event.delta);
+        break;
+      case "exam_point":
+        setExamPoints((prev) => [...prev, event.point]);
+        break;
+      case "question":
+        setQuestions((prev) => [...prev, event.question]);
+        break;
       case "warning":
         pushFeed("warning", event.message);
         break;
@@ -72,6 +84,9 @@ export default function Home() {
     setResult(null);
     setCopied(false);
     setFeed([]);
+    setReportDraft("");
+    setExamPoints([]);
+    setQuestions([]);
     setStageLabel("连接分析服务");
 
     try {
@@ -166,6 +181,93 @@ export default function Home() {
         )}
 
         {status === "error" && <div className="error">{error}</div>}
+
+        {!result && reportDraft && (
+          <section className="report streamingReport" aria-label="理解报告生成中" aria-live="polite">
+            <div className="reportHead">
+              <div>
+                <p className="eyebrow">Streaming</p>
+                <h2>仓库理解报告（生成中）</h2>
+              </div>
+            </div>
+            <pre>{reportDraft}</pre>
+          </section>
+        )}
+
+        {examPoints.length > 0 && (
+          <section className="examPoints" aria-label="项目考核点">
+            <h2>
+              项目考核点 <span className="count">{examPoints.length}</span>
+            </h2>
+            <ul>
+              {examPoints.map((point, index) => (
+                <li key={index}>
+                  <span className={`chip risk-${point.riskLevel}`}>{point.riskLevel}</span>
+                  <div>
+                    <strong>{point.title}</strong>
+                    {point.whyAsk && <p>{point.whyAsk}</p>}
+                    <p className="cardEvidence">证据：{point.evidence.join("、") || "—"}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {questions.length > 0 && (
+          <section className="questionsPanel" aria-label="分层面试题">
+            <h2>
+              分层面试题 <span className="count">{questions.length}</span>
+            </h2>
+            <div className="questionGrid">
+              {questions.map((question, index) => (
+                <article className="questionCard" key={index}>
+                  <header>
+                    <span className={`chip diff-${question.difficulty}`}>{question.difficulty}</span>
+                    {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
+                    <span className="qIndex">Q{String(index + 1).padStart(2, "0")}</span>
+                  </header>
+                  <p className="qText">{question.question}</p>
+                  {question.whyAsk && <p className="qWhy">{question.whyAsk}</p>}
+                  <p className="cardEvidence">证据：{question.evidence.join("、") || "—"}</p>
+                  <details>
+                    <summary>期望要点 / 红旗 / 追问</summary>
+                    {question.expectedAnswer.length > 0 && (
+                      <div className="qBlock">
+                        <h3>期望要点</h3>
+                        <ul>
+                          {question.expectedAnswer.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {question.redFlags.length > 0 && (
+                      <div className="qBlock">
+                        <h3>红旗回答</h3>
+                        <ul>
+                          {question.redFlags.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {question.followUps.length > 0 && (
+                      <div className="qBlock">
+                        <h3>后续追问</h3>
+                        <ul>
+                          {question.followUps.map((item) => (
+                            <li key={item}>{item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </details>
+                </article>
+              ))}
+            </div>
+          </section>
+        )}
 
         {result && (
           <section className="resultGrid">

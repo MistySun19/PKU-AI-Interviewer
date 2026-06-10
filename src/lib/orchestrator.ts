@@ -9,8 +9,10 @@ import {
   generateExamAndQuestions,
   generateResearchPlan,
   getApiKey,
+  streamExamAndQuestions,
   synthesizeUnderstanding
 } from "./llm";
+import { matchKaomianQuestions } from "./kaomian";
 import { buildRepoMapText, computeCentrality, skeletonizeFile } from "./repomap";
 import { buildUnderstandingMarkdown } from "./report";
 import type {
@@ -100,18 +102,63 @@ async function run(repositoryUrl: string, channel: EventChannel): Promise<void> 
 
   emitUnderstandingReport(channel, context, { understanding, paperCodeMap }, warnings);
 
-  channel.emit({ type: "stage", stage: "questions", detail: "生成考核点与分层面试题" });
+  const kaomianMatches = matchKaomianQuestions([
+    ...plan.techTags,
+    ...understanding.techStack,
+    ...understanding.paperSignals.methodSignals
+  ]);
+  channel.emit({
+    type: "stage",
+    stage: "questions",
+    detail:
+      kaomianMatches.length > 0
+        ? `流式生成考核点与分层面试题（匹配到 ${kaomianMatches.length} 道 kaomian 高频题）`
+        : "流式生成考核点与分层面试题"
+  });
+  const interrogationArgs = {
+    repoMapText,
+    understanding,
+    paperCodeMap,
+    digests,
+    kaomianMatches: kaomianMatches.map(({ question, category, frequency }) => ({ question, category, frequency }))
+  };
   let examPoints;
   let questions;
   try {
-    ({ examPoints, questions } = await generateExamAndQuestions(repoMapText, understanding, paperCodeMap, digests));
-  } catch (error) {
-    warnings.push(`出题失败，已使用基于理解的降级题目：${formatModelError(error)}`);
-    ({ examPoints, questions } = fallbackInterrogation(understanding));
+    ({ examPoints, questions } = await streamExamAndQuestions(interrogationArgs, {
+      onExamPoint: (point, index) => channel.emit({ type: "exam_point", point, index }),
+      onQuestion: (question, index) =>
+        channel.emit({ type: "question", question, index, source: question.source ?? "repo" })
+    }));
+  } catch (streamError) {
+    warnings.push(`流式出题失败，改用一次性出题：${formatModelError(streamError)}`);
+    try {
+      ({ examPoints, questions } = await generateExamAndQuestions(interrogationArgs));
+    } catch (error) {
+      warnings.push(`出题失败，已使用基于理解的降级题目：${formatModelError(error)}`);
+      ({ examPoints, questions } = fallbackInterrogation(understanding));
+    }
+    emitInterrogation(channel, examPoints, questions);
+  }
+
+  if (examPoints.length === 0) {
+    examPoints = fallbackInterrogation(understanding).examPoints;
+    examPoints.forEach((point, index) => channel.emit({ type: "exam_point", point, index }));
   }
 
   const result = assembleResponse(context, { understanding, paperCodeMap, examPoints, questions }, warnings);
   finish(channel, result);
+}
+
+function emitInterrogation(
+  channel: EventChannel,
+  examPoints: ReturnType<typeof fallbackInterrogation>["examPoints"],
+  questions: ReturnType<typeof fallbackInterrogation>["questions"]
+): void {
+  examPoints.forEach((point, index) => channel.emit({ type: "exam_point", point, index }));
+  questions.forEach((question, index) =>
+    channel.emit({ type: "question", question, index, total: questions.length, source: question.source ?? "repo" })
+  );
 }
 
 async function runResearchRounds(

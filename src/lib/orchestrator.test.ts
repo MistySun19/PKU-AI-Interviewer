@@ -14,16 +14,17 @@ vi.mock("./llm", async (importOriginal) => {
     generateResearchPlan: vi.fn(),
     generateDimensionDigest: vi.fn(),
     synthesizeUnderstanding: vi.fn(),
-    generateExamAndQuestions: vi.fn()
+    generateExamAndQuestions: vi.fn(),
+    streamExamAndQuestions: vi.fn()
   };
 });
 
 import { fetchRepoContext, fetchSingleFile } from "./github";
 import {
   generateDimensionDigest,
-  generateExamAndQuestions,
   generateResearchPlan,
   getApiKey,
+  streamExamAndQuestions,
   synthesizeUnderstanding
 } from "./llm";
 import { runAnalysisPipeline } from "./orchestrator";
@@ -142,19 +143,24 @@ describe("runAnalysisPipeline", () => {
     vi.mocked(generateDimensionDigest).mockResolvedValue(digestFor("overview"));
     const understanding = { ...fallbackUnderstanding(context), analysisMode: "paper-code" as const };
     vi.mocked(synthesizeUnderstanding).mockResolvedValue({ understanding, paperCodeMap: [] });
-    vi.mocked(generateExamAndQuestions).mockResolvedValue({
-      examPoints: [{ title: "考核点", riskLevel: "medium", evidence: ["train.py"], whyAsk: "原因", followUps: [] }],
-      questions: [
+    vi.mocked(streamExamAndQuestions).mockImplementation(async (_args, handlers) => {
+      const examPoints = [
+        { title: "考核点", riskLevel: "medium" as const, evidence: ["train.py"], whyAsk: "原因", followUps: [] }
+      ];
+      const questions = [
         {
           question: "训练入口在哪",
-          difficulty: "warmup",
+          difficulty: "warmup" as const,
           evidence: ["train.py"],
           whyAsk: "确认理解",
           expectedAnswer: ["train.py"],
           redFlags: [],
           followUps: []
         }
-      ]
+      ];
+      handlers?.onExamPoint?.(examPoints[0], 0);
+      handlers?.onQuestion?.(questions[0], 0);
+      return { examPoints, questions };
     });
 
     const events = await collectEvents("https://github.com/o/r");
@@ -164,6 +170,8 @@ describe("runAnalysisPipeline", () => {
     expect(types).toContain("plan");
     expect(types).toContain("finding");
     expect(types.filter((type) => type === "report_delta").length).toBeGreaterThan(1);
+    expect(types).toContain("exam_point");
+    expect(types).toContain("question");
     expect(types.slice(-2)).toEqual(["result", "done"]);
 
     const result = events.find((event) => event.type === "result");
@@ -192,7 +200,7 @@ describe("runAnalysisPipeline", () => {
       understanding: fallbackUnderstanding(context),
       paperCodeMap: []
     });
-    vi.mocked(generateExamAndQuestions).mockResolvedValue({
+    vi.mocked(streamExamAndQuestions).mockResolvedValue({
       examPoints: [{ title: "t", riskLevel: "high", evidence: ["train.py"], whyAsk: "w", followUps: [] }],
       questions: [
         {
