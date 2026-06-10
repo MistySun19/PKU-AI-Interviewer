@@ -4,27 +4,38 @@
 
 核心判断：
 
-> 先证明系统能独立读懂 GitHub 仓库，尤其是论文 / AI 项目制代码库，再逐步加入题库、用户自述、论文和 JD。
+> 先证明系统能独立读懂 GitHub 仓库，尤其是论文 / AI 项目制代码库，再逐步加入题库、论文和 JD。
 
-这个顺序是对的，因为它避免系统一开始就依赖用户描述或岗位描述。只有仓库理解足够扎实，后面的 `kaomian`、一句话补充、arXiv 和 JD 才会成为增强层，而不是泛化问题生成器的装饰。
+这个顺序是对的，因为它避免系统一开始就依赖用户描述或岗位描述。只有仓库理解足够扎实，后面的 `kaomian`、arXiv 和 JD 才会成为增强层，而不是泛化问题生成器的装饰。
+
+## 当前进度
+
+做到 **v1.0.0-beta.1**。已完成 Phase 1 / 1.1 / 2，并把原计划在 v1.3.0 的实时面试追问提前落地。
+
+已上线：
+
+- Repo Deep Research Agent：四阶段管道（scout 抓取 → plan 维度规划 → 并行 digest worker 深读 → 单次合成），全程 SSE 流式。
+- `kaomian` 高频题接入：按技术标签检索，模型改写成绑定仓库证据的口语追问。
+- 双模式：Survey（全量报告 + 出题）+ Interactive（一问一答模拟面试，含评估、追问、总结）。
+- 出题改为面试官口语的思路题（设计动机 / 权衡 / 反事实 / 失败边界等八类），文件证据移出题面。
+
+还差：Phase 3（arXiv）、Phase 4（JD），以及 beta 暴露的几项工程改进（见末尾）。
 
 ## 计划线
 
 ```text
-Phase 1：GitHub repo 基础理解
+Phase 1：GitHub repo 基础理解              [✅ 已完成]
         ↓
-Phase 1.1：GitHub repo paper-code 理解
+Phase 1.1：GitHub repo paper-code 理解     [✅ 已完成]
         ↓
-Phase 2：GitHub repo + kaomian
+Phase 2：GitHub repo + kaomian             [✅ 已完成 · 当前]
         ↓
-Phase 3：GitHub repo + 一句话自述
+Phase 3：arXiv / 论文项目                  [⬜ 待开始 · 下一步]
         ↓
-Phase 4：arXiv / 论文项目
-        ↓
-Phase 5：JD / 岗位偏置
+Phase 4：JD / 岗位偏置                     [⬜ 待开始]
 ```
 
-## Phase 1：只支持 GitHub repo 基础理解
+## Phase 1：只支持 GitHub repo 基础理解 ✅ 已完成
 
 目标：
 
@@ -38,14 +49,7 @@ Phase 5：JD / 岗位偏置
 - 系统能说清项目目标、主流程、核心模块、数据流。
 - 每个问题都能绑定仓库证据。
 
-暂不做：
-
-- `kaomian`。
-- 用户自述。
-- arXiv。
-- JD。
-
-## Phase 1.1：GitHub repo paper-code 理解
+## Phase 1.1：GitHub repo paper-code 理解 ✅ 已完成
 
 目标：
 
@@ -61,14 +65,7 @@ Phase 5：JD / 岗位偏置
 - 系统能识别 baseline、ablation、metric、config、data leakage、reproducibility 等算法岗追问点。
 - 大型 benchmark 或 label 文件不会挤掉核心方法代码。
 
-暂不做：
-
-- `kaomian`。
-- 用户自述。
-- arXiv 输入。
-- JD。
-
-## Phase 2：接入 kaomian
+## Phase 2：接入 kaomian ✅ 已完成（实际超出原计划）
 
 目标：
 
@@ -82,29 +79,14 @@ Phase 5：JD / 岗位偏置
 - 每个主追问必须绑定仓库证据。
 - 高频题能帮助系统从项目细节切到原理、八股和场景。
 
-## Phase 3：GitHub repo + 一句话自述
+实际落地（beta 一并完成，超出原 Phase 2 定义）：
 
-目标：
+- 仓库理解从单轮全量喂入升级为 Repo Deep Research Agent 四阶段管道（架构见 `docs/ARCHITECTURE.md`）。
+- 输出从一份报告扩展为 Survey + Interactive 双模式；交互版即原计划 v1.3.0 的实时面试追问，已提前。
+- 全程 SSE 流式；出题改为面试官口语的思路题，文件证据移出题面只进证据字段。
+- `kaomian` 按 ADR-0002 以快照接入（636 题，关键词 / 标签检索）。
 
-- 用户可以补一句“我做了哪些部分”。
-- 系统用这句话调整关注点。
-- 系统仍然以仓库证据为准，不能完全相信用户自述。
-
-例子：
-
-```text
-仓库：一个 RAG agent 项目
-用户自述：我主要做了 query rewrite 和 eval benchmark
-系统行为：优先审查 query rewrite、eval、benchmark、bad case 和指标设计
-```
-
-必须证明：
-
-- 一句话自述是聚焦器，不是证据源。
-- 如果用户自述和仓库证据冲突，输出要标记不确定。
-- 面试问题要更像“你负责的部分会被怎么追问”。
-
-## Phase 4：支持 arXiv / 论文项目
+## Phase 3：支持 arXiv / 论文项目 ⬜ 待开始（下一步）
 
 目标：
 
@@ -119,7 +101,7 @@ Phase 5：JD / 岗位偏置
 - 系统能问 baseline、消融、指标和局限。
 - 系统能把论文问题连接到研究岗 / 保研追问。
 
-## Phase 5：支持 JD / 岗位偏置
+## Phase 4：支持 JD / 岗位偏置 ⬜ 待开始
 
 目标：
 
@@ -140,15 +122,28 @@ JD 很有用，但太早接会带来两个问题：
 - 系统容易变成岗位题生成器。
 - 项目理解不准时，JD 会把泛问题伪装成岗位化问题。
 
-因此 JD 应该等仓库理解、题库连接、用户负责部分和论文理解都稳定后再接。
+因此 JD 应该等仓库理解、题库连接和论文理解都稳定后再接。
 
-## 当前推荐版本对应
+## 版本对应与状态
 
-- `v1.0.0-alpha`: GitHub repo 基础理解。
-- `v1.0.0-alpha.1`: GitHub repo paper-code 理解。
-- `v1.0.0-beta`: GitHub repo + `kaomian`。
-- `v1.0.0-rc`: GitHub repo + 一句话自述。
-- `v1.1.0`: arXiv / 论文项目。
-- `v1.2.0`: JD / 岗位偏置。
-- `v1.3.0`: 实时面试追问。
-- `v1.4.0`: `bagu-killer` 定时更新题库。
+| 版本 | 内容 | 状态 |
+|---|---|---|
+| `v1.0.0-alpha` | GitHub repo 基础理解 | ✅ 完成 |
+| `v1.0.0-alpha.1` | paper-code 理解 | ✅ 完成 |
+| `v1.0.0-beta` | Repo Deep Research Agent + `kaomian` + Survey/Interactive 双模式 | ✅ 完成（当前 `beta.1`） |
+| `v1.0.0-rc` | beta 稳定化：修工程债、补出题质量评测集（见下） | ⬜ 下一步 |
+| `v1.1.0` | arXiv / 论文项目（Phase 3） | ⬜ 待开始 |
+| `v1.2.0` | JD / 岗位偏置（Phase 4） | ⬜ 待开始 |
+| `v1.4.0` | `kaomian` 向量检索 + `bagu-killer` 定时更新题库 | ⬜ 待开始 |
+
+注 1：原计划 `v1.3.0` 的实时面试追问已提前并入 `v1.0.0-beta`（交互版模拟面试），故版本号跳过 v1.3.0。
+
+注 2：原 `v1.0.0-rc` 的“一句话自述”功能已移除——面试场景下证据驱动已足够，用户自述容易把系统拉回“听描述生成题”的老路，性价比低。
+
+## beta 暴露、待排期的工程改进
+
+这些是 beta 上线后发现、计划在 `v1.0.0-rc` 收口的工程项：
+
+- 交互面试会话存进程内存，服务重启丢失，需要换持久化存储。
+- 出题质量没有 golden repo 回归评测集，改 prompt 只能靠人工抽查。
+- `kaomian` 检索是关键词级，英文技术标签对中文题库命中靠术语重叠，非 Agent / LLM 类仓库命中弱；可加中文标签匹配或上 embedding（并入 v1.4）。
