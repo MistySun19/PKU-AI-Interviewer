@@ -1,7 +1,16 @@
 "use client";
 
 import { useRef, useState } from "react";
-import type { AnalyzeMode, AnalyzeResponse, ExamPoint, InterviewQuestion, InterviewSummary, SseEvent } from "@/lib/types";
+import type {
+  AnalyzeMode,
+  AnalyzeResponse,
+  ExamPoint,
+  InterviewQuestion,
+  InterviewSummary,
+  PipelineStage,
+  ResearchPlanSummary,
+  SseEvent
+} from "@/lib/types";
 
 type Status = "idle" | "loading" | "done" | "error";
 
@@ -48,6 +57,11 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [stageLabel, setStageLabel] = useState("");
+  const [currentStage, setCurrentStage] = useState<PipelineStage | null>(null);
+  const [planSummary, setPlanSummary] = useState<ResearchPlanSummary | null>(null);
+  const [filesRead, setFilesRead] = useState(0);
+  const [findingsSeen, setFindingsSeen] = useState(0);
+  const [latestReadPath, setLatestReadPath] = useState("");
   const [reportDraft, setReportDraft] = useState("");
   const [examPoints, setExamPoints] = useState<ExamPoint[]>([]);
   const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
@@ -76,13 +90,17 @@ export default function Home() {
   function handleEvent(event: SseEvent) {
     switch (event.type) {
       case "stage":
+        setCurrentStage(event.stage);
         setStageLabel(event.detail ?? event.stage);
         pushFeed("stage", event.detail ?? event.stage);
         break;
       case "file_read":
+        setFilesRead((prev) => prev + 1);
+        setLatestReadPath(event.path);
         pushFeed("file", `读取 ${event.path}${event.dimension ? `（${event.dimension} 补读）` : ""}`);
         break;
       case "plan":
+        setPlanSummary(event.plan);
         pushFeed(
           "stage",
           `研究计划（${event.plan.analysisMode}）：${event.plan.dimensions
@@ -91,6 +109,7 @@ export default function Home() {
         );
         break;
       case "finding":
+        setFindingsSeen((prev) => prev + 1);
         pushFeed("finding", `[${event.dimension}] ${event.claim}（${event.evidence.join("、") || "无证据"}）`);
         break;
       case "report_delta":
@@ -166,6 +185,11 @@ export default function Home() {
     setSummary(null);
     setAnswerDraft("");
     setStageLabel("连接分析服务");
+    setCurrentStage("scout");
+    setPlanSummary(null);
+    setFilesRead(0);
+    setFindingsSeen(0);
+    setLatestReadPath("");
 
     try {
       const response = await fetch("/api/analyze", {
@@ -270,11 +294,19 @@ export default function Home() {
           </button>
         </div>
 
-        {status === "loading" && feed.length === 0 && (
-          <div className="progress" aria-live="polite">
-            <span />
-            正在连接仓库分析服务。
-          </div>
+        {status !== "idle" && (
+          <ProgressDashboard
+            status={status}
+            mode={mode}
+            currentStage={currentStage}
+            stageLabel={stageLabel}
+            plan={planSummary}
+            filesRead={filesRead}
+            findingsSeen={findingsSeen}
+            examPointCount={examPoints.length}
+            questionCount={questions.length}
+            latestReadPath={latestReadPath}
+          />
         )}
 
         {status === "error" && <div className="error">{error}</div>}
@@ -514,6 +546,147 @@ export default function Home() {
       </section>
     </main>
   );
+}
+
+type RoadmapStage = PipelineStage | "complete";
+
+type RoadmapStep = {
+  stage: RoadmapStage;
+  label: string;
+  caption: string;
+};
+
+const SURVEY_ROADMAP: RoadmapStep[] = [
+  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
+  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
+  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
+  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
+  { stage: "questions", label: "出题", caption: "连接 kaomian 并生成追问链" },
+  { stage: "complete", label: "可复盘", caption: "高亮重点，保留原始报告" }
+];
+
+const INTERVIEW_ROADMAP: RoadmapStep[] = [
+  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
+  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
+  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
+  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
+  { stage: "questions", label: "备题", caption: "生成可追问的问题组" },
+  { stage: "interview_ready", label: "开面", caption: "进入一问一答 session" }
+];
+
+function ProgressDashboard({
+  status,
+  mode,
+  currentStage,
+  stageLabel,
+  plan,
+  filesRead,
+  findingsSeen,
+  examPointCount,
+  questionCount,
+  latestReadPath
+}: {
+  status: Status;
+  mode: AnalyzeMode;
+  currentStage: PipelineStage | null;
+  stageLabel: string;
+  plan: ResearchPlanSummary | null;
+  filesRead: number;
+  findingsSeen: number;
+  examPointCount: number;
+  questionCount: number;
+  latestReadPath: string;
+}) {
+  const steps = mode === "interview" ? INTERVIEW_ROADMAP : SURVEY_ROADMAP;
+  const activeStage: RoadmapStage = status === "done" && mode === "survey" ? "complete" : currentStage ?? "scout";
+  const activeIndex = Math.max(
+    0,
+    steps.findIndex((step) => step.stage === activeStage)
+  );
+  const clampedActiveIndex = activeIndex === -1 ? 0 : activeIndex;
+  const nextStep = status === "loading" ? steps[clampedActiveIndex + 1] : null;
+  const detail = status === "error" ? "分析中断，请查看错误信息" : status === "done" ? "本轮分析完成" : stageLabel || "连接分析服务";
+  const planLabel = plan
+    ? `${plan.analysisMode} · ${plan.dimensions.length} 个维度`
+    : mode === "interview"
+      ? "Interactive"
+      : "Survey";
+
+  return (
+    <section className={`progressDashboard status-${status}`} aria-label="分析进度">
+      <div className="dashTopline">
+        <div>
+          <p className="eyebrow">Run Dashboard</p>
+          <h2>{roadmapTitle(activeStage, status)}</h2>
+          <p className="dashDetail">{detail}</p>
+        </div>
+        <div className="dashMode">
+          <span>{planLabel}</span>
+          {nextStep && <strong>下一步：{nextStep.label}</strong>}
+        </div>
+      </div>
+
+      <ol className="roadmap" aria-label="分析路线图">
+        {steps.map((step, index) => {
+          const state =
+            status === "error" && index === clampedActiveIndex
+              ? "blocked"
+              : index < clampedActiveIndex || status === "done"
+                ? "done"
+                : index === clampedActiveIndex
+                  ? "active"
+                  : "queued";
+          return (
+            <li className={`roadmapStep ${state}`} key={step.stage} aria-current={state === "active" ? "step" : undefined}>
+              <span className="roadmapIndex">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <strong>{step.label}</strong>
+                <small>{step.caption}</small>
+              </div>
+            </li>
+          );
+        })}
+      </ol>
+
+      <div className="dashStats" aria-label="实时产出">
+        <div>
+          <span>已读文件</span>
+          <strong>{filesRead}</strong>
+        </div>
+        <div>
+          <span>研究发现</span>
+          <strong>{findingsSeen}</strong>
+        </div>
+        <div>
+          <span>考核点</span>
+          <strong>{examPointCount}</strong>
+        </div>
+        <div>
+          <span>题目</span>
+          <strong>{questionCount}</strong>
+        </div>
+      </div>
+
+      <div className="dashFoot">
+        <span>{latestReadPath ? `最近读取：${latestReadPath}` : "等待第一个证据文件"}</span>
+      </div>
+    </section>
+  );
+}
+
+function roadmapTitle(stage: RoadmapStage, status: Status): string {
+  if (status === "error") return "分析被打断";
+  if (status === "done") return "分析完成";
+  const labels: Record<RoadmapStage, string> = {
+    scout: "正在抓取仓库证据",
+    plan: "正在规划研究路线",
+    research: "正在并行深读",
+    synthesize: "正在合成项目理解",
+    questions: "正在生成面试题",
+    interview_ready: "正在准备模拟面试",
+    complete: "分析完成"
+  };
+  return labels[stage];
 }
 
 function RenderedInterviewPlan({
