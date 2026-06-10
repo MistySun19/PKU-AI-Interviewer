@@ -103,10 +103,65 @@ export type InterviewQuestion = {
   difficulty: "warmup" | "medium" | "hard";
   evidence: string[];
   whyAsk: string;
+  hint?: string;
   expectedAnswer: string[];
   redFlags: string[];
   followUps: string[];
   source?: "repo" | "kaomian";
+};
+
+export type EvidenceRef = {
+  filePath: string;
+  startLine: number;
+  endLine: number;
+  snippet: string;
+  reason: string;
+  highlightTerms: string[];
+};
+
+export type EvidenceDocument = {
+  filePath: string;
+  language: string;
+  content: string;
+  truncated: boolean;
+  evidenceRanges: Array<{ startLine: number; endLine: number; riskIds: string[] }>;
+};
+
+export type EvidenceCheck = {
+  status: "pass" | "needs_revision" | "drop";
+  sufficiency: "sufficient" | "partial" | "insufficient";
+  necessity: "necessary" | "excessive" | "irrelevant";
+  missingEvidence: string[];
+  removedEvidenceRefs: EvidenceRef[];
+  reason: string;
+};
+
+export type RepoInterviewRisk = {
+  id: string;
+  riskLevel: "low" | "medium" | "high";
+  title: string;
+  interviewerQuestion: string;
+  claim: string;
+  whyThisMatters: string;
+  evidenceRefs: EvidenceRef[];
+  knowledgeGaps: string[];
+  referenceAnswer: string;
+  redFlags: string[];
+  fixSuggestions: string[];
+  followUpSeeds: string[];
+  source: "repo" | "interview_story";
+  evidenceCheck: EvidenceCheck;
+};
+
+export type RiskChatMessage = {
+  role: "user" | "assistant";
+  content: string;
+};
+
+export type RiskChatResponse = {
+  reply: string;
+  followUpQuestion?: string;
+  referenceAnswer?: string;
 };
 
 export type KaomianItem = {
@@ -127,6 +182,8 @@ export type AnalyzeResponse = {
   understanding: Understanding;
   examPoints: ExamPoint[];
   questions: InterviewQuestion[];
+  risks: RepoInterviewRisk[];
+  evidenceBundle: EvidenceDocument[];
   markdownReport: string;
   evidenceFiles: EvidenceFile[];
   warnings: string[];
@@ -152,6 +209,7 @@ export type PipelineStage =
   | "research"
   | "synthesize"
   | "questions"
+  | "evidence_check"
   | "interview_ready";
 
 export type Confidence = "high" | "medium" | "low";
@@ -183,6 +241,8 @@ export type SseEvent =
   | { type: "report_delta"; delta: string }
   | { type: "exam_point"; point: ExamPoint; index: number }
   | { type: "question"; question: InterviewQuestion; index: number; total?: number; source: "repo" | "kaomian" }
+  | { type: "risk"; risk: RepoInterviewRisk; index: number; total?: number }
+  | { type: "evidence_check"; riskId: string; check: EvidenceCheck }
   | { type: "result"; result: AnalyzeResponse }
   | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number; session?: InterviewSession }
   | { type: "session_state"; session: InterviewSession }

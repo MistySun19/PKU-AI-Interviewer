@@ -1,24 +1,32 @@
 # AGENTS.md
 
-本仓库正在构建 **PKU AI Interviewer** 的 V1.0.0 版本。
+本仓库当前正在构建 **Traceback**。
 
-这份文件是智能体和后续开发者的工作约束。它不是最终产品说明书，而是当前阶段的工程共识。
+这份文件是智能体和后续开发者的工作约束。它描述当前工程共识，不是历史归档。
 
 ## 产品定位
 
-PKU AI Interviewer 不是通用模拟面试题库。
+Traceback 不是通用模拟面试题库，也不是代码质量审查工具。
 
-它是一个 **仓库理解优先的 AI 算法岗项目考核面试生成器**：
+它是一个 **Repo 面试风险审查器**：
 
-> 输入 GitHub 仓库，系统先按论文 / AI 项目制代码库读懂方法 claim、训练入口、配置超参、数据处理、评测逻辑和复现证据，再结合动态八股题库，生成一份项目相关的面试拷打计划。
+> 输入 GitHub 仓库，系统把最容易被面试官问穿的项目细节标出来，并把每个问题直接链接到代码、README 或配置证据。
 
 核心差异：
 
 - 普通 AI 面试：用户描述项目，AI 生成泛问题。
 - 通用代码审查：AI 给出工程质量、可维护性或部署风险。
-- PKU AI Interviewer：AI 读取仓库证据，找出论文 / 算法项目里真实可追问的方法、实验和复现风险，再生成面试。
+- Traceback：AI 先读取仓库证据，再找出项目面试中最容易被追问穿的 claim、实现细节、设计取舍和失败边界。
 
-## V1.0.0 输入约束
+一句话：
+
+```text
+Turnitin for GitHub 项目面试
+```
+
+像 Turnitin 把论文里的可疑引用和来源并排展示，Traceback 把项目里可能被面试官质疑的地方和代码证据并排展示。
+
+## 当前 V1 输入
 
 必要输入：
 
@@ -28,156 +36,171 @@ PKU AI Interviewer 不是通用模拟面试题库。
 
 - 用户补充背景，例如目标方向、自己负责的模块、希望重点检查的代码路径
 
-不要把“手填项目描述”作为 V1.0.0 的主要入口。它只能作为兜底补充。
+不要把“手填项目描述”作为主入口。它只能作为补充上下文。
 
-V1.0.0 内部按 alpha / beta / rc 推进：alpha（repo 基础理解）和 alpha.1（paper-code 理解）已完成；beta（当前版本）落地了 Repo Deep Research Agent 四阶段管道、`kaomian` 快照接入和 Survey/Interactive 双模式（实时面试追问从 v1.3.0 提前）；rc 支持一句话自述。arXiv / 论文解析放到 v1.1.0，JD / 岗位描述放到 v1.2.0。架构见 `docs/ARCHITECTURE.md`，调研依据见 `docs/research/deep-research-agent-design.md`。
+## 当前 V1 输出
 
-## V1.0.0 输出目标
+主结果文案：
 
-Survey 模式输出一份结构化的 **项目相关面试计划**（流式）；Interactive 模式在同一套仓库理解之上进行一问一答模拟面试（评估、追问、总结）。
+> 这是你的项目里最可能被面试官问穿的 k 个地方。
 
-输出必须包含：
+输出包含：
 
 - 仓库摘要
-- Paper claim 摘要
-- 训练、推理、评测复现路线
-- 核心方法代码地图
-- 实验与评测证据地图
-- 可出题点列表
-- 每个出题点的证据来源
-- 与 `kaomian` 高频题的连接
-- 分层面试问题
-- 预期回答要点
+- 项目 claim 与代码证据
+- 8 个及以上风险点，数量由模型和证据密度决定
+- 每个风险点的风险等级、面试官追问、对应 claim、证据 refs
+- 参考答案
 - 红旗回答
-- 追问链
+- 补坑建议
+- Evidence Check 结果
+- 单风险点下的持续追问聊天
 
-## 题库策略
+如果证据不足，宁可返回较少风险点并给 warning，也不要强行编造。
 
-V1.0.0 先使用 `kaomian` 作为题库快照。
+## 当前不要再做的主入口
 
-`kaomian` 的角色：
+以下能力可以保留为历史代码或后续实验，但不要作为当前产品主入口：
 
-- 提供 AI Agent / RAG / Tool Calling / Memory / 多 Agent 岗位的高频拷打题。
-- 作为仓库审查结果和高频八股之间的连接层。
-- 不能替代仓库审查。
+- Survey
+- Practice
+- Test
+- 题目种子
+- 题集历史
+- 整场评分
+- 详尽复盘
 
-`bagu-killer` 的角色：
-
-- 作为未来定时更新题库的生产流水线。
-- V1.0.0 不需要集成它的抓取、OCR、抽取、归并流程。
-- 后续版本可以定时运行 `bagu-killer`，产出新的题库快照，再刷新检索索引。
-
-架构分层：
+当前主入口只有：
 
 ```text
-GitHub 仓库               -> V1.0.0 一手证据源
-kaomian                   -> 当前八股题库快照
-bagu-killer               -> 未来定时题库更新流水线
-PKU AI Interviewer agent  -> 证据审查 + 题库连接 + 面试生成
+Repo 输入 -> 风险审查结果 -> Evidence Viewer -> 单风险点持续追问
 ```
 
-## 智能体流程
+## kaomian 策略
 
-V1.0.0 推荐使用这条 agent loop：
+`kaomian` 保留，但必须转换说法和用法：
 
-1. 输入解析智能体
-   - 校验 GitHub 仓库链接。
-   - 解析 owner、repo、branch。
-   - 解析用户补充的目标方向和负责模块。
-
-2. 仓库抓取智能体
-   - 获取 README、文件树、关键源码文件、配置文件、训练脚本、推理 / demo、数据处理、测试文件和评测脚本。
-   - 必须过滤大文件、二进制文件、构建产物、依赖目录和锁文件。
-   - 文件选择要按 paper-code bucket 控制数量，避免 label、benchmark 数据或 docs 把方法代码挤出上下文。
-   - alpha.1 使用 GitHub REST API，不使用 `git clone`。
-   - 本地 demo 建议配置 `GITHUB_TOKEN`，把未认证 60 次/小时/IP 的限制提升到常规 5000 次/小时。
-
-3. 仓库结构化理解智能体
-   - 由大模型基于原始证据判断 `paper-code` / `general-code` / `unknown`，不要在 ingest 阶段用正则或关键词预判 paper signals。
-   - 对 paper-code 仓库，先进入“论文项目理解”步骤：问题设定、方法主张、核心贡献、训练 / 推理流程、数据流、实验评测、复现入口、关键超参。
-   - 根据仓库形态选择轻量理解 skill：`benchmark-skill`、`training-skill`、`inference-skill`、`method-skill`、`data-skill`、`reproduce-skill` 或 `paper-code-general-skill`。
-   - skill 只是当前 alpha.1 的可替换理解层，后续可以升级成更高级的 agent、工具链或专门模型。
-   - 对 paper-code 仓库，最终拆出问题设定、论文 claim、方法实现、训练 / 推理入口、数据处理、配置超参、评测 / 消融 / benchmark 和复现路线。
-   - 如果是 AI / Agent / RAG / RL / diffusion / RLHF 项目，必须识别模型、数据、agent loop、tool、memory、eval、loss、policy、reward 和推理链路。
-   - 模型请求不设置 `max_tokens`；README 作为原始证据完整传入当前请求。
-
-4. 审查智能体
-   - 像认真算法岗面试官 / 导师一样找可追问点。
-   - 重点找 method validity、baseline / ablation、data leakage、metric choice、config / hyperparameter、reproducibility、failure cases、论文 claim 和代码是否一致。
-
-5. 题库检索智能体
-   - 用仓库技术标签、材料标签、审查出的风险点去检索 `kaomian`。
-   - 召回高频八股和项目拷打题。
-   - 不允许直接硬塞题库题，必须和证据点绑定。
-
-6. 出题规划智能体
-   - 把问题组织成由浅入深的追问链。
-   - 每条链至少包含：
-     - 项目事实
-     - 设计理由
-     - 原理 / 八股连接
-     - 失败情况 / 真实场景
-     - 反事实或替代方案
-
-7. 面试生成智能体
-   - 生成最终面试计划。
-   - 每个问题必须有证据来源、追问理由、期望回答和红旗回答。
-
-## 材料审查原则
-
-GitHub 审查重点：
-
-- 这个仓库是不是 paper-code 项目，证据来自 README、arXiv / OpenReview 链接、citation、会议名、official implementation、训练和评测脚本。
-- Paper / README 的核心 claim 是否能在方法代码里找到对应实现。
-- 训练、推理、评测、配置和数据处理路径是否能串成复现路线。
-- baseline、ablation、metric 和 bad case 是否足以支撑 claim。
-- 是否存在数据泄漏、指标选择不合理、配置隐藏、seed 不稳定或复现命令缺失。
-- 核心方法为什么这样设计，是否有更简单 baseline 或替代实现。
-- 哪些地方最容易被问“这是不是你真的做的”。
-- 通用软件工程问题只能作为补充，不作为 alpha.1 主线。
-
-## 题库连接原则
-
-`kaomian` 题库只能作为连接层，不是主线。
+- 它不是“八股题库”。
+- 它是“真实面经问题素材”。
+- 只能辅助生成绑定 repo 证据的风险点。
+- 不能直接把面经题塞进输出。
 
 正确用法：
 
 ```text
 仓库里有 RAG 召回模块
--> 审查智能体发现没有评测和 bad case 处理
--> kaomian 召回“RAG 召回 bad case 怎么处理”
--> 生成项目相关问题：你这个项目的 RAG 召回失败时怎么定位，是 chunk 问题、embedding 问题，还是 rerank 问题？
+-> 风险生成发现没有评测和 bad case 证据
+-> kaomian 召回真实面经里关于 RAG bad case 的追问方式
+-> 改写成绑定本仓库证据的问题
 ```
 
 错误用法：
 
 ```text
 用户输入 Agent 项目
--> 直接塞 10 道 kaomian 高频题
--> 和项目证据没有关系
+-> 直接塞 10 道高频题
+-> 问题和仓库证据没有关系
 ```
 
-## 技术建议
+## Agent Pipeline
 
-先保持实现简单：
+推荐 pipeline：
 
-- Next.js App Router
-- TypeScript
-- 兼容 OpenAI 接口的大模型 API
-- Markdown 题库快照
-- 本地内存 / 浏览器状态即可
+1. **输入解析**
+   - 校验 GitHub 仓库链接。
+   - 解析 owner、repo、branch。
+   - 解析用户补充的目标方向和负责模块。
 
-后续再加：
+2. **Scout Agent**
+   - 获取 README、文件树、关键源码、配置、训练 / 推理 / 评测 / 数据处理文件。
+   - 过滤大文件、二进制、构建产物、依赖目录和锁文件。
+   - 不使用 `git clone`，默认走 GitHub REST API。
 
-- arXiv / 论文项目理解
-- JD / 岗位描述偏置
-- 向量检索
-- 题库定时更新
-- 数据库存储
-- 用户会话历史
-- 实时面试聊天
+3. **Plan Agent**
+   - 按仓库形态规划 overview、method、training、evaluation、data 等研究维度。
+   - 只从已读取证据文件中分配路径，不发明文件。
 
-## 文件组织建议
+4. **Research Agents**
+   - 每个维度只读分析，抽取代码事实、claim-code link、askPoints、openQuestions。
+   - 重点关注控制流、数据流、关键参数构造、评测逻辑、配置、错误处理和失败边界。
+
+5. **Synthesis Agent**
+   - 合成自洽的项目理解地图。
+   - 对 paper-code 仓库，拆出问题设定、论文 claim、方法实现、训练 / 推理入口、数据处理、配置超参、评测 / 消融 / benchmark 和复现路线。
+
+6. **Risk Generation Agent**
+   - 生成候选风险点。
+   - 只出思路题，不出复述题。
+   - 问题必须是面试官口语，不能把文件路径写进题面。
+   - 主问题必须围绕项目内部实现，不把 HuggingFace / vLLM / transformers / 版本升级作为主问题。
+
+7. **Evidence Bundle Builder**
+   - 将 evidence path 解析成 `filePath/startLine/endLine/snippet/reason/highlightTerms`。
+   - 尽量避免只引用 import、docstring 或泛相关文件。
+
+8. **Evidence Check Agent**
+   - 审核 reference 是否充分且必要。
+   - 删除不必要 evidence。
+   - 要求补充不足 evidence。
+   - 无法补足则降级或丢弃风险点。
+
+9. **Risk Viewer**
+   - 左侧风险点列表。
+   - 右侧代码证据 viewer。
+   - 单风险点持续追问。
+
+## Evidence Check 原则
+
+充分：
+
+- reference 能支撑问题中的代码事实。
+- reference 能支撑 claim、参考答案、红旗回答。
+- 至少覆盖核心实现或配置；必要时覆盖 README claim / eval / train / data。
+
+必要：
+
+- 每条 reference 都对判断该风险点有贡献。
+- 不能只是同目录、同关键词、泛相关。
+
+不充分：
+
+- 只有 README。
+- 只有文件名。
+- 只有宽泛模块。
+- 不能支撑具体追问。
+
+不必要：
+
+- 同义重复。
+- 无关文件。
+- 只因关键词命中但不支撑问题。
+
+处理策略：
+
+- `pass`：进入最终结果。
+- `needs_revision`：尝试补 evidence 或重写 risk。
+- `drop`：不进入最终结果。
+
+## 问题质量原则
+
+问题应该问：
+
+- 为什么这样设计？
+- 这个实现牺牲了什么，换来了什么？
+- 哪些输入或场景下会失效？
+- 如果换一个实现，会破坏哪些假设？
+- README / paper claim 和代码是否对得上？
+- 指标、评测、baseline、数据处理是否真的支撑 claim？
+
+不要问：
+
+- “X 包含哪些部分？”
+- “某函数有哪些参数？”
+- “请基于某文件说明……”
+- “为什么不用某个外部框架？”
+- 没有证据支撑的兼容性或版本升级泛讨论。
+
+## 文件组织
 
 ```text
 src/
@@ -185,36 +208,26 @@ src/
     page.tsx
     api/
       analyze/route.ts
-      generate-interview/route.ts
+      risk-chat/route.ts
   lib/
-    ingest/
-      github.ts
-    agents/
-      parse-input.ts
-      understand-material.ts
-      review-material.ts
-      retrieve-bagu.ts
-      plan-questions.ts
-      generate-interview.ts
-    knowledge/
-      kaomian.ts
-    prompts.ts
-    schemas.ts
+    github.ts
+    orchestrator.ts
+    llm.ts
+    risk-audit.ts
+    kaomian.ts
+    report.ts
+    types.ts
 ```
 
-## V1.0.0 成功标准
-
-V1.0.0 成功，不要求完成完整聊天产品。
-
-成功标准是：
+## 成功标准
 
 1. 用户输入 GitHub 仓库链接。
-2. 系统能抓取并结构化理解 GitHub 仓库。
-3. 对论文 / AI 项目制仓库，系统能识别 paper-code 模式。
-4. 系统能解释 paper claim、方法代码、训练 / 推理入口、数据处理、配置超参和评测逻辑。
-5. 系统能找出 5 到 8 个有证据的算法岗项目考核点。
-6. 后续 beta 系统能从 `kaomian` 召回相关八股题，并把仓库证据和八股题连接起来。
-7. 系统能生成一份项目考核面试计划。
+2. 系统能抓取并结构化理解仓库。
+3. 系统能找出 8 个及以上有证据的项目面试风险点。
+4. 每个进入最终结果的风险点都有充分且必要的 reference。
+5. 点击风险点后，右侧 evidence viewer 能显示对应代码 / README / 配置证据。
+6. 用户能在单个风险点下持续回答，系统继续追问。
+7. Demo / 介绍切换适合 3 分钟演示。
 
 ## 当前不要做
 
@@ -227,31 +240,12 @@ V1.0.0 成功，不要求完成完整聊天产品。
 - 不要把用户手写项目描述作为主入口。
 - 不要把 `kaomian` 的题直接拼到输出里。
 - 不要在没有证据来源的情况下生成“项目相关问题”。
+- 不要恢复 Survey / Practice / Test 作为主入口，除非产品重新决策。
 
-## 源文档
-
-核心定位文档：
-
-- `CHANGELOG.md`
-- `ROADMAP.md`
-- `V1.0.0_PLAN.md`
-- `VERSION_WORKLOG.md`
-- `PROJECT_POSITIONING_v0.0.1.md`
-- `interview-worklog.md`
-- `user-research.md`
-- `github-competitor-research.md`
-- `docs/workflows/GIT_WORKFLOW.md`
-- `docs/workflows/VERSIONING.md`
-- `docs/workflows/WORKLOG_SYSTEM.md`
-- `docs/adr/`
-
-当本文和旧文档冲突时，以 `V1.0.0_PLAN.md` 和本文为准。
-
-## 仓库治理规则
+## 文档治理
 
 - 对外版本变化写入 `CHANGELOG.md`。
 - 产品定位演化写入 `VERSION_WORKLOG.md`。
-- 用户访谈继续写入 `interview-worklog.md`。
-- 关键架构决策写入 `docs/adr/`。
-- Git 提交和版本规则遵守 `docs/workflows/`。
-- 新文档必须被 README 或对应索引引用。
+- 架构变化写入 `docs/ARCHITECTURE.md` 或 `docs/adr/`。
+- 演示脚本写入 `docs/demo-video-script.md`。
+- 提交材料写入 `PRODUCT_MEMO.md` 和 `SUBMISSION_CHECKLIST.md`。

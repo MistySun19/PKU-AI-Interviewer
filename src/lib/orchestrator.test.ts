@@ -187,6 +187,8 @@ describe("runAnalysisPipeline", () => {
 
     const result = events.find((event) => event.type === "result");
     expect(result && result.type === "result" && result.result.analysisMode).toBe("paper-code");
+    expect(result && result.type === "result" && result.result.risks[0].evidenceCheck.status).toBe("pass");
+    expect(result && result.type === "result" && result.result.evidenceBundle[0].filePath).toBe("train.py");
   });
 
   it("keeps analysis independent from practice sessions", async () => {
@@ -276,5 +278,6 @@ describe("runAnalysisPipeline", () => {
     expect(
       result && result.type === "result" && result.result.evidenceFiles.some((file) => file.path === "configs/exp.yaml")
     ).toBe(true);
+    expect(result && result.type === "result" && Array.isArray(result.result.risks)).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { buildRepoInterviewAudit } from "./risk-audit";
 import {
   buildMarkdownReport,
   fallbackExamPoints,
@@ -16,7 +17,9 @@ import type {
   InterviewQuestion,
   InterviewSummary,
   PaperCodeMapItem,
+  RepoInterviewRisk,
   RepoContext,
+  RiskChatResponse,
   ResearchPlanSummary,
   Understanding
 } from "./types";
@@ -192,6 +195,7 @@ const questionSchema = z.object({
   difficulty: lenientEnum(["warmup", "medium", "hard"], "medium"),
   evidence: stringArraySchema,
   whyAsk: z.string().default(""),
+  hint: z.string().optional(),
   expectedAnswer: stringArraySchema,
   redFlags: stringArraySchema,
   followUps: stringArraySchema,
@@ -201,12 +205,18 @@ const questionSchema = z.object({
 const interrogationSchema = z.object({
   examPoints: z.preprocess(
     (value) => (Array.isArray(value) ? value : []),
-    z.array(examPointSchema).min(1).max(8)
+    z.array(examPointSchema).min(1).max(24)
   ),
   questions: z.preprocess(
     (value) => (Array.isArray(value) ? value : []),
-    z.array(questionSchema).min(1).max(12)
+    z.array(questionSchema).min(1).max(24)
   )
+});
+
+const riskChatSchema = z.object({
+  reply: z.string().default(""),
+  followUpQuestion: z.string().optional().default(""),
+  referenceAnswer: z.string().optional().default("")
 });
 
 export function getApiKey(): string | undefined {
@@ -239,7 +249,7 @@ ${context.readme.slice(0, 12_000)}
 - dimensions 按仓库实际形态取舍，2-5 个；overview 必须存在，负责项目目标、主流程和贡献定位；纯工程库可以没有 training/evaluation。
 - 每个维度的 files 只能从"已读取的证据文件"清单中选 3-8 个路径，按相关性排序，不要发明路径。
 - analysisMode：存在论文/复现/benchmark/citation 信号选 paper-code。
-- techTags 8-15 个，用于检索高频面试题库，写具体技术点（如 RAG、PPO、diffusion、attention、对比学习、数据增强），不要写宽泛词（如 Python、深度学习）。`
+- techTags 8-15 个，用于检索真实面经问题素材，写具体技术点（如 RAG、PPO、diffusion、attention、对比学习、数据增强），不要写宽泛词（如 Python、深度学习）。`
       }
     ];
   const parsed = await withRetry("plan", async () =>
@@ -352,15 +362,15 @@ type InterrogationArgs = {
 
 function buildKaomianBlock(matches: KaomianPromptItem[] | undefined): string {
   if (!matches || matches.length === 0) {
-    return "真实面经高频题：本仓库没有匹配到相关高频题，全部题目从仓库证据出发，source 一律为 repo。";
+    return "真实面经问题：本仓库没有匹配到相关面经问题，全部题目从仓库证据出发，source 一律为 repo。";
   }
-  return `真实面经高频题（kaomian 题库按技术标签匹配，按出现频次排序）：
+  return `真实面经问题（kaomian 面经快照按技术标签匹配，按出现频次排序）：
 ${matches.map((item) => `- [${item.frequency}帖|${item.category}] ${item.question}`).join("\n")}
 
-高频题使用规则：
-- 仅当高频题与本仓库相关时，把它改写成针对本仓库的口语追问（同样遵守出题铁律：思路题、面试官口语、题面不报文件路径，证据只进 evidence 字段），该题输出 "source":"kaomian"。
-- 不要照抄高频题题面；与仓库无关的高频题直接忽略。
-- questions 中 source=kaomian 的最多 4 道，其余必须从仓库证据出发（"source":"repo"）。`;
+面经使用规则：
+- 这些不是抽象八股，而是真实场景下面试官常问的问题素材；只有当它能被本仓库证据支撑时，才改写成针对本仓库的口语追问，该题输出 "source":"kaomian"。
+- 不要照抄面经题面；与仓库无关的问题直接忽略。
+- questions 中 source=kaomian 的最多 3 道，其余必须从仓库证据出发（"source":"repo"）。`;
 }
 
 function buildInterrogationContext(args: InterrogationArgs): string {
@@ -380,7 +390,7 @@ ${askPoints.map((point) => `- ${point}`).join("\n") || "- 无"}
 
 ${buildKaomianBlock(args.kaomianMatches)}
 
-任务：模拟一位资深面试官，当面拷打候选人这个项目。生成考核点和分层面试题。
+任务：模拟一位资深面试官，当面拷打候选人这个项目。生成考核点和 20 个最可能被问穿的真实面经式项目追问；如果 Evidence 不足，宁可少于 20，也不要为了凑数编造无证据问题。
 
 ## 出题铁律（最重要，违反即废题）
 
@@ -394,7 +404,7 @@ ${buildKaomianBlock(args.kaomianMatches)}
 - 失败边界：什么样的输入 / 规模 / 数据分布下，这个方案会退化或崩掉
 - 批判改进：现有实现最大的可靠性弱点在哪，你会怎么改
 - 扩展应用：要加某个新功能，现有架构哪里必须改、为什么
-- 横向对比：和业界类似方案的本质区别，各自适合什么场景
+- 内部替代实现对比：如果把当前代码里的 A 路径改成 B 路径、把同步改异步、把缓存改重算、把解析器改成结构化 AST，会破坏哪些已有假设
 （若是论文项目：把"方法为什么成立、实验是否真的支撑结论、baseline/消融/指标选择是否合理、有没有数据泄漏"也按上面八类的追问方式提出，而不是让候选人复述实验设置。）
 
 【铁律二·用面试官口语，不是书面考题】
@@ -402,16 +412,27 @@ ${buildKaomianBlock(args.kaomianMatches)}
 - 严禁在 question 文本里出现任何文件路径、函数签名、"请基于 xxx.md 说明"、"在 xxx 文件中"这类书面引用。文件证据是面试官的底牌，只写进 evidence 字段，候选人看不到，绝不写进题面。
 - 严禁考试腔（"请阐述""试分析""……包含哪些"）。
 
+【铁律三·先说代码事实，再问风险，禁止把假设说成实现】
+- 每道问题必须能拆成两层：A. 代码已经证明的事实；B. 面试官基于事实继续追问的风险或取舍。
+- question 里可以追问风险，但不能说代码实现了 evidence 没证明的东西。例如 evidence 只证明"有 all_to_all/tensor_split"，就不能声称"已经处理了变长 padding"。
+- 如果两个机制在代码里是互斥分支，问题必须问"为什么这两个路径互斥、代价是什么"，不能说"在 A 里面 B 是怎么构造的"。
+- 尤其注意 FlashAttention varlen / cu_seqlens / padding / attention_mask / DistributedAttention 这类细节：只有 evidence 中实际出现对应调用、参数构造或分支关系时，才能把它写进 referenceAnswer；否则只能作为待验证风险。
+- 主问题必须围绕项目内部实现：控制流、数据流、关键参数构造、错误处理、指标计算、状态转移、缓存/并发/通信边界。
+- 禁止把"为什么不用 HuggingFace / transformers / vLLM / 某现成框架"作为主问题；这类外部生态比较最多只能作为 followUps 的一小句，而且必须先讲清本仓库内部实现约束。
+
 正例 ✅："你把它拆成两层而不是一层——为什么？这么拆换来了什么、又牺牲了什么？"
        "如果数据量涨十倍，你这套方案会先从哪儿开始扛不住？"
+       "这里分布式路径和 varlen 路径是互斥的；为什么没让分布式路径走 varlen？padding 很多时会失去什么收益？"
 反例 ❌（禁止）："X 的定义格式包含哪些核心部分？请基于 xxx.md 说明。"
               "forward 方法的参数有哪些？"
+              "在 DistributedAttention 里 cu_seqlens 是怎么构造的？"（如果代码只显示 cu_seqlens 在非分布式分支）
+              "为什么不用 HuggingFace 现成实现？升级 transformers 会不会炸？"（外部生态泛讨论，不是本仓库内部实现风险）
 
 ## 字段与数量
-- examPoints 5-8 个：面试官视角"该往哪儿挖"，title 写追问主题（如"两层结构的取舍与失效场景"），evidence 写文件路径。
-- questions 8-12 道，难度 warmup→medium→hard 递进；即使是 warmup 也必须是思路题（最浅可用"本质抽象"类，让候选人一句话讲清项目到底解决了什么）。
+- examPoints 10 个以上：面试官视角"该往哪儿挖"，title 写追问主题（如"两层结构的取舍与失效场景"），evidence 写文件路径。
+- questions 目标 20 道：难度 warmup→medium→hard 递进；即使是 warmup 也必须是思路题（最浅可用"本质抽象"类，让候选人一句话讲清项目到底解决了什么）。如果证据不足，生成少于 20 也可以，但每题必须证据扎实。
 - 每道 question 的 evidence 字段必须填真实文件路径（系统据此验证答案）；但重申：路径只进 evidence，不进 question 文本。
-- whyAsk 写这道题考察候选人哪种能力；expectedAnswer 写好回答该命中的点；redFlags 写什么回答暴露了没真懂。
+- whyAsk 写这道题考察候选人哪种能力；hint 写给候选人的简短提示；expectedAnswer 写好回答该命中的点；redFlags 写什么回答暴露了没真懂。
 - 不要输出 employability score、code quality score、部署能力评分。`;
 }
 
@@ -427,7 +448,7 @@ export async function generateExamAndQuestions(
 返回 JSON：
 {
   "examPoints": [{"title": "...", "riskLevel": "low|medium|high", "evidence": ["路径"], "whyAsk": "...", "followUps": ["..."]}],
-  "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."], "source": "repo|kaomian"}]
+  "questions": [{"question": "...", "difficulty": "warmup|medium|hard", "evidence": ["路径"], "whyAsk": "...", "hint": "...", "expectedAnswer": ["..."], "redFlags": ["..."], "followUps": ["..."], "source": "repo|kaomian"}]
 }
 
 最后再强调一次：每道 question 都是面试官当面说的一句口语追问（八类思路题之一），evidence 字段里才放文件路径，题面里绝不出现文件路径、函数签名或"请基于 xxx 说明"。`
@@ -452,10 +473,10 @@ export async function streamExamAndQuestions(
       content: `${buildInterrogationContext(args)}
 
 输出格式：NDJSON——每行一个独立完整的 JSON 对象。不要数组包装，不要 markdown 代码块，不要任何解释文本。
-先逐行输出 5-8 个考核点：
+先逐行输出 10-20 个考核点：
 {"kind":"examPoint","title":"...","riskLevel":"low|medium|high","evidence":["路径"],"whyAsk":"...","followUps":["..."]}
-再逐行输出 8-12 道面试题：
-{"kind":"question","question":"...","difficulty":"warmup|medium|hard","evidence":["路径"],"whyAsk":"...","expectedAnswer":["..."],"redFlags":["..."],"followUps":["..."],"source":"repo|kaomian"}
+再逐行输出 20 道面试题；如果证据不足，允许少于 20，但不要输出无证据或泛生态题：
+{"kind":"question","question":"...","difficulty":"warmup|medium|hard","evidence":["路径"],"whyAsk":"...","hint":"...","expectedAnswer":["..."],"redFlags":["..."],"followUps":["..."],"source":"repo|kaomian"}
 
 最后再强调一次：每道 question 都是面试官当面说的一句口语追问（八类思路题之一），evidence 字段里才放文件路径，题面里绝不出现文件路径、函数签名或"请基于 xxx 说明"。`
     }
@@ -470,6 +491,7 @@ export async function streamExamAndQuestions(
       if (!candidate || typeof candidate !== "object") continue;
       const record = candidate as Record<string, unknown>;
       if (record.kind === "question" || typeof record.question === "string") {
+        if (questions.length >= 24) continue;
         const parsed = questionSchema.safeParse(record);
         if (parsed.success) {
           questions.push(parsed.data);
@@ -752,7 +774,7 @@ export async function generateModeQuestionSet(args: {
   examPoints: ExamPoint[];
   seedQuestions: InterviewQuestion[];
 }): Promise<InterviewQuestion[]> {
-  const modeLabel = args.mode === "practice" ? "练习" : "测试";
+  const modeLabel = "测试";
   const messages: ChatMessage[] = [
     { role: "system", content: SYSTEM_PROMPT },
     {
@@ -778,10 +800,10 @@ ${JSON.stringify(
 Survey 里识别出的可问细节：
 ${JSON.stringify(args.examPoints.slice(0, 10), null, 2)}
 
-题目种子（只能借鉴方向，不能照搬整套）：
+Survey 候选追问点（只能借鉴方向，不能照搬整套）：
 ${JSON.stringify(args.seedQuestions.slice(0, 12), null, 2)}
 
-任务：为 ${modeLabel} 模式重新生成一套项目相关题。返回 JSON：
+任务：为 ${modeLabel} 模式重新生成 8 个最可能被面试官追问的项目细节。返回 JSON：
 {
   "questions": [
     {
@@ -789,6 +811,7 @@ ${JSON.stringify(args.seedQuestions.slice(0, 12), null, 2)}
       "difficulty": "warmup|medium|hard",
       "evidence": ["证据路径或模块名"],
       "whyAsk": "为什么这个问题能考察项目理解",
+      "hint": "候选人点开提示后看到的简短答题切入点",
       "expectedAnswer": ["好回答应该覆盖的要点"],
       "redFlags": ["危险回答"],
       "followUps": ["可继续追问的问题"],
@@ -798,10 +821,10 @@ ${JSON.stringify(args.seedQuestions.slice(0, 12), null, 2)}
 }
 
 要求：
-- 生成 7-9 道题，必须覆盖 warmup、medium、hard。
-- 每题都必须绑定 Survey 的项目证据或模块，不要生成泛八股。
-- ${args.mode === "practice" ? "练习题要更适合学习：从项目事实、设计理由、原理连接到失败 case 递进，followUps 可以带一点引导性。" : "测试题要更接近正式项目考核：不要给提示感，题目更尖锐，重点挖证据链、评测、失败场景和替代方案。"}
-- 可以借鉴题目种子的方向，但要重组为一套新的题，避免逐字重复。
+- 生成恰好 8 道题，必须覆盖 warmup、medium、hard。
+- 每题都必须绑定 Survey 的项目证据或模块，不要生成脱离仓库的泛原理题。
+- 测试题要接近真实项目考核：问题尖锐，重点挖证据链、评测、失败场景和替代方案；但必须提供 hint，方便用户在 Test 中主动查看提示。
+- 可以借鉴候选追问点的方向，但要重组为一套新的题，避免逐字重复。
 - expectedAnswer 和 redFlags 必须具体到本仓库。`
     }
   ];
@@ -870,6 +893,66 @@ ${JSON.stringify(
   return parsed.text;
 }
 
+export async function generateRiskChatReply(args: {
+  risk: RepoInterviewRisk;
+  answer: string;
+  history: Array<{ role: "user" | "assistant"; content: string }>;
+  evidenceRefs: RepoInterviewRisk["evidenceRefs"];
+  repoSummary: string;
+}): Promise<RiskChatResponse> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `你正在围绕一个 repo 面试风险点持续追问候选人。不要评分，不要做整场复盘，只针对这个风险点继续把问题问深。
+
+仓库摘要：
+${args.repoSummary}
+
+风险点：
+${JSON.stringify(
+  {
+    title: args.risk.title,
+    interviewerQuestion: args.risk.interviewerQuestion,
+    claim: args.risk.claim,
+    whyThisMatters: args.risk.whyThisMatters,
+    referenceAnswer: args.risk.referenceAnswer,
+    redFlags: args.risk.redFlags,
+    followUpSeeds: args.risk.followUpSeeds,
+    evidenceRefs: args.evidenceRefs.map((ref) => ({
+      filePath: ref.filePath,
+      startLine: ref.startLine,
+      endLine: ref.endLine,
+      reason: ref.reason,
+      snippet: ref.snippet.slice(0, 1800)
+    }))
+  },
+  null,
+  2
+)}
+
+已有对话：
+${JSON.stringify(args.history.slice(-12), null, 2)}
+
+候选人最新回答：
+"""
+${args.answer.slice(0, 5000)}
+"""
+
+返回 JSON：
+{"reply": "用 2-4 句中文指出回答里答到了什么、漏了什么，必须贴合该 repo 证据", "followUpQuestion": "继续追问一个更深的问题，候选人可以一直答下去；若已经非常充分也给一个延伸场景题", "referenceAnswer": "简短参考答案，聚焦这轮追问"}
+
+要求：
+- 每轮都可以继续追问，不设置轮数上限。
+- followUpQuestion 不要出现文件路径，但 reply/referenceAnswer 可以自然提到证据文件名。
+- 不要编造 snippet 之外的实现细节。`
+    }
+  ];
+  return withRetry("risk-chat", async () =>
+    parseModelJson(riskChatSchema, await chatJson(messages, 120_000), "risk-chat")
+  );
+}
+
 export function assembleResponse(
   context: RepoContext,
   parts: {
@@ -885,6 +968,14 @@ export function assembleResponse(
   if (repaired.repairedCount > 0) {
     allWarnings.push(`有 ${repaired.repairedCount} 个问题缺少证据，已回退绑定到已读取的仓库文件。`);
   }
+  const audit = buildRepoInterviewAudit({
+    context,
+    understanding: parts.understanding,
+    paperCodeMap: repaired.paperCodeMap,
+    examPoints: repaired.examPoints,
+    questions: repaired.questions
+  });
+  allWarnings.push(...audit.warnings);
 
   const base = {
     repo: context.repo,
@@ -895,6 +986,8 @@ export function assembleResponse(
     understanding: parts.understanding,
     examPoints: repaired.examPoints,
     questions: repaired.questions,
+    risks: audit.risks,
+    evidenceBundle: audit.evidenceBundle,
     evidenceFiles: context.files.map(({ content: _content, ...file }) => file),
     warnings: allWarnings
   };

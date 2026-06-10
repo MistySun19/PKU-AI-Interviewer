@@ -80,7 +80,7 @@ POST /api/analyze  (SSE 流式)
 └─ Phase 4  Questions（1 次 LLM 调用，流式逐题）
      输入：报告 + kaomian 按 techTags 关键词匹配出的题目 + 可选 JD
      输出：NDJSON 逐题流式（每题含 evidence/whyAsk/followUps/redFlags）
-     约束：主追问链必须绑定仓库证据；kaomian 题必须改写为项目相关，标记"主追问/补充八股"
+     约束：主追问链必须绑定仓库证据；kaomian 题必须改写为项目相关，标记"主追问/补充真实面经素材"
 ```
 
 ### DimensionDigest schema（worker 唯一合法输出）
@@ -133,7 +133,7 @@ event: done       data: { summary }
 ### kaomian / JD 接入（不用 embedding）
 
 - Phase 1 产出 techTags + 风险点 → 对 kaomian 题库做关键词/标签匹配（题库预先打标签，构建期一次性完成）。
-- 匹配题 → Phase 4 prompt 里作为"高频考点素材"，要求模型改写成绑定本仓库证据的追问，并区分"主追问链"（必须有 evidence）与"补充八股"（标注来源题库）。
+- 匹配题 → Phase 4 prompt 里作为"高频考点素材"，要求模型改写成绑定本仓库证据的追问，并区分"主追问链"（必须有 evidence）与"补充真实面经素材"（标注来源题库）。
 - JD 可选输入：作为 Phase 4 的偏置段落（影响题目权重排序），不影响 Phase 1-3 的理解主线（与 ROADMAP "JD 只是偏置层"一致）。
 
 ---

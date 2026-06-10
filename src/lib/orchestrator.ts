@@ -120,8 +120,8 @@ async function run(repositoryUrl: string, _mode: AnalyzeMode, channel: EventChan
     stage: "questions",
     detail:
       kaomianMatches.length > 0
-        ? `整理可问细节与题目种子（匹配到 ${kaomianMatches.length} 道 kaomian 高频题）`
-        : "整理可问细节与题目种子"
+        ? `整理可问细节与真实面经问题（匹配到 ${kaomianMatches.length} 道 kaomian 面经）`
+        : "整理可问细节"
   });
   const interrogationArgs = {
     repoMapText,
@@ -154,6 +154,11 @@ async function run(repositoryUrl: string, _mode: AnalyzeMode, channel: EventChan
     examPoints.forEach((point, index) => channel.emit({ type: "exam_point", point, index }));
   }
 
+  channel.emit({
+    type: "stage",
+    stage: "evidence_check",
+    detail: `Evidence Check：审核 ${questions.length} 个候选风险点的 reference 充分性与必要性`
+  });
   const result = assembleResponse(context, { understanding, paperCodeMap, examPoints, questions }, warnings);
   finish(channel, result);
 }

@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" href="data:,">
-  <title>DevContext.AI 与 PKU AI Interviewer Agent Workflow 对比</title>
+  <title>DevContext.AI 与 Traceback Agent Workflow 对比</title>
   <style>
     :root {
       --ink: #18212f;
@@ -378,10 +378,10 @@
   <main>
     <header>
       <div>
-        <h1>DevContext.AI 与 PKU AI Interviewer 的 Agent Workflow 对比</h1>
+        <h1>DevContext.AI 与 Traceback 的 Agent Workflow 对比</h1>
         <p class="subtitle">
           DevContext.AI 的架构值得借鉴，因为它已经把“仓库分析 -> 项目报告 -> 项目面试 -> 回答评价”跑成了闭环。
-          但 PKU AI Interviewer 的目标不是复刻一个软件工程仓库解释器，而是做面向实习、保研、研究岗的项目考核拷打器。
+          但 Traceback 的目标不是复刻一个软件工程仓库解释器，而是做面向实习、保研、研究岗的项目考核拷打器。
         </p>
       </div>
       <aside class="position-card">
@@ -438,7 +438,7 @@
       <article class="lane pku">
         <div class="lane-head">
           <div>
-            <h2>PKU AI Interviewer Workflow</h2>
+            <h2>Traceback Workflow</h2>
             <p>V1.0.0 先输入 GitHub 仓库，生成面向项目考核的证据驱动面试计划；JD 和 arXiv 后置。</p>
           </div>
           <span class="badge">Project Examiner</span>
@@ -472,7 +472,7 @@
             <li class="step">
               <div>
                 <h3>Bagu Retrieval & Interview Plan</h3>
-                <p>用 kaomian 召回高频八股，再把八股改写成绑定仓库证据的追问链。</p>
+                <p>用 kaomian 召回高频真实面经素材，再把真实面经素材改写成绑定仓库证据的追问链。</p>
               </div>
             </li>
           </ol>
@@ -488,7 +488,7 @@
             <tr>
               <th>维度</th>
               <th>DevContext.AI</th>
-              <th>PKU AI Interviewer</th>
+              <th>Traceback</th>
               <th>我们的产品判断</th>
             </tr>
           </thead>
@@ -514,7 +514,7 @@
             <tr>
               <td>问题类型</td>
               <td>架构、实现、取舍、边界情况、扩展性、代码质量。</td>
-              <td>项目事实、设计理由、核心实现、评测可信度、八股连接、失败场景、真实贡献。</td>
+              <td>项目事实、设计理由、核心实现、评测可信度、真实面经素材连接、失败场景、真实贡献。</td>
               <td>我们要保留工程深挖，但用项目考核标准重写它。</td>
             </tr>
             <tr>
@@ -526,7 +526,7 @@
             <tr>
               <td>题库角色</td>
               <td>主要从仓库上下文生成项目问题。</td>
-              <td>kaomian 作为高频八股校准器，bagu-killer 未来做题库更新流水线。</td>
+              <td>kaomian 作为高频真实面经素材校准器，bagu-killer 未来做题库更新流水线。</td>
               <td>题库不能直接拼题，必须和材料证据绑定。</td>
             </tr>
           </tbody>
@@ -589,7 +589,7 @@
     </section>
 
     <section class="section">
-      <h2>PKU AI Interviewer 的推荐 V1.0.0 Agent Loop</h2>
+      <h2>Traceback 的推荐 V1.0.0 Agent Loop</h2>
       <div class="flow-strip">
         <div class="flow-node">
           <strong>1. 解析输入</strong>
@@ -618,7 +618,7 @@
       <h2>一句话结论</h2>
       <div class="position-card">
         <p>
-          DevContext.AI 证明了“读仓库生成面试”这条技术路线可行；PKU AI Interviewer 的 V1.0.0 先把仓库理解做深，再把这条路线推进到更贴近中国学生真实场景的项目考核：代码、八股、评测、真实贡献和导师/面试官式连续追问。
+          DevContext.AI 证明了“读仓库生成面试”这条技术路线可行；Traceback 的 V1.0.0 先把仓库理解做深，再把这条路线推进到更贴近中国学生真实场景的项目考核：代码、真实面经素材、评测、真实贡献和导师/面试官式连续追问。
         </p>
       </div>
     </section>
@@ -627,7 +627,7 @@
       参考对象：
       <a href="https://github.com/Rounakneema/DevContext.AI">DevContext.AI</a>
       的公开 README、Stage 3 question generation、answer evaluation 和 live follow-up 设计；
-      PKU AI Interviewer 侧参考本仓库的 <code>V1.0.0_PLAN.md</code>、<code>AGENTS.md</code> 与用户访谈工作日志。
+      Traceback 侧参考本仓库的 <code>V1.0.0_PLAN.md</code>、<code>AGENTS.md</code> 与用户访谈工作日志。
     </div>
   </main>
 </body>

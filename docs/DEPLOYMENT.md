@@ -1,4 +1,4 @@
-# 部署指南
+# Traceback 部署指南
 
 目标：在一台公网可访问的云服务器上跑起本产品，提交「公网 IP + 端口」形式的 URL，并让评委能用他们的 SSH key 登录服务器查看运行环境。
 
@@ -35,12 +35,12 @@ cd PKU-AI-Interviewer
 cp .env.example .env.local
 vim .env.local
 
-docker build -t pku-ai-interviewer .
-docker run -d --name interviewer --restart unless-stopped \
-  -p 3000:3000 --env-file .env.local pku-ai-interviewer
+docker build -t traceback .
+docker run -d --name traceback --restart unless-stopped \
+  -p 3000:3000 --env-file .env.local traceback
 ```
 
-注意：deep research 单次请求可能长达 20 分钟，如果前面挂 nginx 等反向代理，需要把 `proxy_read_timeout` 调到 1200s 以上；直接用「公网 IP:3000」则无此问题。
+注意：完整分析一个仓库仍可能较慢，演示建议使用固定 demo 结果或 `deepseek-v4-flash` + non-thinking。SSE 已内置心跳避免公网链路空闲断连；如果前面挂 nginx 等反向代理，仍建议把 `proxy_read_timeout` 调到 1200s 以上并关闭 `proxy_buffering`；直接用「公网 IP:3000」则无此问题。
 
 ## 4. 部署方式 B：pm2（不装 Docker）
 
@@ -54,7 +54,7 @@ cd PKU-AI-Interviewer
 cp .env.example .env.local && vim .env.local
 npm ci
 npm run build
-pm2 start npm --name interviewer -- start
+pm2 start npm --name traceback -- start
 pm2 save && pm2 startup
 ```
 
@@ -76,4 +76,5 @@ curl -sf http://<公网IP>:3000 > /dev/null && echo OK
 
 - 截止时间之后服务器上的任何构建和部署都会被认定为超时完成——部署务必留足缓冲，截止后不要再 `docker build` / `npm run build` / 重启部署。
 - 提交时若受 API key 额度或部署限制影响，需在邮件中明确说明。
-- Dockerfile 尚未在干净绿色构建上验证过（核心管道仍在开发中），合并后先在本地跑一次 `docker build` 确认再上服务器。
+- 分析 run 和面试 session 保存在单进程内存中（前端有本地快照兜底）：重启或重新部署服务会丢失进行中的后台任务，部署后不要随意重启容器。
+- 上服务器前先在本地跑一次 `docker build` 验证镜像构建通过。

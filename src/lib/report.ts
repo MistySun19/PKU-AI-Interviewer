@@ -1,6 +1,7 @@
 import type { AnalyzeResponse, ExamPoint, InterviewQuestion, PaperCodeMapItem, RepoContext, Understanding } from "./types";
 
-export type ReportBase = Omit<AnalyzeResponse, "markdownReport">;
+export type ReportBase = Omit<AnalyzeResponse, "markdownReport" | "risks" | "evidenceBundle"> &
+  Partial<Pick<AnalyzeResponse, "risks" | "evidenceBundle">>;
 
 export function buildMarkdownReport(result: ReportBase): string {
   return `${buildUnderstandingMarkdown(result)}\n${buildInterrogationMarkdown(result)}`;
@@ -101,15 +102,16 @@ export function buildInterrogationMarkdown(result: ReportBase): string {
     pushList(lines, point.followUps);
   });
 
-  lines.push("## 8. 分层面试题");
+  lines.push("## 8. 真实面经追问");
   lines.push("");
   questions.forEach((question, index) => {
     lines.push(`### ${index + 1}. ${question.question}`);
     lines.push("");
     lines.push(`- 难度：${question.difficulty}`);
-    if (question.source === "kaomian") lines.push("- 来源：kaomian 高频题改写");
+    if (question.source === "kaomian") lines.push("- 来源：kaomian 真实面经问题改写");
     lines.push(`- 证据：${question.evidence.join("、") || "未提供"}`);
     lines.push(`- 为什么问：${question.whyAsk}`);
+    if (question.hint) lines.push(`- 提示：${question.hint}`);
     lines.push("- 期望回答要点：");
     pushList(lines, question.expectedAnswer);
     lines.push("- 红旗回答：");
@@ -273,6 +275,7 @@ export function fallbackQuestions(examPoints: ExamPoint[]): InterviewQuestion[] 
       difficulty: "medium",
       evidence: point.evidence,
       whyAsk: point.whyAsk,
+      hint: "先说这个点在项目里的具体位置，再解释设计理由、替代方案和失败边界。",
       expectedAnswer: ["能指出代码证据", "能解释方法或实验设计选择", "能说明 baseline、替代方案和取舍"],
       redFlags: ["只复述项目简介", "说不出核心文件作用", "无法解释实验或失败场景"],
       followUps: point.followUps
@@ -282,13 +285,14 @@ export function fallbackQuestions(examPoints: ExamPoint[]): InterviewQuestion[] 
       difficulty: point.riskLevel === "high" ? "hard" : "medium",
       evidence: point.evidence,
       whyAsk: "连续追问会测试候选人是否真的做过项目，并能把实现、原理和排错连接起来。",
+      hint: "不要只讲理论，先给一个项目里的具体失败例子，再说你会沿哪些文件或配置定位。",
       expectedAnswer: ["能给出具体失败例子", "能说明从数据、配置、模型、指标逐步定位", "能回到仓库证据解释"],
       redFlags: ["只说理论", "没有 bad case", "无法指出相关文件"],
       followUps: ["如果数据分布变了怎么办？", "如果评测指标下降你先查什么？", "有没有更简单的 baseline？"]
     }
   ]);
 
-  return questions.slice(0, 12);
+  return questions.slice(0, 8);
 }
 
 function pushList(lines: string[], items: string[]) {

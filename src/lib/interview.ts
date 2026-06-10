@@ -6,7 +6,7 @@ import type {
   Understanding
 } from "./types";
 
-const MAX_MAIN_QUESTIONS = 7;
+const MAX_MAIN_QUESTIONS = 8;
 const MAX_FOLLOW_UP_DEPTH = 1;
 const SESSION_TTL_MS = 3 * 60 * 60 * 1000;
 const SESSION_CAP = 200;

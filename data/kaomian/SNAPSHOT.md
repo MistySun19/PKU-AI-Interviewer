@@ -1,26 +1,33 @@
-# kaomian 题库快照
+# kaomian 面经快照
 
-- 来源仓库：https://github.com/smile-struggler/kaomian
-- 固定 commit：`2651f16666ba48e858bd934b317313763f69ed02`
-- 快照日期：2026-06-10
-- 快照范围：源仓库 `题库/` 目录下全部 7 个 Markdown 文件，逐字节一致
+- 来源仓库：https://github.com/smile-struggler/kaomian（`main` 分支）
+- 设计决策：ADR-0002（快照模式，不在运行时实时拉取）
+- 运行时实际使用：`kaomian.json`（636 条真实面经问题素材，含技术标签），由 `src/lib/kaomian.ts` 读取
+- Markdown 原始快照：源仓库 `题库/` 目录下全部 7 个文件（首次快照固定于 commit `2651f16`，2026-06-10）
 
 ## 文件清单
 
-| 文件 | 用途（对应 V1.0.0_PLAN §4.5） |
+| 文件 | 角色 |
 | --- | --- |
-| 00_题库总索引.md | 题库索引 |
-| 01_Top100_高频题.md | 推荐优先使用 |
-| 02_知识问答题.md | 补充 |
-| 03_Agent_RAG_Tool_Memory.md | 推荐优先使用 |
-| 04_LeetCode_算法手撕.md | 补充 |
-| 05_机器学习_大模型手撕.md | 推荐优先使用 |
-| 06_项目拷打题.md | 推荐优先使用 |
+| kaomian.json | 运行时检索用的结构化快照（636 题带标签） |
+| 00_题库总索引.md | 原始材料：面经索引 |
+| 01_Top100_高频题.md | 原始材料：高频面经问题（优先级高） |
+| 02_知识问答题.md | 原始材料：知识问答 |
+| 03_Agent_RAG_Tool_Memory.md | 原始材料：Agent / RAG（优先级高） |
+| 04_LeetCode_算法手撕.md | 原始材料：算法手撕 |
+| 05_机器学习_大模型手撕.md | 原始材料：ML / 大模型手撕（优先级高） |
+| 06_项目拷打题.md | 原始材料：项目拷打（优先级高） |
+
+## 使用规则
+
+检索为关键词 / 技术标签级（不做 embedding）。命中的问题不是直接当作真实面经素材题塞进产品，而是作为真实面试场景里“面试官常问什么”的素材；只有被模型改写成绑定当前仓库证据的风险点，并通过 Evidence Check 后，才能进入最终结果，并标注"真实面经改写"。
 
 ## 更新方式
 
-v1.4.0 之前为手动快照。重新拉取时更新固定 commit 与快照日期：
+v1.4.0 定时更新落地前为手动刷新：
 
 ```bash
-gh api "repos/smile-struggler/kaomian/contents/题库/<文件名>.md?ref=<commit>" --jq '.content' | base64 -d > data/kaomian/<文件名>.md
+node scripts/build-kaomian.mjs
 ```
+
+脚本会从源仓库 `main` 分支拉取题库 Markdown 并重建 `kaomian.json`。刷新后请同步更新本文件的题数与日期。

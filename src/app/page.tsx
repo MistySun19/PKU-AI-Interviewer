@@ -1,419 +1,87 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { FormEvent, Fragment, useEffect, useMemo, useState } from "react";
 import type {
-  AnalyzeMode,
   AnalyzeResponse,
-  ExamPoint,
-  InteractiveMode,
-  InterviewQuestion,
-  InterviewRun,
-  InterviewSession,
-  InterviewSummary,
+  EvidenceDocument,
+  EvidenceRef,
+  RepoInterviewRisk,
+  RiskChatMessage,
+  RiskChatResponse,
   PipelineStage,
-  QuestionSet,
-  ResearchPlanSummary,
   SseEvent
 } from "@/lib/types";
 
-type Status = "idle" | "loading" | "done" | "error";
+const STORAGE_KEY = "pku-ai-interviewer:risk-reviewer:v1";
+const DEMO_REPO = "https://github.com/MistySun19/PKU-AI-Interviewer";
 
-type FeedItem = {
-  id: number;
-  kind: "stage" | "file" | "warning" | "finding";
+type ProgressItem = {
+  id: string;
   text: string;
 };
 
-type ChatMessage =
-  | { id: number; role: "interviewer"; kind: "main" | "follow_up"; text: string; meta: string }
-  | { id: number; role: "candidate"; text: string }
-  | { id: number; role: "evaluation"; score: number; verdict: string; feedback: string; gaps: string[] }
-  | { id: number; role: "system"; text: string };
-
-type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
-type RiskLevel = ExamPoint["riskLevel"];
-type Difficulty = InterviewQuestion["difficulty"];
-
-const PERSISTENCE_KEY = "pku-ai-interviewer:last-run:v1";
-
-type PersistedRun = {
-  version: 1;
-  savedAt: number;
-  repositoryUrl: string;
-  mode: AnalyzeMode;
-  status: Status;
-  runId: string;
-  result: AnalyzeResponse | null;
-  error: string;
-  feed: FeedItem[];
-  stageLabel: string;
-  currentStage: PipelineStage | null;
-  planSummary: ResearchPlanSummary | null;
-  filesRead: number;
-  findingsSeen: number;
-  latestReadPath: string;
-  reportDraft: string;
-  examPoints: ExamPoint[];
-  questions: InterviewQuestion[];
-  sessionId: string;
-  chat: ChatMessage[];
-  interviewTotal: number;
-  summary: InterviewSummary | null;
-  interviewSession: InterviewSession | null;
-  activeQuestionSet: QuestionSet | null;
-  questionSets: QuestionSet[];
-  interviewRuns: InterviewRun[];
-  answerDraft: string;
+type RiskChatState = {
+  history: RiskChatMessage[];
+  draft: string;
+  busy: boolean;
 };
 
-async function consumeSse(body: ReadableStream<Uint8Array>, onEvent: (event: SseEvent) => void): Promise<void> {
-  const reader = body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true });
-    let frameEnd = buffer.indexOf("\n\n");
-    while (frameEnd !== -1) {
-      const frame = buffer.slice(0, frameEnd);
-      buffer = buffer.slice(frameEnd + 2);
-      const dataLine = frame.split("\n").find((line) => line.startsWith("data: "));
-      if (dataLine) onEvent(JSON.parse(dataLine.slice(6)) as SseEvent);
-      frameEnd = buffer.indexOf("\n\n");
-    }
-  }
-}
+type ViewMode = "demo" | "intro";
 
 export default function Home() {
+  const [viewMode, setViewMode] = useState<ViewMode>("demo");
   const [repositoryUrl, setRepositoryUrl] = useState("");
-  const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
-  const [analysisRunId, setAnalysisRunId] = useState("");
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
-  const [feed, setFeed] = useState<FeedItem[]>([]);
-  const [stageLabel, setStageLabel] = useState("");
+  const [selectedRiskId, setSelectedRiskId] = useState<string>("");
+  const [selectedEvidenceKey, setSelectedEvidenceKey] = useState<string>("");
+  const [progress, setProgress] = useState<ProgressItem[]>([]);
   const [currentStage, setCurrentStage] = useState<PipelineStage | null>(null);
-  const [planSummary, setPlanSummary] = useState<ResearchPlanSummary | null>(null);
   const [filesRead, setFilesRead] = useState(0);
   const [findingsSeen, setFindingsSeen] = useState(0);
+  const [candidateQuestions, setCandidateQuestions] = useState(0);
   const [latestReadPath, setLatestReadPath] = useState("");
-  const [reportDraft, setReportDraft] = useState("");
-  const [examPoints, setExamPoints] = useState<ExamPoint[]>([]);
-  const [questions, setQuestions] = useState<InterviewQuestion[]>([]);
-  const [mode, setMode] = useState<AnalyzeMode>("survey");
-  const [sessionId, setSessionId] = useState("");
-  const [chat, setChat] = useState<ChatMessage[]>([]);
-  const [interviewTotal, setInterviewTotal] = useState(0);
-  const [summary, setSummary] = useState<InterviewSummary | null>(null);
-  const [interviewSession, setInterviewSession] = useState<InterviewSession | null>(null);
-  const [activeQuestionSet, setActiveQuestionSet] = useState<QuestionSet | null>(null);
-  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
-  const [interviewRuns, setInterviewRuns] = useState<InterviewRun[]>([]);
-  const [answerDraft, setAnswerDraft] = useState("");
-  const [sending, setSending] = useState(false);
-  const [startingMode, setStartingMode] = useState<InteractiveMode | null>(null);
-  const [practiceHelpLoading, setPracticeHelpLoading] = useState<"hint" | "answer" | null>(null);
-  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
-  const [restoredNotice, setRestoredNotice] = useState("");
-  const feedSeq = useRef(0);
-  const hydrated = useRef(false);
-  const reconnectingRun = useRef(false);
-  const interactiveMode = mode === "interview" || mode === "practice";
-  const practiceMode = mode === "practice";
-  const interviewReady = interactiveMode && (sessionId || summary);
+  const [status, setStatus] = useState<"idle" | "analyzing" | "ready" | "error">("idle");
+  const [error, setError] = useState("");
+  const [chats, setChats] = useState<Record<string, RiskChatState>>({});
 
   useEffect(() => {
-    const saved = readPersistedRun();
-    hydrated.current = true;
+    const saved = safeLoad();
     if (!saved) return;
-
-    setRepositoryUrl(saved.repositoryUrl);
-    setMode(saved.mode);
-    setAnalysisRunId(saved.runId);
-    setStatus(saved.status === "loading" && saved.runId ? "loading" : saved.status === "loading" ? "error" : saved.status);
-    setResult(saved.result);
-    setError(saved.status === "loading" && !saved.runId ? "上次分析被刷新中断，已恢复刷新前已经生成的内容。" : saved.error);
-    setFeed(saved.feed);
-    setStageLabel(saved.stageLabel);
-    setCurrentStage(saved.currentStage);
-    setPlanSummary(saved.planSummary);
-    setFilesRead(saved.filesRead);
-    setFindingsSeen(saved.findingsSeen);
-    setLatestReadPath(saved.latestReadPath);
-    setReportDraft(saved.reportDraft);
-    setExamPoints(saved.examPoints);
-    setQuestions(saved.questions);
-    setSessionId(saved.sessionId);
-    setChat(saved.chat);
-    setInterviewTotal(saved.interviewTotal);
-    setSummary(saved.summary);
-    setInterviewSession(saved.interviewSession);
-    setActiveQuestionSet(saved.activeQuestionSet);
-    setQuestionSets(saved.questionSets);
-    setInterviewRuns(saved.interviewRuns);
-    setAnswerDraft(saved.answerDraft);
-    setLastSavedAt(saved.savedAt);
-    setRestoredNotice(
-      saved.status === "loading" && saved.runId
-        ? "正在重新连接上次分析任务。"
-        : saved.status === "loading"
-          ? "已恢复刷新前的中间结果，原分析流已中断。"
-          : "已恢复上次分析记录。"
-    );
-    feedSeq.current = Math.max(0, ...saved.feed.map((item) => item.id), ...saved.chat.map((item) => item.id));
-    if (saved.status === "loading" && saved.runId) void reconnectAnalysisRun(saved.runId);
+    setResult(saved);
+    setRepositoryUrl(saved.repo.htmlUrl);
+    setStatus("ready");
+    setSelectedRiskId(saved.risks[0]?.id ?? "");
+    setSelectedEvidenceKey(evidenceKey(saved.risks[0]?.evidenceRefs[0]));
   }, []);
 
   useEffect(() => {
-    if (!hydrated.current) return;
-    if (
-      !hasPersistableContent({
-        currentStage,
-        result,
-        reportDraft,
-        feed,
-        examPoints,
-        questions,
-        sessionId,
-        chat,
-        summary,
-        questionSets,
-        interviewRuns
-      })
-    ) {
-      return;
-    }
+    if (!result) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
+  }, [result]);
 
-    const savedAt = Date.now();
-    const snapshot: PersistedRun = {
-      version: 1,
-      savedAt,
-      repositoryUrl,
-      mode,
-      status,
-      runId: analysisRunId,
-      result,
-      error,
-      feed,
-      stageLabel,
-      currentStage,
-      planSummary,
-      filesRead,
-      findingsSeen,
-      latestReadPath,
-      reportDraft,
-      examPoints,
-      questions,
-      sessionId,
-      chat,
-      interviewTotal,
-      summary,
-      interviewSession,
-      activeQuestionSet,
-      questionSets,
-      interviewRuns,
-      answerDraft
-    };
-    try {
-      window.localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(snapshot));
-      setLastSavedAt(savedAt);
-    } catch {
-      setRestoredNotice("浏览器本地存储空间不足，本次记录可能无法完整保存。");
-    }
-  }, [
-    analysisRunId,
-    answerDraft,
-    chat,
-    currentStage,
-    error,
-    examPoints,
-    feed,
-    filesRead,
-    findingsSeen,
-    interviewTotal,
-    interviewSession,
-    activeQuestionSet,
-    latestReadPath,
-    mode,
-    planSummary,
-    questions,
-    reportDraft,
-    repositoryUrl,
-    result,
-    sessionId,
-    stageLabel,
-    status,
-    summary,
-    questionSets,
-    interviewRuns
-  ]);
+  const risks = useMemo(() => result?.risks ?? [], [result]);
+  const selectedRisk = risks.find((risk) => risk.id === selectedRiskId) ?? risks[0];
+  const selectedEvidence =
+    selectedRisk?.evidenceRefs.find((ref) => evidenceKey(ref) === selectedEvidenceKey) ??
+    selectedRisk?.evidenceRefs[0] ??
+    null;
+  const selectedDocument = selectedEvidence ? findEvidenceDocument(result?.evidenceBundle ?? [], selectedEvidence) : null;
+  const chat = selectedRisk ? chats[selectedRisk.id] ?? { history: [], draft: "", busy: false } : null;
 
-  function pushFeed(kind: FeedItem["kind"], text: string) {
-    feedSeq.current += 1;
-    const item = { id: feedSeq.current, kind, text };
-    setFeed((prev) => [item, ...prev].slice(0, 120));
-  }
-
-  function pushChat(message: DistributiveOmit<ChatMessage, "id">) {
-    feedSeq.current += 1;
-    setChat((prev) => [...prev, { ...message, id: feedSeq.current } as ChatMessage]);
-  }
-
-  function handleEvent(event: SseEvent) {
-    switch (event.type) {
-      case "stage":
-        setCurrentStage(event.stage);
-        setStageLabel(event.detail ?? event.stage);
-        pushFeed("stage", event.detail ?? event.stage);
-        break;
-      case "run":
-        setAnalysisRunId(event.runId);
-        break;
-      case "file_read":
-        setFilesRead((prev) => prev + 1);
-        setLatestReadPath(event.path);
-        pushFeed("file", `读取 ${event.path}${event.dimension ? `（${event.dimension} 补读）` : ""}`);
-        break;
-      case "plan":
-        setPlanSummary(event.plan);
-        pushFeed(
-          "stage",
-          `研究计划（${event.plan.analysisMode}）：${event.plan.dimensions
-            .map((dimension) => `${dimension.key}×${dimension.files.length}文件`)
-            .join("，")}`
-        );
-        break;
-      case "finding":
-        setFindingsSeen((prev) => prev + 1);
-        pushFeed("finding", `[${event.dimension}] ${event.claim}（${event.evidence.join("、") || "无证据"}）`);
-        break;
-      case "report_delta":
-        setReportDraft((prev) => prev + event.delta);
-        break;
-      case "exam_point":
-        setExamPoints((prev) => [...prev, event.point]);
-        break;
-      case "question":
-        setQuestions((prev) => [...prev, event.question]);
-        break;
-      case "session":
-        setSessionId(event.sessionId);
-        setInterviewSession(event.session ?? null);
-        setInterviewTotal(event.total);
-        pushChat({
-          role: "interviewer",
-          kind: "main",
-          text: event.question.question,
-          meta: `Q1/${event.total}`
-        });
-        break;
-      case "session_state":
-        setInterviewSession(event.session);
-        break;
-      case "evaluation":
-        pushChat({
-          role: "evaluation",
-          score: event.evaluation.score,
-          verdict: event.evaluation.verdict,
-          feedback: event.evaluation.feedback,
-          gaps: event.evaluation.gaps
-        });
-        break;
-      case "interview_question":
-        pushChat({
-          role: "interviewer",
-          kind: event.kind,
-          text: event.question,
-          meta: event.kind === "follow_up" ? `Q${event.index + 1} 追问` : `Q${event.index + 1}/${event.total}`
-        });
-        break;
-      case "summary":
-        setSummary(event.summary);
-        if (activeQuestionSet) {
-          const run: InterviewRun = {
-            id: createClientId(),
-            questionSetId: activeQuestionSet.id,
-            repoFullName: activeQuestionSet.repoFullName,
-            mode: activeQuestionSet.mode,
-            createdAt: Date.now(),
-            summary: event.summary
-          };
-          setInterviewRuns((prev) => [run, ...prev.filter((item) => item.questionSetId !== run.questionSetId)]);
-        }
-        break;
-      case "warning":
-        pushFeed("warning", event.message);
-        break;
-      case "result":
-        setResult(event.result);
-        break;
-      case "error":
-        setError(event.message);
-        setStatus("error");
-        break;
-      case "done":
-        setStatus("done");
-        break;
-      default:
-        break;
-    }
-  }
-
-  async function submit() {
-    if (!repositoryUrl.trim() || status === "loading") return;
-    const urlError = validateGitHubRepoUrl(repositoryUrl);
-    if (urlError) {
-      setStatus("error");
-      setError(urlError);
-      setResult(null);
-      setAnalysisRunId("");
-      setCopied(false);
-      setFeed([]);
-      setReportDraft("");
-      setExamPoints([]);
-      setQuestions([]);
-      setSessionId("");
-      setChat([]);
-      setInterviewTotal(0);
-      setSummary(null);
-      setInterviewSession(null);
-      setActiveQuestionSet(null);
-      setAnswerDraft("");
-      setStageLabel("");
-      setCurrentStage(null);
-      setPlanSummary(null);
-      setFilesRead(0);
-      setFindingsSeen(0);
-      setLatestReadPath("");
-      return;
-    }
-    setStatus("loading");
-    setMode("survey");
+  async function analyze(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!repositoryUrl.trim() || status === "analyzing") return;
     setError("");
     setResult(null);
-    setAnalysisRunId("");
-    setCopied(false);
-    setFeed([]);
-    setReportDraft("");
-    setExamPoints([]);
-    setQuestions([]);
-    setSessionId("");
-    setChat([]);
-    setInterviewTotal(0);
-    setSummary(null);
-    setInterviewSession(null);
-    setActiveQuestionSet(null);
-    setQuestionSets([]);
-    setInterviewRuns([]);
-    setAnswerDraft("");
-    setStageLabel("连接分析服务");
+    setSelectedRiskId("");
+    setSelectedEvidenceKey("");
+    setProgress([{ id: crypto.randomUUID(), text: "正在读取仓库，准备定位会被问穿的地方。" }]);
     setCurrentStage("scout");
-    setPlanSummary(null);
     setFilesRead(0);
     setFindingsSeen(0);
+    setCandidateQuestions(0);
     setLatestReadPath("");
+    setStatus("analyzing");
 
     try {
       const response = await fetch("/api/analyze", {
@@ -421,1258 +89,652 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ repositoryUrl: repositoryUrl.trim(), mode: "survey" })
       });
-
       if (!response.ok || !response.body) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? `分析失败 (${response.status})。`);
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error ?? "分析请求失败。");
       }
-      const responseRunId = response.headers.get("X-Analysis-Run-Id");
-      if (responseRunId) setAnalysisRunId(responseRunId);
-
-      await consumeSse(response.body, handleEvent);
-      setStatus((prev) => (prev === "loading" ? "done" : prev));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "分析失败。");
+      await readAnalysisStream(response.body);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "分析失败。");
       setStatus("error");
     }
   }
 
-  async function reconnectAnalysisRun(runId: string) {
-    if (reconnectingRun.current) return;
-    reconnectingRun.current = true;
-    setError("");
-    setStatus("loading");
-    setRestoredNotice("正在重新连接上次分析任务。");
-
-    try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ runId })
-      });
-      if (!response.ok || !response.body) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? `续接分析失败 (${response.status})。`);
+  async function readAnalysisStream(body: ReadableStream<Uint8Array>) {
+    const reader = body.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      let splitIndex = buffer.indexOf("\n\n");
+      while (splitIndex !== -1) {
+        const frame = buffer.slice(0, splitIndex);
+        buffer = buffer.slice(splitIndex + 2);
+        handleSseFrame(frame);
+        splitIndex = buffer.indexOf("\n\n");
       }
-      const responseRunId = response.headers.get("X-Analysis-Run-Id");
-      if (responseRunId) setAnalysisRunId(responseRunId);
-      setFeed([]);
-      setReportDraft("");
-      setExamPoints([]);
-      setQuestions([]);
-      setSessionId("");
-      setChat([]);
-      setInterviewTotal(0);
-      setSummary(null);
-      setInterviewSession(null);
-      setActiveQuestionSet(null);
-      setStageLabel("重新连接分析任务");
-      setCurrentStage(null);
-      setPlanSummary(null);
-      setFilesRead(0);
-      setFindingsSeen(0);
-      setLatestReadPath("");
-      feedSeq.current = 0;
-      await consumeSse(response.body, handleEvent);
-      setStatus((prev) => (prev === "loading" ? "done" : prev));
-      setRestoredNotice("已续接并恢复上次分析任务。");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "续接分析失败，请重新开始。");
+    }
+  }
+
+  function handleSseFrame(frame: string) {
+    const dataLine = frame.split("\n").find((line) => line.startsWith("data:"));
+    if (!dataLine) return;
+    const event = JSON.parse(dataLine.slice(5)) as SseEvent;
+    if (event.type === "stage") {
+      setCurrentStage(event.stage);
+      pushProgress(event.detail ?? stageLabel(event.stage));
+      return;
+    }
+    if (event.type === "file_read") {
+      setFilesRead((count) => count + 1);
+      setLatestReadPath(event.path);
+      pushProgress(`读取证据文件：${event.path}`);
+      return;
+    }
+    if (event.type === "finding") {
+      setFindingsSeen((count) => count + 1);
+      pushProgress(`发现候选风险线索：${event.claim}`);
+      return;
+    }
+    if (event.type === "question") {
+      setCandidateQuestions((count) => Math.max(count + 1, event.index + 1));
+      return;
+    }
+    if (event.type === "warning") {
+      pushProgress(`注意：${event.message}`);
+      return;
+    }
+    if (event.type === "error") {
+      setError(event.message);
       setStatus("error");
-      setRestoredNotice("服务端分析任务无法续接，已保留本地保存的内容。");
-    } finally {
-      reconnectingRun.current = false;
+      return;
+    }
+    if (event.type === "result") {
+      setResult(event.result);
+      setStatus("ready");
+      setCurrentStage("interview_ready");
+      setCandidateQuestions(event.result.questions.length);
+      const firstRisk = event.result.risks[0];
+      setSelectedRiskId(firstRisk?.id ?? "");
+      setSelectedEvidenceKey(evidenceKey(firstRisk?.evidenceRefs[0]));
+      pushProgress(`完成：保留 ${event.result.risks.length} 个通过 Evidence Check 的风险点。`);
     }
   }
 
-  async function sendAnswer(end = false) {
-    if (!sessionId || sending || summary) return;
-    const answer = answerDraft.trim();
-    if (!end && !answer) return;
-    setSending(true);
-    if (!end) {
-      pushChat({ role: "candidate", text: answer });
-      setAnswerDraft("");
-    }
+  function pushProgress(text: string) {
+    setProgress((items) => [...items.slice(-8), { id: crypto.randomUUID(), text }]);
+  }
 
+  function selectRisk(risk: RepoInterviewRisk) {
+    setSelectedRiskId(risk.id);
+    setSelectedEvidenceKey(evidenceKey(risk.evidenceRefs[0]));
+  }
+
+  function updateDraft(riskId: string, draft: string) {
+    setChats((current) => ({
+      ...current,
+      [riskId]: { history: current[riskId]?.history ?? [], busy: current[riskId]?.busy ?? false, draft }
+    }));
+  }
+
+  async function sendAnswer(risk: RepoInterviewRisk) {
+    const current = chats[risk.id] ?? { history: [], draft: "", busy: false };
+    const answer = current.draft.trim();
+    if (!answer || current.busy) return;
+    const nextHistory: RiskChatMessage[] = [...current.history, { role: "user", content: answer }];
+    setChats((state) => ({ ...state, [risk.id]: { history: nextHistory, draft: "", busy: true } }));
     try {
-      const response = await fetch("/api/interview", {
+      const response = await fetch("/api/risk-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, answer, end, restoreSession: interviewSession ?? undefined })
+        body: JSON.stringify({
+          riskId: risk.id,
+          risk,
+          answer,
+          history: nextHistory,
+          evidenceRefs: risk.evidenceRefs,
+          repoSummary: result?.understanding.summary ?? ""
+        })
       });
-      if (!response.ok || !response.body) {
-        const data = await response.json().catch(() => null);
-        throw new Error(data?.error ?? `面试服务请求失败 (${response.status})。`);
-      }
-      await consumeSse(response.body, handleEvent);
-    } catch (err) {
-      pushChat({ role: "system", text: err instanceof Error ? err.message : "面试服务异常，请重试。" });
-    } finally {
-      setSending(false);
+      const payload = (await response.json()) as RiskChatResponse & { error?: string };
+      if (!response.ok) throw new Error(payload.error ?? "追问失败。");
+      const assistantText = [payload.reply, payload.followUpQuestion ? `追问：${payload.followUpQuestion}` : ""]
+        .filter(Boolean)
+        .join("\n");
+      setChats((state) => ({
+        ...state,
+        [risk.id]: {
+          history: [...nextHistory, { role: "assistant", content: assistantText || "继续说说你的判断依据。" }],
+          draft: "",
+          busy: false
+        }
+      }));
+    } catch (reason) {
+      setChats((state) => ({
+        ...state,
+        [risk.id]: {
+          history: [...nextHistory, { role: "assistant", content: reason instanceof Error ? reason.message : "追问失败。" }],
+          draft: "",
+          busy: false
+        }
+      }));
     }
-  }
-
-  async function copyReport() {
-    if (!result) return;
-    await navigator.clipboard.writeText(result.markdownReport);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1600);
-  }
-
-  async function requestPracticeHelp(kind: "hint" | "answer") {
-    if (!sessionId || !interviewSession || practiceHelpLoading) return;
-    setPracticeHelpLoading(kind);
-    try {
-      const response = await fetch("/api/practice-help", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, kind, restoreSession: interviewSession })
-      });
-      const data = (await response.json().catch(() => null)) as { text?: string; error?: string } | null;
-      if (!response.ok) throw new Error(data?.error ?? `AI 生成失败 (${response.status})。`);
-      pushChat({
-        role: "system",
-        text: data?.text?.trim() || (kind === "hint" ? "AI 暂时没有生成有效提示。" : "AI 暂时没有生成有效参考答案。")
-      });
-    } catch (err) {
-      pushChat({ role: "system", text: err instanceof Error ? err.message : "AI 生成失败，请稍后重试。" });
-    } finally {
-      setPracticeHelpLoading(null);
-    }
-  }
-
-  async function startInteractiveSession(nextMode: InteractiveMode, reuseQuestionSet?: QuestionSet) {
-    if (!result || startingMode || sending) return;
-    setStartingMode(nextMode);
-    setMode(nextMode);
-    setError("");
-    setSessionId("");
-    setChat([]);
-    setInterviewTotal(0);
-    setSummary(null);
-    setInterviewSession(null);
-    setActiveQuestionSet(null);
-    setAnswerDraft("");
-    try {
-      const response = await fetch("/api/question-set", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mode: nextMode, result, questionSet: reuseQuestionSet })
-      });
-      const data = (await response.json().catch(() => null)) as
-        | {
-            questionSet?: QuestionSet;
-            sessionId?: string;
-            session?: InterviewSession;
-            question?: InterviewQuestion;
-            total?: number;
-            warnings?: string[];
-            error?: string;
-          }
-        | null;
-      if (!response.ok || !data?.questionSet || !data.sessionId || !data.session || !data.question) {
-        throw new Error(data?.error ?? `题集生成失败 (${response.status})。`);
-      }
-
-      const createdQuestionSet = data.questionSet;
-      setActiveQuestionSet(createdQuestionSet);
-      setQuestionSets((prev) => [createdQuestionSet, ...prev.filter((item) => item.id !== createdQuestionSet.id)]);
-      setSessionId(data.sessionId);
-      setInterviewSession(data.session);
-      setInterviewTotal(data.total ?? data.session.questions.length);
-      pushChat({
-        role: "interviewer",
-        kind: "main",
-        text: data.question.question,
-        meta: `Q1/${data.total ?? data.session.questions.length}`
-      });
-      for (const warning of data.warnings ?? []) pushChat({ role: "system", text: warning });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "题集生成失败，请重试。");
-    } finally {
-      setStartingMode(null);
-    }
-  }
-
-  function clearPersistedRun() {
-    try {
-      window.localStorage.removeItem(PERSISTENCE_KEY);
-    } catch {
-      // ignore localStorage failures; clearing UI state still matters.
-    }
-    setRepositoryUrl("");
-    setStatus("idle");
-    setResult(null);
-    setAnalysisRunId("");
-    setError("");
-    setCopied(false);
-    setFeed([]);
-    setReportDraft("");
-    setExamPoints([]);
-    setQuestions([]);
-    setSessionId("");
-    setChat([]);
-    setInterviewTotal(0);
-    setSummary(null);
-    setInterviewSession(null);
-    setActiveQuestionSet(null);
-    setQuestionSets([]);
-    setInterviewRuns([]);
-    setAnswerDraft("");
-    setStageLabel("");
-    setCurrentStage(null);
-    setPlanSummary(null);
-    setFilesRead(0);
-    setFindingsSeen(0);
-    setLatestReadPath("");
-    setLastSavedAt(null);
-    setRestoredNotice("");
-    feedSeq.current = 0;
   }
 
   return (
     <main className="shell">
-      <section className="workspace">
-        <div className="intro">
-          <p className="eyebrow">v1.0.0-beta.1</p>
-          <h1>GitHub Repo 项目考核面试生成器</h1>
-          <p className="lede">
-            Deep Research Agent 读懂你的仓库（方法、训练、评测、配置、复现证据），结合 kaomian
-            高频题库，先沉淀项目细节地图，再进入练习或测试。
-          </p>
-        </div>
-
-        <div className="inputRow" role="search">
-          <input
-            aria-label="GitHub 仓库链接"
-            value={repositoryUrl}
-            onChange={(event) => setRepositoryUrl(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" && !event.nativeEvent.isComposing) void submit();
-            }}
-            placeholder="https://github.com/owner/repo"
-          />
-          <button disabled={status === "loading" || !repositoryUrl.trim()} onClick={() => void submit()}>
-            {status === "loading" ? "分析中" : result ? "重新分析" : "开始分析"}
-          </button>
-        </div>
-
-        {(lastSavedAt || restoredNotice) && (
-          <div className="persistenceRow">
-            <span>
-              {restoredNotice || "本轮记录已自动保存"}
-              {lastSavedAt ? ` · ${formatSavedAt(lastSavedAt)}` : ""}
-            </span>
-            <button type="button" onClick={clearPersistedRun} disabled={status === "loading"}>
-              清空本地记录
+      <div className="workspace">
+        <div className="topBar">
+          <div>
+            <p className="eyebrow">Traceback</p>
+            <strong>Repo Interview Risk Review</strong>
+          </div>
+          <div className="viewSwitch" aria-label="页面视图切换">
+            <button
+              type="button"
+              className={viewMode === "demo" ? "active" : ""}
+              onClick={() => setViewMode("demo")}
+            >
+              Demo
+            </button>
+            <button
+              type="button"
+              className={viewMode === "intro" ? "active" : ""}
+              onClick={() => setViewMode("intro")}
+            >
+              介绍
             </button>
           </div>
-        )}
+        </div>
 
-        {status !== "idle" && (currentStage || feed.length > 0 || filesRead > 0 || result || reportDraft) && (
-          <ProgressDashboard
-            status={status}
-            currentStage={currentStage}
-            stageLabel={stageLabel}
-            plan={planSummary}
-            filesRead={filesRead}
-            findingsSeen={findingsSeen}
-            examPointCount={examPoints.length}
-            questionCount={questions.length}
-            latestReadPath={latestReadPath}
-          />
-        )}
-
-        {status === "error" && <div className="error">{error}</div>}
-        {status !== "error" && error && <div className="error">{error}</div>}
-
-        {result && (
-          <ModuleSwitcher
-            mode={mode}
-            result={result}
-            questionSets={questionSets}
-            interviewRuns={interviewRuns}
-            startingMode={startingMode}
-            onSelectSurvey={() => setMode("survey")}
-            onStartPractice={(questionSet) => void startInteractiveSession("practice", questionSet)}
-            onStartTest={(questionSet) => void startInteractiveSession("interview", questionSet)}
-          />
-        )}
-
-        {interviewReady && (
-          <section className="chatPanel priority" aria-label={practiceMode ? "练习模式" : "测试模式"}>
-            <div className="chatHead">
-              <div>
-                <p className="eyebrow">{practiceMode ? "Practice Session" : "Test Session"}</p>
-                <h2>
-                  {practiceMode ? "练习模式" : "测试模式"}
-                  {interviewTotal > 0 && <span className="count"> {interviewTotal} 道主问题链</span>}
-                </h2>
-                {activeQuestionSet && <p className="sessionSubtitle">{activeQuestionSet.title}</p>}
-              </div>
-              {!summary && (
-                <button className="endBtn" disabled={sending} onClick={() => void sendAnswer(true)}>
-                  {practiceMode ? "结束练习出复盘" : "提前结束测试"}
-                </button>
-              )}
-            </div>
-
-            <div className="chatLog">
-              {chat.map((message) => {
-                if (message.role === "evaluation") {
-                  return (
-                    <div className={`evalCard verdict-${message.verdict}`} key={message.id}>
-                      <div className="evalHead">
-                        <span className="evalScore">{message.score}/5</span>
-                        <span className="evalVerdict">{message.verdict}</span>
-                      </div>
-                      <p>{message.feedback}</p>
-                      {message.gaps.length > 0 && (
-                        <ul>
-                          {message.gaps.map((gap) => (
-                            <li key={gap}>{gap}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  );
-                }
-                if (message.role === "system") {
-                  return (
-                    <div className="chatSystem" key={message.id}>
-                      {message.text}
-                    </div>
-                  );
-                }
-                return (
-                  <div className={`bubble ${message.role}`} key={message.id}>
-                    {message.role === "interviewer" && <span className="bubbleMeta">{message.meta}</span>}
-                    <p>{message.text}</p>
-                  </div>
-                );
-              })}
-              {sending && <div className="chatSystem">面试官思考中…</div>}
-            </div>
-
-            {practiceMode && !summary && sessionId && (
-              <div className="practiceTools" aria-label="练习辅助">
-                <button
-                  type="button"
-                  disabled={sending || !interviewSession || practiceHelpLoading !== null}
-                  onClick={() => void requestPracticeHelp("hint")}
-                >
-                  {practiceHelpLoading === "hint" ? "AI 生成中" : "给我提示"}
-                </button>
-                <button
-                  type="button"
-                  disabled={sending || !interviewSession || practiceHelpLoading !== null}
-                  onClick={() => void requestPracticeHelp("answer")}
-                >
-                  {practiceHelpLoading === "answer" ? "AI 生成中" : "看参考答案"}
-                </button>
-              </div>
-            )}
-
-            {!summary && sessionId && (
-              <div className="chatInput">
-                <textarea
-                  aria-label="你的回答"
-                  value={answerDraft}
-                  disabled={sending}
-                  rows={4}
-                  placeholder="输入你的回答…（Ctrl/⌘ + Enter 发送）"
-                  onChange={(event) => setAnswerDraft(event.target.value)}
-                  onKeyDown={(event) => {
-                    if ((event.metaKey || event.ctrlKey) && event.key === "Enter") void sendAnswer();
-                  }}
+        {viewMode === "intro" ? (
+          <IntroPage />
+        ) : (
+          <>
+            <section className="intro compactIntro">
+              <p className="eyebrow">Traceback</p>
+              <h1>Traceback</h1>
+              <p className="lede">
+                你的 GitHub 项目，真的经得起面试官追问吗？
+              </p>
+              <form className="inputRow" onSubmit={analyze}>
+                <input
+                  value={repositoryUrl}
+                  onChange={(event) => setRepositoryUrl(event.target.value)}
+                  placeholder={DEMO_REPO}
+                  aria-label="GitHub repository URL"
                 />
-                <button disabled={sending || !answerDraft.trim()} onClick={() => void sendAnswer()}>
-                  发送回答
-                </button>
-              </div>
-            )}
+                <button disabled={status === "analyzing"}>{status === "analyzing" ? "审查中" : "开始审查"}</button>
+              </form>
+              {error ? <p className="errorText">{error}</p> : null}
+            </section>
 
-            {summary && (
-              <div className="summaryCard">
-                <h2>面试复盘</h2>
-                <p className="summaryOverall">{summary.overall}</p>
-                {summary.scores.length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>得分</h3>
-                    <ul>
-                      {summary.scores.map((item) => (
-                        <li key={item.question}>
-                          <span className="scoreChip">{item.score}/5</span> {item.question}
-                        </li>
-                      ))}
-                    </ul>
+            {status === "analyzing" || progress.length > 0 ? (
+              <AgentDashboard
+                status={status}
+                currentStage={currentStage}
+                filesRead={filesRead}
+                findingsSeen={findingsSeen}
+                candidateQuestions={candidateQuestions}
+                passedRisks={result?.risks.length ?? 0}
+                latestReadPath={latestReadPath}
+                progress={progress}
+              />
+            ) : null}
+
+            {result ? (
+              <section className="riskReviewer">
+                <aside className="riskColumn">
+                  <div className="resultHeader">
+                    <p className="eyebrow">Repository Risk Review</p>
+                    <h2>这是你的项目里最可能被面试官问穿的 {risks.length} 个地方。</h2>
+                    <p>{result.repo.fullName} · {result.analysisMode}</p>
                   </div>
-                )}
-                {(summary.questionReviews ?? []).length > 0 && (
-                  <div className="summaryBlock primaryReviewBlock">
-                    <h3>逐题复盘</h3>
-                    <div className="questionReviewList">
-                      {(summary.questionReviews ?? []).map((item, index) => (
-                        <article className={`questionReviewCard verdict-${item.verdict}`} key={`${item.question}-${index}`}>
-                          <div className="questionReviewHead">
-                            <span className="scoreChip">{item.score}/5</span>
-                            <span className="evalVerdict">{item.verdict}</span>
-                          </div>
-                          <h4>{item.question}</h4>
-                          {item.answer && <p className="answerExcerpt">你的回答：{item.answer}</p>}
-                          <div className="reviewColumns">
-                            {item.whatWorked.length > 0 && (
-                              <div>
-                                <strong>已经答到</strong>
-                                <ul>
-                                  {item.whatWorked.map((point) => (
-                                    <li key={point}>{point}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                            {item.missingPoints.length > 0 && (
-                              <div>
-                                <strong>需要补齐</strong>
-                                <ul>
-                                  {item.missingPoints.map((point) => (
-                                    <li key={point}>{point}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            )}
-                          </div>
-                          {item.betterAnswer && (
-                            <div className="betterAnswer">
-                              <strong>更好的回答方式</strong>
-                              <p>{item.betterAnswer}</p>
-                            </div>
-                          )}
-                          {item.followUpAdvice.length > 0 && (
-                            <div className="followUpAdvice">
-                              <strong>下一轮追问准备</strong>
-                              <ul>
-                                {item.followUpAdvice.map((point) => (
-                                  <li key={point}>{point}</li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
-                        </article>
+                  {result.warnings.length > 0 ? (
+                    <div className="warningBox">
+                      {result.warnings.map((warning) => (
+                        <p key={warning}>{warning}</p>
                       ))}
                     </div>
+                  ) : null}
+                  <div className="riskList">
+                    {risks.map((risk, index) => (
+                      <Fragment key={risk.id}>
+                        <button
+                          type="button"
+                          className={`riskCard ${risk.id === selectedRisk?.id ? "active" : ""}`}
+                          onClick={() => selectRisk(risk)}
+                        >
+                          <span className={`riskLevel ${risk.riskLevel}`}>{riskLevelLabel(risk.riskLevel)}</span>
+                          <strong>{index + 1}. {risk.title}</strong>
+                          <span>{risk.interviewerQuestion}</span>
+                          <small>
+                            Evidence Check: {risk.evidenceCheck.status} · {risk.evidenceRefs.length} refs
+                            {risk.source === "interview_story" ? " · 真实面经改写" : ""}
+                          </small>
+                        </button>
+                        {risk.id === selectedRisk?.id && chat ? (
+                          <RiskDetail
+                            risk={risk}
+                            chat={chat}
+                            onDraftChange={(draft) => updateDraft(risk.id, draft)}
+                            onSend={() => sendAnswer(risk)}
+                          />
+                        ) : null}
+                      </Fragment>
+                    ))}
                   </div>
-                )}
-                {summary.strengths.length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>亮点</h3>
-                    <ul>
-                      {summary.strengths.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {summary.weaknesses.length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>薄弱点</h3>
-                    <ul>
-                      {summary.weaknesses.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {(summary.evidenceReview ?? []).length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>证据链复盘</h3>
-                    <ul>
-                      {(summary.evidenceReview ?? []).map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {(summary.priorityFixes ?? []).length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>优先补坑</h3>
-                    <ul>
-                      {(summary.priorityFixes ?? []).map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {summary.reviewPlan.length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>面试前补坑计划</h3>
-                    <ul>
-                      {summary.reviewPlan.map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                {(summary.practiceDrills ?? []).length > 0 && (
-                  <div className="summaryBlock">
-                    <h3>专项练习</h3>
-                    <ul>
-                      {(summary.practiceDrills ?? []).map((item) => (
-                        <li key={item}>{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
+                </aside>
+
+                <EvidencePane
+                  risk={selectedRisk}
+                  selectedEvidence={selectedEvidence}
+                  selectedDocument={selectedDocument}
+                  onSelectEvidence={(ref) => setSelectedEvidenceKey(evidenceKey(ref))}
+                />
+              </section>
+            ) : (
+              <section className="emptyState">
+                <h2>先给我一个 repo。</h2>
+                <p>系统会先抓仓库证据，再输出一组能被代码、README 或配置支撑的面试风险点。</p>
+              </section>
             )}
-          </section>
+          </>
         )}
-
-        {feed.length > 0 && status !== "idle" && (
-          <details
-            className={interviewReady ? "feedPanel compact collapsiblePanel" : "feedPanel collapsiblePanel"}
-            aria-live="polite"
-            open
-          >
-            <summary className="feedHead panelSummary">
-              <span>
-                <span className={status === "loading" ? "dot" : "dot idle"} />
-                {interviewReady ? "面试已开始" : status === "loading" ? stageLabel : "分析完成"}
-              </span>
-            </summary>
-            <ul className="feedList">
-              {feed.map((item) => (
-                <li key={item.id} className={`feedItem ${item.kind}`}>
-                  {item.text}
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-
-        {!result && reportDraft && !sessionId && (
-          <details className="report streamingReport collapsiblePanel" aria-label="理解报告生成中" aria-live="polite" open>
-            <summary className="reportHead panelSummary">
-              <div>
-                <p className="eyebrow">Streaming</p>
-                <h2>仓库理解报告（生成中）</h2>
-              </div>
-            </summary>
-            <pre>{reportDraft}</pre>
-          </details>
-        )}
-
-        {mode === "survey" && examPoints.length > 0 && !result && (
-          <details className="examPoints collapsiblePanel" aria-label="项目考核点" open>
-            <summary className="sectionSummary panelSummary">
-              <h2>
-                项目考核点 <span className="count">{examPoints.length}</span>
-              </h2>
-            </summary>
-            <ul>
-              {examPoints.map((point, index) => (
-                <li key={index}>
-                  <span className={`chip risk-${point.riskLevel}`}>{point.riskLevel}</span>
-                  <div>
-                    <strong>{point.title}</strong>
-                    {point.whyAsk && <p>{point.whyAsk}</p>}
-                    <p className="cardEvidence">证据：{point.evidence.join("、") || "—"}</p>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </details>
-        )}
-
-        {mode === "survey" && questions.length > 0 && !result && (
-          <details className="questionsPanel collapsiblePanel" aria-label="题目种子" open>
-            <summary className="sectionSummary panelSummary">
-              <h2>
-                题目种子 <span className="count">{questions.length}</span>
-              </h2>
-            </summary>
-            <div className="questionGrid">
-              {questions.map((question, index) => (
-                <article className="questionCard" key={index}>
-                  <header>
-                    <span className={`chip diff-${question.difficulty}`}>{question.difficulty}</span>
-                    {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
-                    <span className="qIndex">Q{String(index + 1).padStart(2, "0")}</span>
-                  </header>
-                  <p className="qText">{question.question}</p>
-                  {question.whyAsk && <p className="qWhy">{question.whyAsk}</p>}
-                  <p className="cardEvidence">证据：{question.evidence.join("、") || "—"}</p>
-                  <details>
-                    <summary>期望要点 / 红旗 / 追问</summary>
-                    {question.expectedAnswer.length > 0 && (
-                      <div className="qBlock">
-                        <h3>期望要点</h3>
-                        <ul>
-                          {question.expectedAnswer.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {question.redFlags.length > 0 && (
-                      <div className="qBlock">
-                        <h3>红旗回答</h3>
-                        <ul>
-                          {question.redFlags.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    {question.followUps.length > 0 && (
-                      <div className="qBlock">
-                        <h3>后续追问</h3>
-                        <ul>
-                          {question.followUps.map((item) => (
-                            <li key={item}>{item}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                  </details>
-                </article>
-              ))}
-            </div>
-          </details>
-        )}
-
-        {mode === "survey" && result && <RenderedInterviewPlan result={result} copied={copied} onCopy={() => void copyReport()} />}
-      </section>
+      </div>
     </main>
   );
 }
 
-type RoadmapStage = PipelineStage | "complete";
-
-function ModuleSwitcher({
-  mode,
-  result,
-  questionSets,
-  interviewRuns,
-  startingMode,
-  onSelectSurvey,
-  onStartPractice,
-  onStartTest
-}: {
-  mode: AnalyzeMode;
-  result: AnalyzeResponse;
-  questionSets: QuestionSet[];
-  interviewRuns: InterviewRun[];
-  startingMode: InteractiveMode | null;
-  onSelectSurvey: () => void;
-  onStartPractice: (questionSet?: QuestionSet) => void;
-  onStartTest: (questionSet?: QuestionSet) => void;
-}) {
-  const latestRun = interviewRuns[0];
-  const latestQuestionSet = questionSets[0];
+function IntroPage() {
   return (
-    <section className="moduleHub" aria-label="分析后的模式入口">
-      <div className="moduleHubHead">
+    <section className="introPage" aria-label="Traceback 项目介绍">
+      <div className="introHeroPanel">
         <div>
-          <p className="eyebrow">Analysis Ready</p>
-          <h2>{result.repo.fullName} 的项目底座已生成</h2>
-          <p>Survey 查看项目细节地图；练习和测试会基于同一份分析结果，各自生成一套新的问题。</p>
+          <p className="eyebrow">Traceback</p>
+          <h1>你的 GitHub 项目，哪里会被面试官问穿？</h1>
+          <p>
+            输入 GitHub 仓库，系统会把最容易被面试官追问的项目细节标出来，并把每个问题直接链接到代码、README 或配置证据。
+          </p>
+        </div>
+        <div className="introThesis">
+          <strong>核心判断</strong>
+          <p>项目面试不是看 README 写得多漂亮，而是看你的 claim 能不能在仓库里找到证据。</p>
         </div>
       </div>
-      <div className="moduleGrid">
-        <button className={mode === "survey" ? "moduleCard active" : "moduleCard"} type="button" onClick={onSelectSurvey}>
+
+      <div className="introSplit">
+        <article className="introNarrative">
+          <p className="eyebrow">Problem</p>
+          <h2>Vibe coding 之后，项目更容易做，也更容易讲虚。</h2>
+          <p>
+            README 可以很好看，简历也可以很完整。但好的技术面试官会顺着你的项目 claim 一层层追问，直到确认这个项目是不是你真的理解、做过、能解释。
+          </p>
+          <blockquote>
+            Traceback 不生成更多泛题，它先读仓库，再指出哪些地方最可能经不起追问。
+          </blockquote>
+        </article>
+
+        <aside className="demoCue">
+          <p className="eyebrow">3-minute talk flow</p>
+          <div>
+            <strong>0:00 - 0:30</strong>
+            <span>展示 Demo：左边风险点，右边代码证据。</span>
+          </div>
+          <div>
+            <strong>0:30 - 2:30</strong>
+            <span>解释 Deep Research Agent 和 Evidence Check Agent。</span>
+          </div>
+          <div>
+            <strong>2:30 - 3:00</strong>
+            <span>回到用户价值：逐个补项目理解，直到经得起追问。</span>
+          </div>
+        </aside>
+      </div>
+
+      <div className="agentIntroGrid">
+        <article>
           <span>01</span>
-          <strong>Survey 报告</strong>
-          <small>{result.examPoints.length} 个考核点 · {result.questions.length} 个题目种子</small>
-        </button>
-        <button
-          className={mode === "practice" ? "moduleCard active" : "moduleCard"}
-          type="button"
-          disabled={Boolean(startingMode)}
-          onClick={() => onStartPractice()}
-        >
+          <h2>Deep Research Agent</h2>
+          <p>先搜索、读取、整理仓库，形成项目理解地图：项目声称做了什么，关键实现和复现证据在哪里。</p>
+        </article>
+        <article>
           <span>02</span>
-          <strong>{startingMode === "practice" ? "正在生成练习题" : "练习模式"}</strong>
-          <small>新题集 · 可看提示和参考答案</small>
-        </button>
-        <button
-          className={mode === "interview" ? "moduleCard active" : "moduleCard"}
-          type="button"
-          disabled={Boolean(startingMode)}
-          onClick={() => onStartTest()}
-        >
+          <h2>Evidence Check Agent</h2>
+          <p>每个风险点进入结果前，都要检查 reference 是否充分且必要，避免听起来专业但证据不扎实的问题混进来。</p>
+        </article>
+        <article>
           <span>03</span>
-          <strong>{startingMode === "interview" ? "正在生成测试题" : "测试模式"}</strong>
-          <small>新题集 · 不给提示，结束后详尽复盘</small>
-        </button>
+          <h2>Follow-up Interview</h2>
+          <p>用户点开任意风险点直接回答，Agent 会继续追问，把“答得虚”的地方暴露出来。</p>
+        </article>
       </div>
-      {(questionSets.length > 0 || latestRun) && (
-        <div className="historyStrip" aria-label="最近题集和复盘">
-          {latestQuestionSet && (
-            <div>
-              <strong>最近题集</strong>
-              <p>
-                {latestQuestionSet.mode === "practice" ? "练习" : "测试"} · {latestQuestionSet.questions.length} 题 ·{" "}
-                {formatDateTime(latestQuestionSet.createdAt)}
-              </p>
-              <div className="historyActions">
-                <button type="button" disabled={Boolean(startingMode)} onClick={() => onStartPractice(latestQuestionSet)}>
-                  用这套练习
-                </button>
-                <button type="button" disabled={Boolean(startingMode)} onClick={() => onStartTest(latestQuestionSet)}>
-                  用这套测试
-                </button>
-              </div>
-            </div>
-          )}
-          {latestRun && (
-            <div>
-              <strong>最近复盘</strong>
-              <p>
-                {latestRun.mode === "practice" ? "练习" : "测试"} · {summaryAverage(latestRun.summary)} ·{" "}
-                {formatDateTime(latestRun.createdAt)}
-              </p>
-            </div>
-          )}
+
+      <div className="traceFlow">
+        <div>
+          <strong>GitHub repo</strong>
+          <span>仓库输入</span>
         </div>
-      )}
+        <div>
+          <strong>Risk points</strong>
+          <span>会被问穿的问题</span>
+        </div>
+        <div>
+          <strong>Evidence viewer</strong>
+          <span>代码 / README / 配置证据</span>
+        </div>
+        <div>
+          <strong>Follow-up</strong>
+          <span>持续追问与补坑</span>
+        </div>
+      </div>
     </section>
   );
 }
 
-type RoadmapStep = {
-  stage: RoadmapStage;
-  label: string;
-  caption: string;
-};
+function RiskDetail(props: {
+  risk: RepoInterviewRisk;
+  chat: RiskChatState;
+  onDraftChange: (draft: string) => void;
+  onSend: () => void;
+}) {
+  const { risk, chat, onDraftChange, onSend } = props;
+  return (
+    <section className="riskDetail">
+      <p className="eyebrow">Selected Risk</p>
+      <h2>{risk.title}</h2>
+      <p className="questionText">{risk.interviewerQuestion}</p>
+      <div className="riskDisclosureStack">
+        <MetaBlock label="对应 claim" items={[risk.claim]} />
+        <MetaBlock label="参考答案" items={[risk.referenceAnswer]} />
+        <MetaBlock label="红旗回答" items={risk.redFlags} />
+        <MetaBlock label="补坑建议" items={risk.fixSuggestions} />
+        <details className="metaBlock">
+          <summary>
+            <span>Evidence Check</span>
+            <small>{risk.evidenceCheck.status}</small>
+          </summary>
+          <p>{risk.evidenceCheck.reason}</p>
+          <p>
+            {risk.evidenceCheck.sufficiency} / {risk.evidenceCheck.necessity}
+          </p>
+          {risk.evidenceCheck.missingEvidence.length > 0 ? (
+            <p>缺少证据：{risk.evidenceCheck.missingEvidence.join("、")}</p>
+          ) : null}
+        </details>
+      </div>
+      <div className="riskChat">
+        <div className="chatHistory">
+          {chat.history.length === 0 ? (
+            <p className="mutedText">直接写你的回答，系统会沿着这个风险点继续追问。</p>
+          ) : (
+            chat.history.map((turn, index) => (
+              <p key={`${turn.role}-${index}`} className={`chatTurn ${turn.role}`}>
+                <strong>{turn.role === "user" ? "你" : "面试官"}</strong>
+                {turn.content}
+              </p>
+            ))
+          )}
+        </div>
+        <textarea
+          value={chat.draft}
+          onChange={(event) => onDraftChange(event.target.value)}
+          placeholder="在这里回答这个风险点..."
+        />
+        <button type="button" onClick={onSend} disabled={chat.busy}>
+          {chat.busy ? "追问中" : "提交回答"}
+        </button>
+      </div>
+    </section>
+  );
+}
 
-const SURVEY_ROADMAP: RoadmapStep[] = [
-  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
-  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
-  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
-  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
-  { stage: "questions", label: "整理细节", caption: "连接 kaomian，形成可问方向和题目种子" },
-  { stage: "complete", label: "进入模块", caption: "Survey / 练习 / 测试共用同一份分析底座" }
-];
+function EvidencePane(props: {
+  risk?: RepoInterviewRisk;
+  selectedEvidence: EvidenceRef | null;
+  selectedDocument: EvidenceDocument | null;
+  onSelectEvidence: (ref: EvidenceRef) => void;
+}) {
+  const { risk, selectedEvidence, selectedDocument, onSelectEvidence } = props;
+  const displayEvidence = buildEvidenceDisplay(selectedEvidence, selectedDocument);
 
-function ProgressDashboard({
-  status,
-  currentStage,
-  stageLabel,
-  plan,
-  filesRead,
-  findingsSeen,
-  examPointCount,
-  questionCount,
-  latestReadPath
-}: {
-  status: Status;
+  return (
+    <section className="evidenceColumn">
+      <div className="evidenceToolbar">
+        <div>
+          <p className="eyebrow">Evidence Viewer</p>
+          <h2>{selectedEvidence?.filePath ?? "等待证据"}</h2>
+        </div>
+        {selectedEvidence ? (
+          <span>
+            L{displayEvidence.startLine}-L{displayEvidence.endLine}
+          </span>
+        ) : null}
+      </div>
+      {risk ? (
+        <div className="referenceRail">
+          {risk.evidenceRefs.map((ref) => (
+            <button
+              key={evidenceKey(ref)}
+              type="button"
+              className={evidenceKey(ref) === evidenceKey(selectedEvidence) ? "active" : ""}
+              onClick={() => onSelectEvidence(ref)}
+            >
+              {ref.filePath}:{ref.startLine}-{ref.endLine}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <pre className="codeViewer">
+        <code>{displayEvidence.code}</code>
+      </pre>
+      {selectedEvidence ? (
+        <div className="evidenceReason">
+          <strong>为什么引用这里</strong>
+          <p>{selectedEvidence.reason}</p>
+          {selectedEvidence.highlightTerms.length > 0 ? (
+            <p>高亮词：{selectedEvidence.highlightTerms.join("、")}</p>
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function AgentDashboard(props: {
+  status: "idle" | "analyzing" | "ready" | "error";
   currentStage: PipelineStage | null;
-  stageLabel: string;
-  plan: ResearchPlanSummary | null;
   filesRead: number;
   findingsSeen: number;
-  examPointCount: number;
-  questionCount: number;
+  candidateQuestions: number;
+  passedRisks: number;
   latestReadPath: string;
+  progress: ProgressItem[];
 }) {
-  const steps = SURVEY_ROADMAP;
-  const activeStage: RoadmapStage = status === "done" ? "complete" : currentStage ?? "scout";
-  const activeIndex = Math.max(
-    0,
-    steps.findIndex((step) => step.stage === activeStage)
-  );
-  const clampedActiveIndex = activeIndex === -1 ? 0 : activeIndex;
-  const nextStep = status === "loading" ? steps[clampedActiveIndex + 1] : null;
-  const detail = status === "error" ? "分析中断，请查看错误信息" : status === "done" ? "本轮分析完成" : stageLabel || "连接分析服务";
-  const planLabel = plan
-    ? `${plan.analysisMode} · ${plan.dimensions.length} 个维度`
-    : "Analysis";
-
+  const activeIndex = props.currentStage ? AGENT_STEPS.findIndex((step) => step.stage === props.currentStage) : -1;
+  const currentStep = activeIndex >= 0 ? AGENT_STEPS[activeIndex] : AGENT_STEPS[0];
   return (
-    <section className={`progressDashboard status-${status}`} aria-label="分析进度">
-      <div className="dashTopline">
+    <section className={`agentDashboard status-${props.status}`} aria-label="agent pipeline dashboard">
+      <div className="agentDashTop">
         <div>
-          <p className="eyebrow">Run Dashboard</p>
-          <h2>{roadmapTitle(activeStage, status)}</h2>
-          <p className="dashDetail">{detail}</p>
+          <p className="eyebrow">Agent Pipeline</p>
+          <h2>{currentStep.title}</h2>
+          <p>{currentStep.description}</p>
         </div>
-        <div className="dashMode">
-          <span>{planLabel}</span>
-          {nextStep && <strong>下一步：{nextStep.label}</strong>}
+        <div className="agentMetrics">
+          <div>
+            <strong>{props.filesRead}</strong>
+            <span>证据文件</span>
+          </div>
+          <div>
+            <strong>{props.findingsSeen}</strong>
+            <span>风险线索</span>
+          </div>
+          <div>
+            <strong>{props.candidateQuestions}</strong>
+            <span>候选问题</span>
+          </div>
+          <div>
+            <strong>{props.passedRisks}</strong>
+            <span>通过审核</span>
+          </div>
         </div>
       </div>
-
-      <ol className="roadmap" aria-label="分析路线图">
-        {steps.map((step, index) => {
-          const state =
-            status === "error" && index === clampedActiveIndex
-              ? "blocked"
-              : index < clampedActiveIndex || status === "done"
-                ? "done"
-                : index === clampedActiveIndex
-                  ? "active"
-                  : "queued";
+      <div className="agentStepRail">
+        {AGENT_STEPS.map((step, index) => {
+          const state = index < activeIndex || props.status === "ready" ? "done" : index === activeIndex ? "active" : "pending";
           return (
-            <li className={`roadmapStep ${state}`} key={step.stage} aria-current={state === "active" ? "step" : undefined}>
-              <span className="roadmapIndex">{String(index + 1).padStart(2, "0")}</span>
-              <div>
-                <strong>{step.label}</strong>
-                <small>{step.caption}</small>
-              </div>
-            </li>
+            <div key={step.stage} className={`agentStep ${state}`}>
+              <span>{index + 1}</span>
+              <strong>{step.short}</strong>
+              <small>{step.agent}</small>
+            </div>
           );
         })}
-      </ol>
-
-      <div className="dashStats" aria-label="实时产出">
-        <div>
-          <span>已读文件</span>
-          <strong>{filesRead}</strong>
-        </div>
-        <div>
-          <span>研究发现</span>
-          <strong>{findingsSeen}</strong>
-        </div>
-        <div>
-          <span>考核点</span>
-          <strong>{examPointCount}</strong>
-        </div>
-        <div>
-          <span>题目</span>
-          <strong>{questionCount}</strong>
-        </div>
       </div>
-
-      <div className="dashFoot">
-        <span>{latestReadPath ? `最近读取：${latestReadPath}` : "等待第一个证据文件"}</span>
+      <div className="agentDashBottom">
+        <div>
+          <strong>最近读取</strong>
+          <span>{props.latestReadPath || "等待文件读取"}</span>
+        </div>
+        <div className="agentEventLog">
+          {props.progress.slice(-5).map((item) => (
+            <p key={item.id}>{item.text}</p>
+          ))}
+        </div>
       </div>
     </section>
   );
 }
 
-function roadmapTitle(stage: RoadmapStage, status: Status): string {
-  if (status === "error") return "分析被打断";
-  if (status === "done") return "分析完成";
-  const labels: Record<RoadmapStage, string> = {
-    scout: "正在抓取仓库证据",
-    plan: "正在规划研究路线",
-    research: "正在并行深读",
-    synthesize: "正在合成项目理解",
-    questions: "正在整理可问细节",
-    interview_ready: "正在准备模拟面试",
-    complete: "分析完成"
-  };
-  return labels[stage];
+function buildEvidenceDisplay(ref: EvidenceRef | null, document: EvidenceDocument | null) {
+  const fallback = "选择左侧风险点后，这里会显示对应 evidence snippet。";
+  if (!ref) return { code: document?.content ?? fallback, startLine: 1, endLine: 1 };
+  const documentLines = document?.content.split(/\r?\n/) ?? [];
+  if (!document || documentLines.length < ref.endLine) {
+    return { code: ref.snippet, startLine: ref.startLine, endLine: ref.endLine };
+  }
+
+  const minEndLine = ref.startLine + 39;
+  const endLine = Math.min(documentLines.length, Math.max(ref.endLine, minEndLine));
+  const code = documentLines
+    .slice(ref.startLine - 1, endLine)
+    .map((line, offset) => `${String(ref.startLine + offset).padStart(4, " ")} | ${line}`)
+    .join("\n");
+  return { code, startLine: ref.startLine, endLine };
 }
 
-function validateGitHubRepoUrl(input: string): string | null {
-  let url: URL;
-  try {
-    url = new URL(input.trim());
-  } catch {
-    return "请输入完整的 GitHub 仓库链接，例如 https://github.com/owner/repo。";
-  }
-  if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
-    return "请输入 github.com 仓库链接。";
-  }
-  const [owner, repoSegment, marker, ...rest] = url.pathname.split("/").filter(Boolean);
-  if (!owner || !repoSegment) {
-    return "GitHub 链接需要包含 owner 和 repo。";
-  }
-  const repo = repoSegment.replace(/\.git$/, "");
-  const repoNamePattern = /^[A-Za-z0-9_.-]+$/;
-  if (!repo || !repoNamePattern.test(owner) || !repoNamePattern.test(repo)) {
-    return "GitHub 仓库链接中的 owner 或 repo 不合法。";
-  }
-  if (marker && marker !== "tree") {
-    return "请输入 GitHub 仓库主页链接，或 /tree/{branch} 分支链接。";
-  }
-  if (marker === "tree" && rest.length === 0) {
-    return "GitHub 分支链接需要包含 branch。";
-  }
-  return null;
+function MetaBlock({ label, items }: { label: string; items: string[] }) {
+  const clean = items.filter(Boolean);
+  if (clean.length === 0) return null;
+  return (
+    <details className="metaBlock">
+      <summary>
+        <span>{label}</span>
+        <small>{clean.length} 条</small>
+      </summary>
+      {clean.map((item) => (
+        <p key={item}>{item}</p>
+      ))}
+    </details>
+  );
 }
 
-function readPersistedRun(): PersistedRun | null {
+function safeLoad(): AnalyzeResponse | null {
+  if (typeof window === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(PERSISTENCE_KEY);
+    const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const data = JSON.parse(raw) as Partial<PersistedRun>;
-    if (data.version !== 1) return null;
-    if (typeof data.savedAt !== "number") return null;
-    if (typeof data.repositoryUrl !== "string") return null;
-    if (!isAnalyzeMode(data.mode)) return null;
-    if (!isStatus(data.status)) return null;
-    return {
-      version: 1,
-      savedAt: data.savedAt,
-      repositoryUrl: data.repositoryUrl,
-      mode: data.mode,
-      status: data.status,
-      runId: typeof data.runId === "string" ? data.runId : "",
-      result: data.result ?? null,
-      error: typeof data.error === "string" ? data.error : "",
-      feed: Array.isArray(data.feed) ? data.feed : [],
-      stageLabel: typeof data.stageLabel === "string" ? data.stageLabel : "",
-      currentStage: isPipelineStage(data.currentStage) ? data.currentStage : null,
-      planSummary: data.planSummary ?? null,
-      filesRead: typeof data.filesRead === "number" ? data.filesRead : 0,
-      findingsSeen: typeof data.findingsSeen === "number" ? data.findingsSeen : 0,
-      latestReadPath: typeof data.latestReadPath === "string" ? data.latestReadPath : "",
-      reportDraft: typeof data.reportDraft === "string" ? data.reportDraft : "",
-      examPoints: Array.isArray(data.examPoints) ? data.examPoints : [],
-      questions: Array.isArray(data.questions) ? data.questions : [],
-      sessionId: typeof data.sessionId === "string" ? data.sessionId : "",
-      chat: Array.isArray(data.chat) ? data.chat : [],
-      interviewTotal: typeof data.interviewTotal === "number" ? data.interviewTotal : 0,
-      summary: data.summary ?? null,
-      interviewSession: data.interviewSession ?? null,
-      activeQuestionSet: data.activeQuestionSet ?? null,
-      questionSets: Array.isArray(data.questionSets) ? data.questionSets : [],
-      interviewRuns: Array.isArray(data.interviewRuns) ? data.interviewRuns : [],
-      answerDraft: typeof data.answerDraft === "string" ? data.answerDraft : ""
-    };
+    const parsed = JSON.parse(raw) as AnalyzeResponse;
+    return Array.isArray(parsed.risks) ? parsed : null;
   } catch {
     return null;
   }
 }
 
-function hasPersistableContent({
-  currentStage,
-  result,
-  reportDraft,
-  feed,
-  examPoints,
-  questions,
-  sessionId,
-  chat,
-  summary,
-  questionSets,
-  interviewRuns
-}: {
-  currentStage: PipelineStage | null;
-  result: AnalyzeResponse | null;
-  reportDraft: string;
-  feed: FeedItem[];
-  examPoints: ExamPoint[];
-  questions: InterviewQuestion[];
-  sessionId: string;
-  chat: ChatMessage[];
-  summary: InterviewSummary | null;
-  questionSets: QuestionSet[];
-  interviewRuns: InterviewRun[];
-}) {
-  return Boolean(
-    currentStage ||
-      result ||
-      reportDraft ||
-      feed.length > 0 ||
-      examPoints.length > 0 ||
-      questions.length > 0 ||
-      sessionId ||
-      chat.length > 0 ||
-      summary ||
-      questionSets.length > 0 ||
-      interviewRuns.length > 0
-  );
+function findEvidenceDocument(documents: EvidenceDocument[], ref: EvidenceRef): EvidenceDocument | null {
+  return documents.find((document) => document.filePath === ref.filePath) ?? null;
 }
 
-function isAnalyzeMode(value: unknown): value is AnalyzeMode {
-  return value === "survey" || value === "interview" || value === "practice";
+function evidenceKey(ref?: EvidenceRef | null): string {
+  return ref ? `${ref.filePath}:${ref.startLine}-${ref.endLine}` : "";
 }
 
-function isStatus(value: unknown): value is Status {
-  return value === "idle" || value === "loading" || value === "done" || value === "error";
+function stageLabel(stage: string): string {
+  const labels: Record<string, string> = {
+    scout: "读取仓库证据",
+    plan: "规划审查路径",
+    research: "深读关键文件",
+    synthesize: "合成仓库理解",
+    questions: "生成风险点并准备 Evidence Check",
+    evidence_check: "审核证据充分性与必要性",
+    interview_ready: "审查完成"
+  };
+  return labels[stage] ?? stage;
 }
 
-function isPipelineStage(value: unknown): value is PipelineStage {
-  return (
-    value === "scout" ||
-    value === "plan" ||
-    value === "research" ||
-    value === "synthesize" ||
-    value === "questions" ||
-    value === "interview_ready"
-  );
-}
+const AGENT_STEPS: Array<{
+  stage: PipelineStage;
+  short: string;
+  title: string;
+  agent: string;
+  description: string;
+}> = [
+  {
+    stage: "scout",
+    short: "Scout",
+    title: "Scout Agent 正在抓取仓库证据",
+    agent: "Repo Scout",
+    description: "读取仓库元数据、README、文件树和关键源码文件。"
+  },
+  {
+    stage: "plan",
+    short: "Plan",
+    title: "Planner Agent 正在规划研究维度",
+    agent: "Research Planner",
+    description: "决定要深读哪些模块、训练/评测/数据/配置路径。"
+  },
+  {
+    stage: "research",
+    short: "Research",
+    title: "Research Agents 正在并行深读代码",
+    agent: "Repo Deep Research",
+    description: "抽取可验证的代码事实、claim-code link 和候选风险线索。"
+  },
+  {
+    stage: "synthesize",
+    short: "Synthesize",
+    title: "Synthesis Agent 正在合成仓库理解",
+    agent: "Understanding Synthesizer",
+    description: "把多维度 digest 合成项目地图、方法路径和评估逻辑。"
+  },
+  {
+    stage: "questions",
+    short: "Risk Gen",
+    title: "Risk Agent 正在生成会被问穿的问题",
+    agent: "Repo Interview Risk Agent",
+    description: "只围绕内部实现、控制流、数据流和边界条件生成候选问题。"
+  },
+  {
+    stage: "evidence_check",
+    short: "Evidence",
+    title: "Evidence Check Agent 正在审核 reference",
+    agent: "Evidence Check",
+    description: "检查每个问题的证据是否充分且必要，不通过则丢弃。"
+  },
+  {
+    stage: "interview_ready",
+    short: "Result",
+    title: "风险审查结果已生成",
+    agent: "Risk Viewer",
+    description: "展示通过审核的问题和右侧代码证据。"
+  }
+];
 
-function formatSavedAt(savedAt: number): string {
-  return new Intl.DateTimeFormat("zh-CN", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit"
-  }).format(savedAt);
-}
-
-function formatDateTime(value: number): string {
-  return new Intl.DateTimeFormat("zh-CN", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(value);
-}
-
-function summaryAverage(summary: InterviewSummary): string {
-  if (summary.scores.length === 0) return "暂无得分";
-  const average = summary.scores.reduce((sum, item) => sum + item.score, 0) / summary.scores.length;
-  return `平均 ${Math.round(average * 10) / 10}/5`;
-}
-
-function createClientId(): string {
-  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-}
-
-function RenderedInterviewPlan({
-  result,
-  copied,
-  onCopy
-}: {
-  result: AnalyzeResponse;
-  copied: boolean;
-  onCopy: () => void;
-}) {
-  const priorityPoints = [
-    ...result.examPoints.filter((point) => point.riskLevel === "high"),
-    ...result.examPoints.filter((point) => point.riskLevel !== "high")
-  ].slice(0, 3);
-  const spotlightQuestions = uniqueByQuestion([
-    ...result.questions.filter((question) => question.difficulty === "hard"),
-    ...result.questions.filter((question) => question.source === "kaomian"),
-    ...result.questions
-  ]).slice(0, 3);
-  const primaryEvidence = uniqueStrings([
-    ...priorityPoints.flatMap((point) => point.evidence),
-    ...spotlightQuestions.flatMap((question) => question.evidence)
-  ]).slice(0, 8);
-  const supportSignals = [
-    ...result.understanding.entryPoints,
-    ...result.understanding.evaluationSignals,
-    ...result.understanding.reproductionRecipe
-  ].filter(Boolean);
-
-  return (
-    <section className="planCanvas" aria-label="项目细节地图">
-      <header className="planHero">
-        <div>
-          <p className="eyebrow">Project Survey</p>
-          <h2>{result.repo.fullName}</h2>
-          <p className="planSummary">{result.understanding.summary}</p>
-        </div>
-        <div className="planScoreboard" aria-label="分析指标">
-          <div>
-            <span>考核点</span>
-            <strong>{result.examPoints.length}</strong>
-          </div>
-          <div>
-            <span>题目种子</span>
-            <strong>{result.questions.length}</strong>
-          </div>
-          <div>
-            <span>证据文件</span>
-            <strong>{result.evidenceFiles.length}</strong>
-          </div>
-        </div>
-      </header>
-
-      <section className="priorityBand" aria-label="项目可问细节">
-        <div className="bandTitle">
-          <p className="eyebrow">Start Here</p>
-          <h2>最容易被问的细节</h2>
-        </div>
-        <div className="priorityGrid">
-          {priorityPoints.map((point, index) => (
-            <article className="priorityCard" key={`${point.title}-${index}`}>
-              <span className={`chip risk-${point.riskLevel}`}>{riskText(point.riskLevel)}</span>
-              <h3>{point.title}</h3>
-              <p>{point.whyAsk || "这类问题最容易暴露候选人是否真的理解项目取舍。"}</p>
-              <EvidenceLine paths={point.evidence} />
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="focusLayout" aria-label="核心面试题">
-        <div className="focusMain">
-          <div className="sectionLead">
-            <p className="eyebrow">Question Seeds</p>
-            <h2>可转成题目的方向</h2>
-          </div>
-          <div className="spotlightList">
-            {spotlightQuestions.map((question, index) => (
-              <QuestionSpotlight question={question} index={index} key={`${question.question}-${index}`} />
-            ))}
-          </div>
-        </div>
-
-        <aside className="prepRail" aria-label="答题抓手">
-          <div className="railBlock">
-            <h3>一句话项目定位</h3>
-            <p>{result.understanding.problemSetting || result.understanding.summary}</p>
-          </div>
-          <div className="railBlock">
-            <h3>先打开这些证据</h3>
-            <CompactPathList paths={primaryEvidence.length > 0 ? primaryEvidence : result.evidenceFiles.map((file) => file.path).slice(0, 6)} />
-          </div>
-          {supportSignals.length > 0 && (
-            <div className="railBlock quiet">
-              <h3>复现/评测线索</h3>
-              <CompactPathList paths={supportSignals.slice(0, 6)} />
-            </div>
-          )}
-        </aside>
-      </section>
-
-      <section className="questionDeck" aria-label="题目种子">
-        <div className="sectionLead">
-          <p className="eyebrow">Seed Set</p>
-          <h2>Survey 题目种子</h2>
-        </div>
-        <div className="questionDeckGrid">
-          {result.questions.map((question, index) => (
-            <article className="planQuestionCard" key={`${question.question}-${index}`}>
-              <header>
-                <span className={`chip diff-${question.difficulty}`}>{difficultyText(question.difficulty)}</span>
-                {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
-                <span className="qIndex">Q{String(index + 1).padStart(2, "0")}</span>
-              </header>
-              <p className="qText">{question.question}</p>
-              <div className="answerGrid">
-                <MiniList title="好回答要点" items={question.expectedAnswer.slice(0, 3)} />
-                <MiniList title="红旗回答" items={question.redFlags.slice(0, 3)} danger />
-              </div>
-              <details>
-                <summary>证据与追问</summary>
-                <EvidenceLine paths={question.evidence} />
-                <MiniList title="追问链" items={question.followUps} />
-              </details>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="secondaryReport" aria-label="低优先级信息">
-        <details>
-          <summary>仓库元信息、证据文件和原始 Markdown</summary>
-          <div className="secondaryGrid">
-            <div className="smallFacts">
-              <h3>仓库元信息</h3>
-              <dl>
-                <div>
-                  <dt>分析模式</dt>
-                  <dd>{result.analysisMode}</dd>
-                </div>
-                <div>
-                  <dt>语言</dt>
-                  <dd>{result.repo.language ?? "Unknown"}</dd>
-                </div>
-                <div>
-                  <dt>默认分支</dt>
-                  <dd>{result.repo.defaultBranch}</dd>
-                </div>
-                <div>
-                  <dt>Stars</dt>
-                  <dd>{result.repo.stars}</dd>
-                </div>
-              </dl>
-            </div>
-            <div className="smallFacts">
-              <h3>证据文件</h3>
-              <CompactPathList paths={result.evidenceFiles.map((file) => `${file.path} · ${file.category}`).slice(0, 18)} />
-            </div>
-            {result.warnings.length > 0 && (
-              <div className="smallFacts warning">
-                <h3>Warnings</h3>
-                <CompactPathList paths={result.warnings} />
-              </div>
-            )}
-          </div>
-          <div className="rawReportHead">
-            <h3>原始 Markdown</h3>
-            <button className="copy" onClick={onCopy}>
-              {copied ? "已复制" : "复制"}
-            </button>
-          </div>
-          <pre>{result.markdownReport}</pre>
-        </details>
-      </section>
-    </section>
-  );
-}
-
-function QuestionSpotlight({ question, index }: { question: InterviewQuestion; index: number }) {
-  return (
-    <article className="spotlightQuestion">
-      <header>
-        <span className="spotlightIndex">{String(index + 1).padStart(2, "0")}</span>
-        <div>
-          <span className={`chip diff-${question.difficulty}`}>{difficultyText(question.difficulty)}</span>
-          {question.source === "kaomian" && <span className="chip kaomian">高频题改写</span>}
-        </div>
-      </header>
-      <p>{question.question}</p>
-      {question.whyAsk && <small>{question.whyAsk}</small>}
-      <EvidenceLine paths={question.evidence} />
-    </article>
-  );
-}
-
-function MiniList({ title, items, danger = false }: { title: string; items: string[]; danger?: boolean }) {
-  if (items.length === 0) return null;
-  return (
-    <div className={danger ? "miniList danger" : "miniList"}>
-      <h3>{title}</h3>
-      <ul>
-        {items.map((item) => (
-          <li key={item}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function EvidenceLine({ paths }: { paths: string[] }) {
-  if (paths.length === 0) return <p className="cardEvidence">证据：—</p>;
-  return (
-    <p className="cardEvidence">
-      证据：{paths.slice(0, 4).join("、")}
-      {paths.length > 4 ? ` 等 ${paths.length} 处` : ""}
-    </p>
-  );
-}
-
-function CompactPathList({ paths }: { paths: string[] }) {
-  if (paths.length === 0) return <p className="emptySmall">未明确识别</p>;
-  return (
-    <ul className="compactPathList">
-      {paths.map((path) => (
-        <li key={path}>{path}</li>
-      ))}
-    </ul>
-  );
-}
-
-function uniqueByQuestion(questions: InterviewQuestion[]): InterviewQuestion[] {
-  const seen = new Set<string>();
-  return questions.filter((question) => {
-    if (seen.has(question.question)) return false;
-    seen.add(question.question);
-    return true;
-  });
-}
-
-function uniqueStrings(items: string[]): string[] {
-  return [...new Set(items.filter(Boolean))];
-}
-
-function riskText(risk: RiskLevel): string {
-  const labels: Record<RiskLevel, string> = { low: "低风险", medium: "中风险", high: "高风险" };
-  return labels[risk];
-}
-
-function difficultyText(difficulty: Difficulty): string {
-  const labels: Record<Difficulty, string> = { warmup: "热身", medium: "中等", hard: "强压" };
-  return labels[difficulty];
+function riskLevelLabel(level: RepoInterviewRisk["riskLevel"]): string {
+  if (level === "high") return "高风险";
+  if (level === "medium") return "中风险";
+  return "低风险";
 }

@@ -1,39 +1,38 @@
 # 提交对照清单
 
-依据：`2026-05-24_项目挑战说明_.pdf`。提交方式：所有材料汇总为一封邮件发送至 `mlic@pku.edu.cn`，以邮件服务器时间戳为准，逾期不收。
-
-注意：PDF 内时间表述不一致（主时间线为 5 月 24 日 24:00 截止；产品链接处写"至 5 月 15 日 24 点"；提交方式处写"5 月 10 日"），以主办方最终确认为准。
+依据：`2026-05-24_项目挑战说明_.pdf`。提交方式以主办方最终通知为准。
 
 ## 必交项
 
-| # | 交付物 | 要求要点 | 状态 |
-| --- | --- | --- | --- |
-| 1 | Demo 视频 ≤ 3 分钟 | 覆盖目标用户痛点 / 设计取舍 / 核心功能演示；前 30 秒放 wow moment；一镜到底即可 | 脚本已备：`docs/demo-video-script.md`，待产品完成后录制 |
-| 2 | 公网可访问 URL | 公网 IP + 端口即可；需在服务器添加 2 个评委公钥（无法登录 = 产品无法访问）；受额度/部署限制需说明 | 部署步骤与公钥已备：`docs/DEPLOYMENT.md` + `Dockerfile`，待核心管道合并后部署 |
-| 3 | Product Memo 1-2 页 | 目标用户与痛点（访谈了谁）/ 设计说明（刻意没做什么）/ 版本迭代记录 / 下一步设计 / AI 工具使用 | 草稿已备：`PRODUCT_MEMO.md`，含【待补充】标记 |
-| 4 | GitHub 公开仓库 | public（已确认 ✓）；README 含项目简介、运行方式、技术栈说明；清晰 commit history，忌一次性提交 | README 已含简介与运行方式，技术栈说明已补；持续小步 commit |
+| # | 交付物 | 要求要点 | 当前状态 |
+|---|---|---|---|
+| 1 | Demo 视频 ≤ 3 分钟 | 前 30 秒展示 wow moment；之后用一页介绍页讲清痛点、设计取舍和 agent 架构 | 脚本已更新为 Traceback 版：`docs/demo-video-script.md` |
+| 2 | 公网可访问 URL | 可访问 Demo；演示时建议使用固定结果或快速模型，保证 1 分钟内出结果 | 部署指南见 `docs/DEPLOYMENT.md` |
+| 3 | Product Memo 1-2 页 | 目标用户与痛点、产品设计、刻意不做什么、版本迭代、下一步 | 已更新为 Traceback：`PRODUCT_MEMO.md` |
+| 4 | GitHub 公开仓库 | README 含项目简介、运行方式、技术栈、当前取舍；commit history 清晰 | README 已更新为 Traceback：`README.md` |
 
-## 可选项
+## 演示材料建议
 
-调研记录、原型图、架构图等（材料贵精不贵多）。本仓库已有，可在邮件中点名：
-
-- `用户访谈工作日志.md`：5 位同学 + 本人的真实访谈记录
-- `user-research.md`：用户需求调研
-- `github-competitor-research.md`：竞品调研
-- `docs/ARCHITECTURE.md`：Deep Research Agent 架构图
-- `VERSION_WORKLOG.md`：产品定位演化记录
+- `Demo` 页面：展示风险点 + Evidence Viewer + 单风险点追问。
+- `介绍` 页面：展示 Traceback 的一句话价值、Deep Research Agent、Evidence Check Agent 和 Follow-up Interview。
+- `docs/demo-video-script.md`：3 分钟讲稿。
+- `PRODUCT_MEMO.md`：提交 memo 草稿。
+- `docs/ARCHITECTURE.md`：系统架构图和 pipeline 说明。
+- `VERSION_WORKLOG.md`：产品从完整平台收缩到风险审查器的决策记录。
 
 ## 诚信与安全要求
 
-- [ ] 标注哪些是自己写的、哪些是 AI 生成的、哪些 fork 来的（已写入 `PRODUCT_MEMO.md` §5，提交前复核）
-- [ ] 演示与测试使用脱敏数据 / 公开仓库，不用真人个人信息
-- [ ] 准备挑战结束后第二周的 1v1 现场答辩——所有项目细节要能自己讲清楚
+- [ ] 说明代码为 AI 辅助生成 + 人工审查迭代。
+- [ ] 演示使用公开仓库，不使用真人隐私数据。
+- [ ] 如果使用固定 demo 结果，需要说明这是为了演示稳定性，真实模式仍可跑完整 pipeline。
+- [ ] API key、GitHub token 不提交到公开仓库。
 
 ## 提交前最后一小时检查
 
-- [ ] 服务器已添加 2 个评委公钥并验证 SSH 可登录
-- [ ] 公网 URL 在手机流量（非本地网络）下可打开并完整跑通一次生成
-- [ ] 视频时长 < 3 分钟，导出格式可直接播放
-- [ ] Memo 中【待补充】标记全部清除
-- [ ] 最后一次 git push 已完成，仓库无未提交的关键代码
-- [ ] 邮件正文写明：URL、测试说明、API 额度限制说明（如有）、各材料清单
+- [ ] 公网 URL 可打开。
+- [ ] Demo / 介绍切换正常。
+- [ ] 演示 repo 能在 1 分钟内展示稳定结果。
+- [ ] 视频时长 < 3 分钟。
+- [ ] Product Memo 无旧产品名、无 Survey / Practice / Test 主入口描述。
+- [ ] README 和架构图描述一致。
+- [ ] 最后一次 `npm run typecheck` 和 `npm test -- --run` 通过。

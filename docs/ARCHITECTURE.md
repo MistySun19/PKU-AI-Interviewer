@@ -1,110 +1,149 @@
-# 系统架构：Repo Deep Research Agent
+# 系统架构：Traceback Repo 面试风险审查器
 
-输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式先深度理解仓库，再进入 Survey / 练习 / 测试三个模块。分析是公共底座，Survey 负责项目细节地图，练习和测试分别生成新的题集。
+Traceback 输入公开 GitHub 仓库，先用 Repo Deep Research Agent 读懂项目，再生成“会被面试官问穿”的风险点。每个风险点进入最终结果前，都要经过 Evidence Check Agent 审核 reference 是否充分且必要。最终前端以双栏 viewer 展示：左侧问题，右侧代码 / README / 配置证据。
 
-- **Survey 版**：展示理解报告、可问细节、证据来源、风险点和题目种子。
-- **测试版**：基于分析结果生成一套新的测试题，模拟真实面试，一问一答，结束后给逐题复盘反馈。
-- **练习版**：基于分析结果生成一套新的练习题，允许用户请求 AI 生成提示或参考答案；历史题集可以复用。
-
-架构决策依据见 `docs/research/deep-research-agent-design.md`（核心结论：仓库是有界输入，不做自由 agent swarm；并行只用于只读分析，写作单次合成保证自洽；不用 embedding，agentic 按需读取）。
-
-## 总体架构
+## 总体流程
 
 ```mermaid
 flowchart TD
-    subgraph FE["前端 src/app/page.tsx"]
-        INPUT["输入 GitHub URL"]
-        FEED["进度 Feed<br/>(阶段 / 读文件 / 发现)"]
-        DASH["Run Dashboard<br/>Roadmap + 产出计数"]
-        REPORT["流式报告 (Markdown 增量)"]
-        CARDS["题目卡片流 (Survey)"]
-        HUB["分析后模块入口<br/>Survey / 练习 / 测试"]
-        CHAT["面试/练习聊天面板"]
-        LOCAL["localStorage<br/>runId + 草稿 + 题集 + session 快照 + 复盘"]
+    INPUT["GitHub repo URL"] --> API["POST /api/analyze (SSE)"]
+
+    subgraph PIPE["Agent Pipeline"]
+        SCOUT["Scout<br/>抓取 README / 文件树 / 关键文件"]
+        PLAN["Plan<br/>规划研究维度"]
+        RESEARCH["Research<br/>并行深读代码事实"]
+        SYN["Synthesize<br/>合成项目理解地图"]
+        RISK["Risk Gen<br/>生成候选风险点"]
+        CHECK["Evidence Check<br/>审核 reference 充分性与必要性"]
+        FINAL["Final Sort<br/>高 / 中 / 低风险排序"]
     end
 
-    subgraph API["API 层"]
-        ANALYZE["POST /api/analyze (SSE)<br/>{url, mode} 或 {runId}"]
-        QSET["POST /api/question-set<br/>{mode, result, questionSet?}"]
-        INTERVIEW["POST /api/interview (SSE)<br/>{sessionId, answer}"]
-        HELP["POST /api/practice-help<br/>{sessionId, kind}"]
+    subgraph UI["前端 src/app/page.tsx"]
+        DASH["Agent Dashboard<br/>显示当前阶段"]
+        LEFT["左侧风险点列表"]
+        RIGHT["右侧 Evidence Viewer"]
+        CHAT["单风险点持续追问"]
+        INTRO["介绍页<br/>Demo / 介绍切换"]
     end
 
-    subgraph ORCH["编排器 src/lib/orchestrator.ts（单线程主循环）"]
-        P0["Phase 0 Scout（无 LLM）<br/>GitHub tree + 锚点文件<br/>+ import 引用计数 → repoMap"]
-        P1["Phase 1 Plan（1 次调用）<br/>analysisMode + 研究维度<br/>+ 文件分配 + techTags"]
-        P2["Phase 2 Research<br/>维度 worker 并发≤3，≤2 轮<br/>gap 队列 + 预算 + beast mode"]
-        P3["Phase 3 Synthesize（流式）<br/>digests → 自洽理解报告"]
-        P4A["Phase 4a Survey<br/>报告 + kaomian 匹配<br/>→ 可问细节 + 题目种子"]
-        P4B["Phase 4b Question Set<br/>分析结果 → 练习/测试题集"]
-        P4C["Phase 4c Interview / Practice<br/>题集 → 会话循环<br/>问→答→评估→追问/下一题→复盘"]
-    end
-
-    subgraph EXT["外部依赖"]
-        GH["GitHub REST API<br/>tree / raw，并发≤5"]
-        LLM["Tokendance deepseek-v4-pro<br/>稳定前缀（prefix cache 实测可用）<br/>Zod 校验 + 降级兜底"]
-        KAOMIAN["kaomian 快照<br/>src/data/kaomian.json<br/>948 题带标签"]
-        RUNS["AnalysisRun<br/>runId + SSE 事件历史"]
-        SESS["InterviewSession<br/>内存会话表 Map + 前端快照恢复"]
-    end
-
-    INPUT --> ANALYZE
-    ANALYZE --> RUNS
-    RUNS --> P0 --> P1 --> P2 --> P3
-    P3 --> P4A
-    P4A --> HUB
-    HUB --> QSET --> P4B --> SESS
-    CHAT --> INTERVIEW --> P4C
-    P4C <--> SESS
-    CHAT --> HELP --> LLM
-    P0 <--> GH
-    P1 <--> LLM
-    P2 <--> LLM
-    P3 <--> LLM
-    P4A <--> LLM
-    P4B <--> LLM
-    P4C <--> LLM
-    P4A <--> KAOMIAN
-    ANALYZE -. "SSE: run / stage / plan / file_read /<br/>finding / report_delta / question / result" .-> FEED
-    FEED --> DASH
-    ANALYZE -.-> REPORT
-    ANALYZE -.-> CARDS
-    INTERVIEW -. "SSE: evaluation / next_question / summary" .-> CHAT
-    LOCAL -. "刷新后用 runId 续接；session 失效时用快照恢复" .-> ANALYZE
-    LOCAL -.-> INTERVIEW
+    API --> SCOUT --> PLAN --> RESEARCH --> SYN --> RISK --> CHECK --> FINAL
+    API -. "stage / file_read / finding / question / result" .-> DASH
+    FINAL --> LEFT
+    FINAL --> RIGHT
+    LEFT --> CHAT
+    LEFT -. "点击 reference" .-> RIGHT
 ```
 
-## 阶段说明
+## API
 
-| 阶段 | LLM 调用 | 输入 | 输出 | 关键约束 |
-|---|---|---|---|---|
-| Phase 0 Scout | 0 | repo URL | repoMap（文件树骨架 + 锚点 + 中心度排序，1-4k token） | 纯确定性；锚点 = README/configs/入口 |
-| Phase 1 Plan | 1 | repoMap + README | 研究维度、文件分配、techTags、analysisMode | Zod 校验；维度按仓库形态动态取舍 |
-| Phase 2 Research | ≤10 | 每维度：repoMap + 分配文件全文（超限骨架化） | DimensionDigest（findings/claimCodeLinks/askPoints/openQuestions） | 原文不进主线程；digest ≤300 token/条；预算耗尽 → beast mode |
-| Phase 3 Synthesize | 1 | 全部 digests + repoMap | 理解报告（流式 Markdown） | 单次合成保证自洽 |
-| Phase 4a Survey | 1 | 报告 + kaomian 匹配题 | 可问细节 + 题目种子（逐条流式） | 主追问链必须绑仓库证据；八股标注来源 |
-| Phase 4b Question Set | 1 | 分析结果 + Survey 题目种子 | 练习或测试题集 + session | 不重新抓仓库；练习/测试各自生成新题集；历史题集可复用 |
-| Phase 4c Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/复盘 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
+| API | 作用 |
+|---|---|
+| `POST /api/analyze` | SSE 分析入口，输入 repo URL，输出风险点、证据 bundle 和进度事件。 |
+| `POST /api/risk-chat` | 单风险点持续追问，输入 risk、answer、history 和 evidenceRefs。 |
 
-## 持久化与续接
+旧的 `question-set`、`interview`、`practice-help` API 仍可保留为兼容层，但不再是当前产品主入口。
 
-- `/api/analyze` 新建分析时生成 `runId`，服务端后台继续消费 pipeline；浏览器 SSE 连接只负责订阅事件。
-- `AnalysisRun` 保存该 run 的 SSE 事件历史。刷新后前端用本地保存的 `runId` 重新请求 `/api/analyze`，服务端先回放历史事件，再继续推送后续事件。
-- 前端使用 `localStorage` 保存仓库链接、当前模块、runId、阶段计数、日志、报告草稿、考核点、题目种子、题集历史、聊天记录、复盘记录和 `InterviewSession` 快照。
-- `/api/interview` 和 `/api/practice-help` 在服务端 session 过期但前端有快照时，可用快照恢复单进程内存 session 后继续。
-- 当前持久化是 beta 轻量实现：刷新可续接；服务重启或重新部署后，服务端后台任务不会继续，但前端仍保留已生成内容。
+## Pipeline 阶段
 
-## 上下文管理硬规则
+| 阶段 | LLM 调用 | 输出 | 关键约束 |
+|---|---:|---|---|
+| Scout | 0 | repo metadata、README、文件树、关键文件 | 纯确定性；过滤大文件、二进制、依赖目录。 |
+| Plan | 1 | 研究维度、文件分配、analysisMode、techTags | 只从已读取文件中选择路径。 |
+| Research | 1-10 | DimensionDigest：findings、claimCodeLinks、askPoints、openQuestions | 受控并行；必要时补读文件；每条 finding 必须有 evidence。 |
+| Synthesize | 1 | Understanding + paperCodeMap | 合成项目 claim、核心实现、数据流、评测与复现路线。 |
+| Risk Gen | 1 | 10-20 个候选 examPoint / question | 只出设计思路、具体实现、失败边界和取舍追问。 |
+| Evidence Check | 本地规则 + 可扩展模型审核 | `RepoInterviewRisk[]` + `EvidenceCheck` | 不充分或不必要 evidence 会被修剪、重写或丢弃。 |
+| Final Sort | 0 | 按 high / medium / low 排序的最终风险点 | 目标 8 个及以上；证据不足时不硬凑。 |
 
-1. 原始文件内容只进 worker context；主线程只持有 repoMap + digests（≤20k token）。
-2. 单文件 >6k token 先骨架化（保留签名/docstring/import）；单 worker 输入预算 ~40k token。
-3. 单次分析 LLM 调用 ≤13 次。
-4. 所有调用共享稳定 system 前缀：无时间戳、append-only、JSON key 顺序固定（实测 Tokendance 支持 prefix caching，cache hit 直接降本提速）。
-5. 每条 finding/question 必须带 evidence 文件路径，缺失由 `ensureEvidence` 回填。
-6. worker Zod 校验失败重试 1 次后跳过该维度；全局兜底走降级报告路径。
+## 核心类型
+
+### `RepoInterviewRisk`
+
+```ts
+type RepoInterviewRisk = {
+  id: string;
+  riskLevel: "low" | "medium" | "high";
+  title: string;
+  interviewerQuestion: string;
+  claim: string;
+  whyThisMatters: string;
+  evidenceRefs: EvidenceRef[];
+  knowledgeGaps: string[];
+  referenceAnswer: string;
+  redFlags: string[];
+  fixSuggestions: string[];
+  followUpSeeds: string[];
+  source: "repo" | "interview_story";
+  evidenceCheck: EvidenceCheck;
+};
+```
+
+### `EvidenceCheck`
+
+```ts
+type EvidenceCheck = {
+  status: "pass" | "needs_revision" | "drop";
+  sufficiency: "sufficient" | "partial" | "insufficient";
+  necessity: "necessary" | "excessive" | "irrelevant";
+  missingEvidence: string[];
+  removedEvidenceRefs: EvidenceRef[];
+  reason: string;
+};
+```
+
+## Evidence Check 规则
+
+通过标准：
+
+- reference 能证明问题里的代码事实。
+- reference 能支撑对应 claim、参考答案和红旗回答。
+- 至少覆盖核心实现或配置；必要时覆盖 README claim、eval、train、data。
+- 每条 reference 都对判断该风险点有贡献。
+
+不通过标准：
+
+- 只有 README，不能证明具体实现。
+- 只有文件名或宽泛模块，不能定位到关键逻辑。
+- 只因关键词命中而引用，不支撑问题。
+- 问题声称了代码没有证明的实现细节。
+- 外部生态比较成为主问题，例如“为什么不用 HuggingFace / vLLM / transformers”，但没有内部实现约束证据。
+
+处理策略：
+
+- `pass`：进入最终结果。
+- `needs_revision`：尝试补 evidence 或重写风险点。
+- `drop`：不进入最终结果。
+
+## 前端结构
+
+首页有两个视图：
+
+- `Demo`：真实风险审查器。
+- `介绍`：用于 3 分钟演讲的一页项目介绍。
+
+Demo 视图：
+
+- `AgentDashboard`：显示当前 agent pipeline 阶段。
+- `riskColumn`：风险点列表、折叠详情、回答框。
+- `EvidencePane`：证据文件、行号、snippet、reference 切换。
+- `RiskDetail`：对应 claim、参考答案、红旗回答、补坑建议、Evidence Check 按钮式折叠区。
+
+## 模型配置
+
+演示优先使用快速配置：
+
+```env
+OPENAI_MODEL=deepseek-v4-flash
+TOKENDANCE_MODEL=deepseek-v4-flash
+TOKENDANCE_RESEARCH_MODEL=deepseek-v4-flash
+TOKENDANCE_THINKING_TYPE=disabled
+```
+
+如果设置了 `OPENAI_MODEL`，当前实现会让所有阶段都使用该模型。
 
 ## 已知取舍
 
-- 分析 run 和交互 session 以进程内存为主；刷新靠 `runId` / session 快照续接，服务重启后仍需要重新开始后台任务。
-- kaomian 按 ADR-0002 以快照消费，关键词/标签检索，不做 embedding。
-- 文件骨架化用正则而非 tree-sitter（24h 预算取舍，效果覆盖主要语言的签名提取）。
+- 右侧 evidence viewer 第一版展示分析时打包的 snippets，不做完整 IDE。
+- `kaomian` 只作为真实面经问题素材，不作为泛八股题库。
+- 不做整场评分和复盘，避免主线从“证据风险审查”漂移到“模拟考试平台”。
+- 分析 run 仍以单进程内存为主；演示场景建议增加固定 demo 快照，避免等待完整 pipeline。
