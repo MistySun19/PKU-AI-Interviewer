@@ -24,6 +24,18 @@ export async function POST(request: Request) {
       const send = (event: SseEvent) => {
         controller.enqueue(encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`));
       };
+      // 周期心跳：synthesize 等阶段是单次长 LLM 调用、事件间会静默数十秒，靠心跳避免公网链路 idle 超时掐连接
+      let alive = true;
+      const ping = () => {
+        if (!alive) return;
+        try {
+          controller.enqueue(encoder.encode(": ping\n\n"));
+        } catch {
+          alive = false;
+        }
+      };
+      ping();
+      const heartbeat = setInterval(ping, 5000);
       try {
         for await (const event of runAnalysisPipeline(body.repositoryUrl, body.mode)) {
           send(event);
@@ -31,6 +43,8 @@ export async function POST(request: Request) {
       } catch (error) {
         send({ type: "error", message: error instanceof Error ? error.message : "分析失败。" });
       } finally {
+        alive = false;
+        clearInterval(heartbeat);
         controller.close();
       }
     }

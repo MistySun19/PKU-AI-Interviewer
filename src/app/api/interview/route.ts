@@ -46,6 +46,18 @@ export async function POST(request: Request) {
       const send = (event: SseEvent) => {
         controller.enqueue(encoder.encode(`event: ${event.type}\ndata: ${JSON.stringify(event)}\n\n`));
       };
+      // 立即占住首字节并周期心跳：评估/总结都要等 LLM 数十秒，否则公网链路会因首字节或 idle 超时掐连接返回 502
+      let alive = true;
+      const ping = () => {
+        if (!alive) return;
+        try {
+          controller.enqueue(encoder.encode(": ping\n\n"));
+        } catch {
+          alive = false;
+        }
+      };
+      ping();
+      const heartbeat = setInterval(ping, 5000);
       try {
         if (body.end) {
           session.finished = true;
@@ -116,6 +128,8 @@ export async function POST(request: Request) {
       } catch (error) {
         send({ type: "error", message: error instanceof Error ? error.message : "面试服务异常。" });
       } finally {
+        alive = false;
+        clearInterval(heartbeat);
         session.busy = false;
         controller.close();
       }
