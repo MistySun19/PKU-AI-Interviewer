@@ -474,6 +474,231 @@ pre {
   line-height: 1.6;
 }
 
+.modeRow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.modeBtn {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  padding: 9px 16px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.modeBtn.active {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: white;
+}
+
+.modeBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.chatPanel {
+  margin-top: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(23, 26, 31, 0.07);
+}
+
+.chatHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel2);
+}
+
+.endBtn {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.endBtn:hover {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.chatLog {
+  display: grid;
+  gap: 12px;
+  padding: 18px;
+  max-height: 520px;
+  overflow-y: auto;
+}
+
+.bubble {
+  max-width: 86%;
+  padding: 12px 14px;
+  line-height: 1.6;
+  font-size: 15px;
+}
+
+.bubble p {
+  margin: 0;
+}
+
+.bubble.interviewer {
+  justify-self: start;
+  background: var(--panel2);
+  border: 1px solid var(--line);
+}
+
+.bubble.candidate {
+  justify-self: end;
+  background: var(--accent);
+  color: white;
+}
+
+.bubbleMeta {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--accent-dark);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.evalCard {
+  justify-self: stretch;
+  border-left: 4px solid var(--warn);
+  background: #fdfaf3;
+  border-top: 1px solid var(--line);
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 12px 14px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.evalCard.verdict-strong {
+  border-left-color: var(--accent);
+}
+
+.evalCard.verdict-weak {
+  border-left-color: var(--danger);
+}
+
+.evalCard p {
+  margin: 6px 0 0;
+  color: var(--ink);
+}
+
+.evalCard ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
+.evalHead {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.evalScore {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--accent-dark);
+}
+
+.evalVerdict {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.chatSystem {
+  justify-self: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.chatInput {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 10px;
+  padding: 14px 18px;
+  border-top: 1px solid var(--line);
+}
+
+.chatInput textarea {
+  resize: vertical;
+  min-height: 84px;
+  border: 1px solid var(--line);
+  background: #fdfaf3;
+  color: var(--ink);
+  padding: 12px;
+  font: inherit;
+  outline: none;
+}
+
+.chatInput textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(15, 107, 87, 0.16);
+}
+
+.chatInput button {
+  border: 0;
+  background: var(--accent);
+  color: white;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.chatInput button:disabled {
+  background: #a7aca2;
+  cursor: not-allowed;
+}
+
+.summaryCard {
+  padding: 18px;
+  border-top: 1px solid var(--line);
+}
+
+.summaryOverall {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.summaryBlock {
+  margin-top: 14px;
+}
+
+.summaryBlock h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--accent-dark);
+}
+
+.summaryBlock ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.scoreChip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 800;
+  color: var(--accent-dark);
+}
+
 @keyframes cardIn {
   from {
     opacity: 0;
