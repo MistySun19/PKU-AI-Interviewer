@@ -12,6 +12,7 @@ import type {
   AnswerEvaluation,
   DimensionDigest,
   ExamPoint,
+  InteractiveMode,
   InterviewQuestion,
   InterviewSummary,
   PaperCodeMapItem,
@@ -637,6 +638,13 @@ const practiceHelpSchema = z.object({
   text: z.string().default("")
 });
 
+const questionSetSchema = z.object({
+  questions: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(questionSchema).min(1).max(12)
+  )
+});
+
 export async function evaluateAnswer(args: {
   repoFullName: string;
   understanding: Understanding;
@@ -735,6 +743,72 @@ ${JSON.stringify(args.rounds, null, 2)}
   return withRetry("summary", async () =>
     parseModelJson(interviewSummarySchema, await chatJson(messages, 180_000), "summary")
   );
+}
+
+export async function generateModeQuestionSet(args: {
+  repoFullName: string;
+  mode: InteractiveMode;
+  understanding: Understanding;
+  examPoints: ExamPoint[];
+  seedQuestions: InterviewQuestion[];
+}): Promise<InterviewQuestion[]> {
+  const modeLabel = args.mode === "practice" ? "练习" : "测试";
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `仓库：${args.repoFullName}
+项目理解：
+${JSON.stringify(
+  {
+    summary: args.understanding.summary,
+    problemSetting: args.understanding.problemSetting,
+    techStack: args.understanding.techStack,
+    coreModules: args.understanding.coreModules,
+    mainFlow: args.understanding.mainFlow,
+    dataFlow: args.understanding.dataFlow,
+    evaluationSignals: args.understanding.evaluationSignals,
+    reproductionRecipe: args.understanding.reproductionRecipe,
+    paperClaims: args.understanding.paperClaims
+  },
+  null,
+  2
+)}
+
+Survey 里识别出的可问细节：
+${JSON.stringify(args.examPoints.slice(0, 10), null, 2)}
+
+题目种子（只能借鉴方向，不能照搬整套）：
+${JSON.stringify(args.seedQuestions.slice(0, 12), null, 2)}
+
+任务：为 ${modeLabel} 模式重新生成一套项目相关题。返回 JSON：
+{
+  "questions": [
+    {
+      "question": "面试官会直接问候选人的题目",
+      "difficulty": "warmup|medium|hard",
+      "evidence": ["证据路径或模块名"],
+      "whyAsk": "为什么这个问题能考察项目理解",
+      "expectedAnswer": ["好回答应该覆盖的要点"],
+      "redFlags": ["危险回答"],
+      "followUps": ["可继续追问的问题"],
+      "source": "repo|kaomian"
+    }
+  ]
+}
+
+要求：
+- 生成 7-9 道题，必须覆盖 warmup、medium、hard。
+- 每题都必须绑定 Survey 的项目证据或模块，不要生成泛八股。
+- ${args.mode === "practice" ? "练习题要更适合学习：从项目事实、设计理由、原理连接到失败 case 递进，followUps 可以带一点引导性。" : "测试题要更接近正式项目考核：不要给提示感，题目更尖锐，重点挖证据链、评测、失败场景和替代方案。"}
+- 可以借鉴题目种子的方向，但要重组为一套新的题，避免逐字重复。
+- expectedAnswer 和 redFlags 必须具体到本仓库。`
+    }
+  ];
+  const parsed = await withRetry("mode-questions", async () =>
+    parseModelJson(questionSetSchema, await chatJson(messages, 180_000), "mode-questions")
+  );
+  return parsed.questions;
 }
 
 export async function generatePracticeHelp(args: {

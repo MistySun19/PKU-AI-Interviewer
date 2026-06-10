@@ -66,8 +66,8 @@ beta 的核心变化是把单轮分析拆成 Repo Deep Research Agent 管道：
 2. Plan：规划研究维度，判断仓库形态，给每个维度分配文件。
 3. Research：多个 digest worker 并行深读不同维度，必要时补读文件。
 4. Synthesize：合成完整项目理解报告。
-5. Questions：连接 `kaomian` 高频题库，生成绑定仓库证据的项目考核问题。
-6. Interview Ready / Session：把同一份仓库理解用于 Survey、Interactive 和 Practice 三种模式。
+5. Questions：连接 `kaomian` 高频题库，生成绑定仓库证据的项目考核点和题目种子。
+6. Module Hub：分析完成后，再进入 Survey、练习和测试三个模块。
 
 这一版里，`kaomian` 的定位也被重新约束：它不是主线，不允许直接把题库题拼进输出。正确用法是先从仓库证据中找到风险点，再用题库提供高频面试连接，最后改写成项目相关追问。
 
@@ -75,7 +75,13 @@ beta 的核心变化是把单轮分析拆成 Repo Deep Research Agent 管道：
 
 原本实时追问不是 V1.0.0 的主线，但在 beta 阶段被提前做进来。
 
-Survey 模式负责生成全量项目考核计划。Interactive 模式则复用同一份仓库理解，进入一问一答：
+后续产品判断进一步收敛为：分析不应该等同于 Survey，也不应该在入口处就让用户选择 Survey / Interactive / Practice。更自然的流程是先统一分析仓库，再把同一份项目理解分发给三个模块：
+
+- Survey：给出项目细节地图、证据来源、可问细节和题目种子。
+- Practice：基于当前分析结果生成一套新的练习题，允许提示和参考答案。
+- Test：基于当前分析结果生成一套新的测试题，不给提示，结束后输出详尽复盘。
+
+Interactive / Test 模式复用同一份仓库理解，进入一问一答：
 
 - 给出第一题。
 - 根据回答强弱打分。
@@ -122,7 +128,7 @@ Survey 模式负责生成全量项目考核计划。Interactive 模式则复用�
 - 降级提示：没有 API key 或模型失败时，必须明确告诉用户当前结果是降级报告。
 - 证据质量：每个核心问题都要尽量绑定文件、路径、配置或 README 片段。
 - 回归评测：建立 golden repo 集合，持续检查报告质量和问题质量。
-- Interactive / Practice 稳定性：题目生成、追问、提示、参考答案、总结和 session 状态要能长时间稳定工作。
+- Practice / Test 稳定性：题集生成、追问、提示、参考答案、复盘和 session 状态要能长时间稳定工作。
 - 持久化升级：当前 `runId` / `localStorage` 方案适合 beta；后续如果要跨设备、跨部署恢复，需要数据库或 Redis。
 
 ## 9. 当前判断

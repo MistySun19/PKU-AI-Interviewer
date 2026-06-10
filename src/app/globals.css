@@ -173,6 +173,133 @@ h2 {
   opacity: 0.55;
 }
 
+.moduleHub {
+  margin-top: 16px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: 0 16px 42px rgba(23, 26, 31, 0.07);
+}
+
+.moduleHubHead {
+  padding: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
+.moduleHubHead h2 {
+  margin-top: 4px;
+}
+
+.moduleHubHead p:not(.eyebrow) {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.65;
+}
+
+.moduleGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-bottom: 1px solid var(--line);
+}
+
+.moduleCard {
+  display: grid;
+  gap: 8px;
+  min-height: 128px;
+  padding: 16px;
+  border: 0;
+  border-right: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+
+.moduleCard:last-child {
+  border-right: 0;
+}
+
+.moduleCard:hover,
+.moduleCard.active {
+  background: color-mix(in srgb, var(--accent) 9%, var(--panel));
+}
+
+.moduleCard:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.moduleCard span {
+  color: var(--accent);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.moduleCard strong {
+  font-size: 18px;
+}
+
+.moduleCard small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.historyStrip {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+}
+
+.historyStrip div {
+  padding: 12px 16px;
+  border-right: 1px solid var(--line);
+}
+
+.historyStrip div:last-child {
+  border-right: 0;
+}
+
+.historyStrip strong {
+  color: var(--accent-dark);
+  font-size: 13px;
+}
+
+.historyStrip p {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.historyActions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 0;
+  border: 0;
+}
+
+.historyActions button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent-dark);
+  cursor: pointer;
+  padding: 6px 9px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.historyActions button:hover {
+  border-color: var(--accent);
+}
+
+.historyActions button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}
+
 .progress,
 .error {
   margin-top: 16px;
@@ -831,6 +958,13 @@ pre {
   background: var(--panel2);
 }
 
+.sessionSubtitle {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .endBtn {
   border: 1px solid var(--line);
   background: transparent;
@@ -1481,6 +1615,8 @@ pre {
   }
 
   .inputRow,
+  .moduleGrid,
+  .historyStrip,
   .resultGrid,
   .questionGrid,
   .dashTopline,
@@ -1498,6 +1634,17 @@ pre {
     border-left: 0;
     border-top: 1px solid var(--line);
     padding: 12px 0 0;
+  }
+
+  .moduleCard,
+  .historyStrip div {
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .moduleCard:last-child,
+  .historyStrip div:last-child {
+    border-bottom: 0;
   }
 
   .roadmap {

@@ -189,7 +189,7 @@ describe("runAnalysisPipeline", () => {
     expect(result && result.type === "result" && result.result.analysisMode).toBe("paper-code");
   });
 
-  it("creates an interview session for practice mode", async () => {
+  it("keeps analysis independent from practice sessions", async () => {
     const context = fakeContext();
     vi.mocked(fetchRepoContext).mockResolvedValue(context);
     vi.mocked(getApiKey).mockReturnValue("key");
@@ -220,7 +220,8 @@ describe("runAnalysisPipeline", () => {
 
     const events = await collectEventsForMode("https://github.com/o/r", "practice");
 
-    expect(events.some((event) => event.type === "session")).toBe(true);
+    expect(events.some((event) => event.type === "session")).toBe(false);
+    expect(events.slice(-2).map((event) => event.type)).toEqual(["result", "done"]);
   });
 
   it("grants requested files and runs a second research round", async () => {

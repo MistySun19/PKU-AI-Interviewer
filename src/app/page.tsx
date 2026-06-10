@@ -5,10 +5,13 @@ import type {
   AnalyzeMode,
   AnalyzeResponse,
   ExamPoint,
+  InteractiveMode,
   InterviewQuestion,
+  InterviewRun,
   InterviewSession,
   InterviewSummary,
   PipelineStage,
+  QuestionSet,
   ResearchPlanSummary,
   SseEvent
 } from "@/lib/types";
@@ -57,6 +60,9 @@ type PersistedRun = {
   interviewTotal: number;
   summary: InterviewSummary | null;
   interviewSession: InterviewSession | null;
+  activeQuestionSet: QuestionSet | null;
+  questionSets: QuestionSet[];
+  interviewRuns: InterviewRun[];
   answerDraft: string;
 };
 
@@ -102,8 +108,12 @@ export default function Home() {
   const [interviewTotal, setInterviewTotal] = useState(0);
   const [summary, setSummary] = useState<InterviewSummary | null>(null);
   const [interviewSession, setInterviewSession] = useState<InterviewSession | null>(null);
+  const [activeQuestionSet, setActiveQuestionSet] = useState<QuestionSet | null>(null);
+  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+  const [interviewRuns, setInterviewRuns] = useState<InterviewRun[]>([]);
   const [answerDraft, setAnswerDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [startingMode, setStartingMode] = useState<InteractiveMode | null>(null);
   const [practiceHelpLoading, setPracticeHelpLoading] = useState<"hint" | "answer" | null>(null);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [restoredNotice, setRestoredNotice] = useState("");
@@ -113,7 +123,6 @@ export default function Home() {
   const interactiveMode = mode === "interview" || mode === "practice";
   const practiceMode = mode === "practice";
   const interviewReady = interactiveMode && (sessionId || summary);
-  const interviewMissing = interactiveMode && status === "done" && !sessionId && !summary;
 
   useEffect(() => {
     const saved = readPersistedRun();
@@ -141,6 +150,9 @@ export default function Home() {
     setInterviewTotal(saved.interviewTotal);
     setSummary(saved.summary);
     setInterviewSession(saved.interviewSession);
+    setActiveQuestionSet(saved.activeQuestionSet);
+    setQuestionSets(saved.questionSets);
+    setInterviewRuns(saved.interviewRuns);
     setAnswerDraft(saved.answerDraft);
     setLastSavedAt(saved.savedAt);
     setRestoredNotice(
@@ -156,7 +168,23 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated.current) return;
-    if (!hasPersistableContent({ currentStage, result, reportDraft, feed, examPoints, questions, sessionId, chat, summary })) return;
+    if (
+      !hasPersistableContent({
+        currentStage,
+        result,
+        reportDraft,
+        feed,
+        examPoints,
+        questions,
+        sessionId,
+        chat,
+        summary,
+        questionSets,
+        interviewRuns
+      })
+    ) {
+      return;
+    }
 
     const savedAt = Date.now();
     const snapshot: PersistedRun = {
@@ -183,6 +211,9 @@ export default function Home() {
       interviewTotal,
       summary,
       interviewSession,
+      activeQuestionSet,
+      questionSets,
+      interviewRuns,
       answerDraft
     };
     try {
@@ -203,6 +234,7 @@ export default function Home() {
     findingsSeen,
     interviewTotal,
     interviewSession,
+    activeQuestionSet,
     latestReadPath,
     mode,
     planSummary,
@@ -213,7 +245,9 @@ export default function Home() {
     sessionId,
     stageLabel,
     status,
-    summary
+    summary,
+    questionSets,
+    interviewRuns
   ]);
 
   function pushFeed(kind: FeedItem["kind"], text: string) {
@@ -297,6 +331,17 @@ export default function Home() {
         break;
       case "summary":
         setSummary(event.summary);
+        if (activeQuestionSet) {
+          const run: InterviewRun = {
+            id: createClientId(),
+            questionSetId: activeQuestionSet.id,
+            repoFullName: activeQuestionSet.repoFullName,
+            mode: activeQuestionSet.mode,
+            createdAt: Date.now(),
+            summary: event.summary
+          };
+          setInterviewRuns((prev) => [run, ...prev.filter((item) => item.questionSetId !== run.questionSetId)]);
+        }
         break;
       case "warning":
         pushFeed("warning", event.message);
@@ -334,6 +379,7 @@ export default function Home() {
       setInterviewTotal(0);
       setSummary(null);
       setInterviewSession(null);
+      setActiveQuestionSet(null);
       setAnswerDraft("");
       setStageLabel("");
       setCurrentStage(null);
@@ -344,6 +390,7 @@ export default function Home() {
       return;
     }
     setStatus("loading");
+    setMode("survey");
     setError("");
     setResult(null);
     setAnalysisRunId("");
@@ -357,6 +404,9 @@ export default function Home() {
     setInterviewTotal(0);
     setSummary(null);
     setInterviewSession(null);
+    setActiveQuestionSet(null);
+    setQuestionSets([]);
+    setInterviewRuns([]);
     setAnswerDraft("");
     setStageLabel("连接分析服务");
     setCurrentStage("scout");
@@ -369,7 +419,7 @@ export default function Home() {
       const response = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repositoryUrl: repositoryUrl.trim(), mode })
+        body: JSON.stringify({ repositoryUrl: repositoryUrl.trim(), mode: "survey" })
       });
 
       if (!response.ok || !response.body) {
@@ -415,6 +465,7 @@ export default function Home() {
       setInterviewTotal(0);
       setSummary(null);
       setInterviewSession(null);
+      setActiveQuestionSet(null);
       setStageLabel("重新连接分析任务");
       setCurrentStage(null);
       setPlanSummary(null);
@@ -491,6 +542,59 @@ export default function Home() {
     }
   }
 
+  async function startInteractiveSession(nextMode: InteractiveMode, reuseQuestionSet?: QuestionSet) {
+    if (!result || startingMode || sending) return;
+    setStartingMode(nextMode);
+    setMode(nextMode);
+    setError("");
+    setSessionId("");
+    setChat([]);
+    setInterviewTotal(0);
+    setSummary(null);
+    setInterviewSession(null);
+    setActiveQuestionSet(null);
+    setAnswerDraft("");
+    try {
+      const response = await fetch("/api/question-set", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: nextMode, result, questionSet: reuseQuestionSet })
+      });
+      const data = (await response.json().catch(() => null)) as
+        | {
+            questionSet?: QuestionSet;
+            sessionId?: string;
+            session?: InterviewSession;
+            question?: InterviewQuestion;
+            total?: number;
+            warnings?: string[];
+            error?: string;
+          }
+        | null;
+      if (!response.ok || !data?.questionSet || !data.sessionId || !data.session || !data.question) {
+        throw new Error(data?.error ?? `题集生成失败 (${response.status})。`);
+      }
+
+      const createdQuestionSet = data.questionSet;
+      setActiveQuestionSet(createdQuestionSet);
+      setQuestionSets((prev) => [createdQuestionSet, ...prev.filter((item) => item.id !== createdQuestionSet.id)]);
+      setSessionId(data.sessionId);
+      setInterviewSession(data.session);
+      setInterviewTotal(data.total ?? data.session.questions.length);
+      pushChat({
+        role: "interviewer",
+        kind: "main",
+        text: data.question.question,
+        meta: `Q1/${data.total ?? data.session.questions.length}`
+      });
+      for (const warning of data.warnings ?? []) pushChat({ role: "system", text: warning });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "题集生成失败，请重试。");
+    } finally {
+      setStartingMode(null);
+    }
+  }
+
   function clearPersistedRun() {
     try {
       window.localStorage.removeItem(PERSISTENCE_KEY);
@@ -512,6 +616,9 @@ export default function Home() {
     setInterviewTotal(0);
     setSummary(null);
     setInterviewSession(null);
+    setActiveQuestionSet(null);
+    setQuestionSets([]);
+    setInterviewRuns([]);
     setAnswerDraft("");
     setStageLabel("");
     setCurrentStage(null);
@@ -532,38 +639,8 @@ export default function Home() {
           <h1>GitHub Repo 项目考核面试生成器</h1>
           <p className="lede">
             Deep Research Agent 读懂你的仓库（方法、训练、评测、配置、复现证据），结合 kaomian
-            高频题库，流式生成有证据来源的项目拷打——或者直接开始一场一问一答的模拟面试。
+            高频题库，先沉淀项目细节地图，再进入练习或测试。
           </p>
-        </div>
-
-        <div className="modeRow" role="tablist" aria-label="生成模式">
-          <button
-            role="tab"
-            aria-selected={mode === "survey"}
-            className={mode === "survey" ? "modeBtn active" : "modeBtn"}
-            disabled={status === "loading"}
-            onClick={() => setMode("survey")}
-          >
-            Survey · 全量报告 + 出题
-          </button>
-          <button
-            role="tab"
-            aria-selected={mode === "interview"}
-            className={mode === "interview" ? "modeBtn active" : "modeBtn"}
-            disabled={status === "loading"}
-            onClick={() => setMode("interview")}
-          >
-            Interactive · 模拟面试
-          </button>
-          <button
-            role="tab"
-            aria-selected={mode === "practice"}
-            className={mode === "practice" ? "modeBtn active" : "modeBtn"}
-            disabled={status === "loading"}
-            onClick={() => setMode("practice")}
-          >
-            Practice · 练习
-          </button>
         </div>
 
         <div className="inputRow" role="search">
@@ -577,7 +654,7 @@ export default function Home() {
             placeholder="https://github.com/owner/repo"
           />
           <button disabled={status === "loading" || !repositoryUrl.trim()} onClick={() => void submit()}>
-            {status === "loading" ? "分析中" : mode === "survey" ? "生成报告" : practiceMode ? "开始练习" : "开始面试"}
+            {status === "loading" ? "分析中" : result ? "重新分析" : "开始分析"}
           </button>
         </div>
 
@@ -596,7 +673,6 @@ export default function Home() {
         {status !== "idle" && (currentStage || feed.length > 0 || filesRead > 0 || result || reportDraft) && (
           <ProgressDashboard
             status={status}
-            mode={mode}
             currentStage={currentStage}
             stageLabel={stageLabel}
             plan={planSummary}
@@ -609,20 +685,35 @@ export default function Home() {
         )}
 
         {status === "error" && <div className="error">{error}</div>}
+        {status !== "error" && error && <div className="error">{error}</div>}
+
+        {result && (
+          <ModuleSwitcher
+            mode={mode}
+            result={result}
+            questionSets={questionSets}
+            interviewRuns={interviewRuns}
+            startingMode={startingMode}
+            onSelectSurvey={() => setMode("survey")}
+            onStartPractice={(questionSet) => void startInteractiveSession("practice", questionSet)}
+            onStartTest={(questionSet) => void startInteractiveSession("interview", questionSet)}
+          />
+        )}
 
         {interviewReady && (
-          <section className="chatPanel priority" aria-label="模拟面试">
+          <section className="chatPanel priority" aria-label={practiceMode ? "练习模式" : "测试模式"}>
             <div className="chatHead">
               <div>
-                <p className="eyebrow">Mock Interview</p>
+                <p className="eyebrow">{practiceMode ? "Practice Session" : "Test Session"}</p>
                 <h2>
-                  {practiceMode ? "练习模式" : "模拟面试"}
+                  {practiceMode ? "练习模式" : "测试模式"}
                   {interviewTotal > 0 && <span className="count"> {interviewTotal} 道主问题链</span>}
                 </h2>
+                {activeQuestionSet && <p className="sessionSubtitle">{activeQuestionSet.title}</p>}
               </div>
               {!summary && (
                 <button className="endBtn" disabled={sending} onClick={() => void sendAnswer(true)}>
-                  {practiceMode ? "结束练习出复盘" : "提前结束出复盘"}
+                  {practiceMode ? "结束练习出复盘" : "提前结束测试"}
                 </button>
               )}
             </div>
@@ -838,10 +929,6 @@ export default function Home() {
           </section>
         )}
 
-        {interviewMissing && (
-          <div className="error">分析已完成，但没有生成可用的面试/练习 session。请重试或切换到 Survey 模式查看已生成题目。</div>
-        )}
-
         {feed.length > 0 && status !== "idle" && (
           <details
             className={interviewReady ? "feedPanel compact collapsiblePanel" : "feedPanel collapsiblePanel"}
@@ -899,10 +986,10 @@ export default function Home() {
         )}
 
         {mode === "survey" && questions.length > 0 && !result && (
-          <details className="questionsPanel collapsiblePanel" aria-label="分层面试题" open>
+          <details className="questionsPanel collapsiblePanel" aria-label="题目种子" open>
             <summary className="sectionSummary panelSummary">
               <h2>
-                分层面试题 <span className="count">{questions.length}</span>
+                题目种子 <span className="count">{questions.length}</span>
               </h2>
             </summary>
             <div className="questionGrid">
@@ -963,6 +1050,97 @@ export default function Home() {
 
 type RoadmapStage = PipelineStage | "complete";
 
+function ModuleSwitcher({
+  mode,
+  result,
+  questionSets,
+  interviewRuns,
+  startingMode,
+  onSelectSurvey,
+  onStartPractice,
+  onStartTest
+}: {
+  mode: AnalyzeMode;
+  result: AnalyzeResponse;
+  questionSets: QuestionSet[];
+  interviewRuns: InterviewRun[];
+  startingMode: InteractiveMode | null;
+  onSelectSurvey: () => void;
+  onStartPractice: (questionSet?: QuestionSet) => void;
+  onStartTest: (questionSet?: QuestionSet) => void;
+}) {
+  const latestRun = interviewRuns[0];
+  const latestQuestionSet = questionSets[0];
+  return (
+    <section className="moduleHub" aria-label="分析后的模式入口">
+      <div className="moduleHubHead">
+        <div>
+          <p className="eyebrow">Analysis Ready</p>
+          <h2>{result.repo.fullName} 的项目底座已生成</h2>
+          <p>Survey 查看项目细节地图；练习和测试会基于同一份分析结果，各自生成一套新的问题。</p>
+        </div>
+      </div>
+      <div className="moduleGrid">
+        <button className={mode === "survey" ? "moduleCard active" : "moduleCard"} type="button" onClick={onSelectSurvey}>
+          <span>01</span>
+          <strong>Survey 报告</strong>
+          <small>{result.examPoints.length} 个考核点 · {result.questions.length} 个题目种子</small>
+        </button>
+        <button
+          className={mode === "practice" ? "moduleCard active" : "moduleCard"}
+          type="button"
+          disabled={Boolean(startingMode)}
+          onClick={() => onStartPractice()}
+        >
+          <span>02</span>
+          <strong>{startingMode === "practice" ? "正在生成练习题" : "练习模式"}</strong>
+          <small>新题集 · 可看提示和参考答案</small>
+        </button>
+        <button
+          className={mode === "interview" ? "moduleCard active" : "moduleCard"}
+          type="button"
+          disabled={Boolean(startingMode)}
+          onClick={() => onStartTest()}
+        >
+          <span>03</span>
+          <strong>{startingMode === "interview" ? "正在生成测试题" : "测试模式"}</strong>
+          <small>新题集 · 不给提示，结束后详尽复盘</small>
+        </button>
+      </div>
+      {(questionSets.length > 0 || latestRun) && (
+        <div className="historyStrip" aria-label="最近题集和复盘">
+          {latestQuestionSet && (
+            <div>
+              <strong>最近题集</strong>
+              <p>
+                {latestQuestionSet.mode === "practice" ? "练习" : "测试"} · {latestQuestionSet.questions.length} 题 ·{" "}
+                {formatDateTime(latestQuestionSet.createdAt)}
+              </p>
+              <div className="historyActions">
+                <button type="button" disabled={Boolean(startingMode)} onClick={() => onStartPractice(latestQuestionSet)}>
+                  用这套练习
+                </button>
+                <button type="button" disabled={Boolean(startingMode)} onClick={() => onStartTest(latestQuestionSet)}>
+                  用这套测试
+                </button>
+              </div>
+            </div>
+          )}
+          {latestRun && (
+            <div>
+              <strong>最近复盘</strong>
+              <p>
+                {latestRun.mode === "practice" ? "练习" : "测试"} · {summaryAverage(latestRun.summary)} ·{" "}
+                {formatDateTime(latestRun.createdAt)}
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </section>
+  );
+}
+
 type RoadmapStep = {
   stage: RoadmapStage;
   label: string;
@@ -974,31 +1152,12 @@ const SURVEY_ROADMAP: RoadmapStep[] = [
   { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
   { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
   { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
-  { stage: "questions", label: "出题", caption: "连接 kaomian 并生成追问链" },
-  { stage: "complete", label: "可复盘", caption: "高亮重点，保留原始报告" }
-];
-
-const INTERVIEW_ROADMAP: RoadmapStep[] = [
-  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
-  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
-  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
-  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
-  { stage: "questions", label: "备题", caption: "生成可追问的问题组" },
-  { stage: "interview_ready", label: "开面", caption: "进入一问一答 session" }
-];
-
-const PRACTICE_ROADMAP: RoadmapStep[] = [
-  { stage: "scout", label: "抓仓库", caption: "README / 文件树 / 证据文件" },
-  { stage: "plan", label: "定计划", caption: "判断仓库形态和研究维度" },
-  { stage: "research", label: "并行深读", caption: "多个 digest worker 读不同维度" },
-  { stage: "synthesize", label: "合成报告", caption: "汇总 claim、代码和复现证据" },
-  { stage: "questions", label: "备题", caption: "生成练习题和追问链" },
-  { stage: "interview_ready", label: "开练", caption: "支持提示和参考答案" }
+  { stage: "questions", label: "整理细节", caption: "连接 kaomian，形成可问方向和题目种子" },
+  { stage: "complete", label: "进入模块", caption: "Survey / 练习 / 测试共用同一份分析底座" }
 ];
 
 function ProgressDashboard({
   status,
-  mode,
   currentStage,
   stageLabel,
   plan,
@@ -1009,7 +1168,6 @@ function ProgressDashboard({
   latestReadPath
 }: {
   status: Status;
-  mode: AnalyzeMode;
   currentStage: PipelineStage | null;
   stageLabel: string;
   plan: ResearchPlanSummary | null;
@@ -1019,8 +1177,8 @@ function ProgressDashboard({
   questionCount: number;
   latestReadPath: string;
 }) {
-  const steps = mode === "practice" ? PRACTICE_ROADMAP : mode === "interview" ? INTERVIEW_ROADMAP : SURVEY_ROADMAP;
-  const activeStage: RoadmapStage = status === "done" && mode === "survey" ? "complete" : currentStage ?? "scout";
+  const steps = SURVEY_ROADMAP;
+  const activeStage: RoadmapStage = status === "done" ? "complete" : currentStage ?? "scout";
   const activeIndex = Math.max(
     0,
     steps.findIndex((step) => step.stage === activeStage)
@@ -1030,11 +1188,7 @@ function ProgressDashboard({
   const detail = status === "error" ? "分析中断，请查看错误信息" : status === "done" ? "本轮分析完成" : stageLabel || "连接分析服务";
   const planLabel = plan
     ? `${plan.analysisMode} · ${plan.dimensions.length} 个维度`
-    : mode === "interview"
-      ? "Interactive"
-      : mode === "practice"
-        ? "Practice"
-      : "Survey";
+    : "Analysis";
 
   return (
     <section className={`progressDashboard status-${status}`} aria-label="分析进度">
@@ -1106,7 +1260,7 @@ function roadmapTitle(stage: RoadmapStage, status: Status): string {
     plan: "正在规划研究路线",
     research: "正在并行深读",
     synthesize: "正在合成项目理解",
-    questions: "正在生成面试题",
+    questions: "正在整理可问细节",
     interview_ready: "正在准备模拟面试",
     complete: "分析完成"
   };
@@ -1175,6 +1329,9 @@ function readPersistedRun(): PersistedRun | null {
       interviewTotal: typeof data.interviewTotal === "number" ? data.interviewTotal : 0,
       summary: data.summary ?? null,
       interviewSession: data.interviewSession ?? null,
+      activeQuestionSet: data.activeQuestionSet ?? null,
+      questionSets: Array.isArray(data.questionSets) ? data.questionSets : [],
+      interviewRuns: Array.isArray(data.interviewRuns) ? data.interviewRuns : [],
       answerDraft: typeof data.answerDraft === "string" ? data.answerDraft : ""
     };
   } catch {
@@ -1191,7 +1348,9 @@ function hasPersistableContent({
   questions,
   sessionId,
   chat,
-  summary
+  summary,
+  questionSets,
+  interviewRuns
 }: {
   currentStage: PipelineStage | null;
   result: AnalyzeResponse | null;
@@ -1202,6 +1361,8 @@ function hasPersistableContent({
   sessionId: string;
   chat: ChatMessage[];
   summary: InterviewSummary | null;
+  questionSets: QuestionSet[];
+  interviewRuns: InterviewRun[];
 }) {
   return Boolean(
     currentStage ||
@@ -1212,7 +1373,9 @@ function hasPersistableContent({
       questions.length > 0 ||
       sessionId ||
       chat.length > 0 ||
-      summary
+      summary ||
+      questionSets.length > 0 ||
+      interviewRuns.length > 0
   );
 }
 
@@ -1241,6 +1404,25 @@ function formatSavedAt(savedAt: number): string {
     minute: "2-digit",
     second: "2-digit"
   }).format(savedAt);
+}
+
+function formatDateTime(value: number): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(value);
+}
+
+function summaryAverage(summary: InterviewSummary): string {
+  if (summary.scores.length === 0) return "暂无得分";
+  const average = summary.scores.reduce((sum, item) => sum + item.score, 0) / summary.scores.length;
+  return `平均 ${Math.round(average * 10) / 10}/5`;
+}
+
+function createClientId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
 
 function RenderedInterviewPlan({
@@ -1272,10 +1454,10 @@ function RenderedInterviewPlan({
   ].filter(Boolean);
 
   return (
-    <section className="planCanvas" aria-label="项目考核面试计划">
+    <section className="planCanvas" aria-label="项目细节地图">
       <header className="planHero">
         <div>
-          <p className="eyebrow">Interview Plan</p>
+          <p className="eyebrow">Project Survey</p>
           <h2>{result.repo.fullName}</h2>
           <p className="planSummary">{result.understanding.summary}</p>
         </div>
@@ -1285,7 +1467,7 @@ function RenderedInterviewPlan({
             <strong>{result.examPoints.length}</strong>
           </div>
           <div>
-            <span>题目</span>
+            <span>题目种子</span>
             <strong>{result.questions.length}</strong>
           </div>
           <div>
@@ -1295,10 +1477,10 @@ function RenderedInterviewPlan({
         </div>
       </header>
 
-      <section className="priorityBand" aria-label="优先准备">
+      <section className="priorityBand" aria-label="项目可问细节">
         <div className="bandTitle">
           <p className="eyebrow">Start Here</p>
-          <h2>先准备这几处</h2>
+          <h2>最容易被问的细节</h2>
         </div>
         <div className="priorityGrid">
           {priorityPoints.map((point, index) => (
@@ -1315,8 +1497,8 @@ function RenderedInterviewPlan({
       <section className="focusLayout" aria-label="核心面试题">
         <div className="focusMain">
           <div className="sectionLead">
-            <p className="eyebrow">Questions</p>
-            <h2>最值得先练的题</h2>
+            <p className="eyebrow">Question Seeds</p>
+            <h2>可转成题目的方向</h2>
           </div>
           <div className="spotlightList">
             {spotlightQuestions.map((question, index) => (
@@ -1343,10 +1525,10 @@ function RenderedInterviewPlan({
         </aside>
       </section>
 
-      <section className="questionDeck" aria-label="完整分层题目">
+      <section className="questionDeck" aria-label="题目种子">
         <div className="sectionLead">
-          <p className="eyebrow">Full Set</p>
-          <h2>完整题组</h2>
+          <p className="eyebrow">Seed Set</p>
+          <h2>Survey 题目种子</h2>
         </div>
         <div className="questionDeckGrid">
           {result.questions.map((question, index) => (

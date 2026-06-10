@@ -134,6 +134,18 @@ export type AnalyzeResponse = {
 
 export type AnalyzeMode = "survey" | "interview" | "practice";
 
+export type InteractiveMode = Exclude<AnalyzeMode, "survey">;
+
+export type QuestionSet = {
+  id: string;
+  repoFullName: string;
+  mode: InteractiveMode;
+  createdAt: number;
+  title: string;
+  questions: InterviewQuestion[];
+  source: "analysis" | "practice" | "test";
+};
+
 export type PipelineStage =
   | "scout"
   | "plan"
@@ -242,4 +254,13 @@ export type InterviewSession = {
   evaluations: Array<AnswerEvaluation & { questionIndex: number }>;
   finished: boolean;
   busy: boolean;
+};
+
+export type InterviewRun = {
+  id: string;
+  questionSetId: string;
+  repoFullName: string;
+  mode: InteractiveMode;
+  createdAt: number;
+  summary: InterviewSummary;
 };

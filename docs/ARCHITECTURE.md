@@ -1,10 +1,10 @@
 # 系统架构：Repo Deep Research Agent
 
-输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式深度理解仓库，再结合 kaomian 高频题库生成面试题。支持三种模式：
+输入公开 GitHub 仓库后，系统以"单编排线程 + 受控并行 digest worker + 单次合成"的方式先深度理解仓库，再进入 Survey / 练习 / 测试三个模块。分析是公共底座，Survey 负责项目细节地图，练习和测试分别生成新的题集。
 
-- **Survey 版**：一次读懂整个项目，流式输出理解报告和全量面试题。
-- **交互版**：模拟真实面试，一问一答，按回答质量决定追问或推进，结束后给逐题复盘反馈。
-- **练习版**：沿用同一套题目和追问链，但允许用户请求 AI 生成提示或参考答案，用于学习如何回答。
+- **Survey 版**：展示理解报告、可问细节、证据来源、风险点和题目种子。
+- **测试版**：基于分析结果生成一套新的测试题，模拟真实面试，一问一答，结束后给逐题复盘反馈。
+- **练习版**：基于分析结果生成一套新的练习题，允许用户请求 AI 生成提示或参考答案；历史题集可以复用。
 
 架构决策依据见 `docs/research/deep-research-agent-design.md`（核心结论：仓库是有界输入，不做自由 agent swarm；并行只用于只读分析，写作单次合成保证自洽；不用 embedding，agentic 按需读取）。
 
@@ -13,17 +13,19 @@
 ```mermaid
 flowchart TD
     subgraph FE["前端 src/app/page.tsx"]
-        INPUT["输入 GitHub URL + 模式选择"]
+        INPUT["输入 GitHub URL"]
         FEED["进度 Feed<br/>(阶段 / 读文件 / 发现)"]
         DASH["Run Dashboard<br/>Roadmap + 产出计数"]
         REPORT["流式报告 (Markdown 增量)"]
         CARDS["题目卡片流 (Survey)"]
+        HUB["分析后模块入口<br/>Survey / 练习 / 测试"]
         CHAT["面试/练习聊天面板"]
-        LOCAL["localStorage<br/>runId + 草稿 + session 快照"]
+        LOCAL["localStorage<br/>runId + 草稿 + 题集 + session 快照 + 复盘"]
     end
 
     subgraph API["API 层"]
         ANALYZE["POST /api/analyze (SSE)<br/>{url, mode} 或 {runId}"]
+        QSET["POST /api/question-set<br/>{mode, result, questionSet?}"]
         INTERVIEW["POST /api/interview (SSE)<br/>{sessionId, answer}"]
         HELP["POST /api/practice-help<br/>{sessionId, kind}"]
     end
@@ -33,8 +35,9 @@ flowchart TD
         P1["Phase 1 Plan（1 次调用）<br/>analysisMode + 研究维度<br/>+ 文件分配 + techTags"]
         P2["Phase 2 Research<br/>维度 worker 并发≤3，≤2 轮<br/>gap 队列 + 预算 + beast mode"]
         P3["Phase 3 Synthesize（流式）<br/>digests → 自洽理解报告"]
-        P4A["Phase 4a Survey<br/>报告 + kaomian 匹配题<br/>→ 全量题逐题流式"]
-        P4B["Phase 4b Interview / Practice<br/>出题计划 → 会话循环<br/>问→答→评估→追问/下一题→复盘"]
+        P4A["Phase 4a Survey<br/>报告 + kaomian 匹配<br/>→ 可问细节 + 题目种子"]
+        P4B["Phase 4b Question Set<br/>分析结果 → 练习/测试题集"]
+        P4C["Phase 4c Interview / Practice<br/>题集 → 会话循环<br/>问→答→评估→追问/下一题→复盘"]
     end
 
     subgraph EXT["外部依赖"]
@@ -49,9 +52,10 @@ flowchart TD
     ANALYZE --> RUNS
     RUNS --> P0 --> P1 --> P2 --> P3
     P3 --> P4A
-    P3 --> P4B
-    P4B <--> SESS
-    CHAT --> INTERVIEW --> P4B
+    P4A --> HUB
+    HUB --> QSET --> P4B --> SESS
+    CHAT --> INTERVIEW --> P4C
+    P4C <--> SESS
     CHAT --> HELP --> LLM
     P0 <--> GH
     P1 <--> LLM
@@ -59,9 +63,9 @@ flowchart TD
     P3 <--> LLM
     P4A <--> LLM
     P4B <--> LLM
+    P4C <--> LLM
     P4A <--> KAOMIAN
-    P4B <--> KAOMIAN
-    ANALYZE -. "SSE: run / stage / plan / file_read /<br/>finding / report_delta / question / session" .-> FEED
+    ANALYZE -. "SSE: run / stage / plan / file_read /<br/>finding / report_delta / question / result" .-> FEED
     FEED --> DASH
     ANALYZE -.-> REPORT
     ANALYZE -.-> CARDS
@@ -78,14 +82,15 @@ flowchart TD
 | Phase 1 Plan | 1 | repoMap + README | 研究维度、文件分配、techTags、analysisMode | Zod 校验；维度按仓库形态动态取舍 |
 | Phase 2 Research | ≤10 | 每维度：repoMap + 分配文件全文（超限骨架化） | DimensionDigest（findings/claimCodeLinks/askPoints/openQuestions） | 原文不进主线程；digest ≤300 token/条；预算耗尽 → beast mode |
 | Phase 3 Synthesize | 1 | 全部 digests + repoMap | 理解报告（流式 Markdown） | 单次合成保证自洽 |
-| Phase 4a Survey | 1 | 报告 + kaomian 匹配题 | 全量面试题（逐题流式） | 主追问链必须绑仓库证据；八股标注来源 |
-| Phase 4b Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/复盘 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
+| Phase 4a Survey | 1 | 报告 + kaomian 匹配题 | 可问细节 + 题目种子（逐条流式） | 主追问链必须绑仓库证据；八股标注来源 |
+| Phase 4b Question Set | 1 | 分析结果 + Survey 题目种子 | 练习或测试题集 + session | 不重新抓仓库；练习/测试各自生成新题集；历史题集可复用 |
+| Phase 4c Interview / Practice | 每轮 1 | 会话状态 + 用户回答 | 评估（1-5 分 + 反馈）+ 追问/下一题/复盘 | 弱回答追问、强回答推进；Practice 可额外请求 AI 提示 / 参考答案 |
 
 ## 持久化与续接
 
 - `/api/analyze` 新建分析时生成 `runId`，服务端后台继续消费 pipeline；浏览器 SSE 连接只负责订阅事件。
 - `AnalysisRun` 保存该 run 的 SSE 事件历史。刷新后前端用本地保存的 `runId` 重新请求 `/api/analyze`，服务端先回放历史事件，再继续推送后续事件。
-- 前端使用 `localStorage` 保存仓库链接、模式、runId、阶段计数、日志、报告草稿、考核点、题目、聊天记录和 `InterviewSession` 快照。
+- 前端使用 `localStorage` 保存仓库链接、当前模块、runId、阶段计数、日志、报告草稿、考核点、题目种子、题集历史、聊天记录、复盘记录和 `InterviewSession` 快照。
 - `/api/interview` 和 `/api/practice-help` 在服务端 session 过期但前端有快照时，可用快照恢复单进程内存 session 后继续。
 - 当前持久化是 beta 轻量实现：刷新可续接；服务重启或重新部署后，服务端后台任务不会继续，但前端仍保留已生成内容。
 
