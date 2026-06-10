@@ -143,7 +143,11 @@ type GitHubTreeApi = {
 };
 
 export function parseGitHubUrl(input: string): ParsedGitHubUrl {
-  const value = githubUrlSchema.parse(input.trim());
+  const parsedValue = githubUrlSchema.safeParse(input.trim());
+  if (!parsedValue.success) {
+    throw new Error("请输入完整的 GitHub 仓库链接，例如 https://github.com/owner/repo。");
+  }
+  const value = parsedValue.data;
   const url = new URL(value);
   if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
     throw new Error("请输入 github.com 仓库链接。");
@@ -157,6 +161,15 @@ export function parseGitHubUrl(input: string): ParsedGitHubUrl {
   }
 
   const repo = repoSegment.replace(/\.git$/, "");
+  if (!repo || !ownerRepoPattern.test(owner) || !ownerRepoPattern.test(repo)) {
+    throw new Error("GitHub 仓库链接中的 owner 或 repo 不合法。");
+  }
+  if (marker && marker !== "tree") {
+    throw new Error("请输入 GitHub 仓库主页链接，或 /tree/{branch} 分支链接。");
+  }
+  if (marker === "tree" && rest.length === 0) {
+    throw new Error("GitHub 分支链接需要包含 branch。");
+  }
   return {
     owner,
     repo,

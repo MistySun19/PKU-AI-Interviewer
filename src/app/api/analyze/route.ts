@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { parseGitHubUrl } from "@/lib/github";
 import { runAnalysisPipeline } from "@/lib/orchestrator";
 import type { SseEvent } from "@/lib/types";
 
@@ -16,6 +17,14 @@ export async function POST(request: Request) {
     body = requestSchema.parse(await request.json());
   } catch {
     return Response.json({ error: "请求体需要包含 repositoryUrl。" }, { status: 400 });
+  }
+  try {
+    parseGitHubUrl(body.repositoryUrl);
+  } catch (error) {
+    return Response.json(
+      { error: error instanceof Error ? error.message : "GitHub 仓库链接无法解析。" },
+      { status: 400 }
+    );
   }
 
   const encoder = new TextEncoder();

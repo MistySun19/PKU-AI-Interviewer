@@ -171,6 +171,29 @@ export default function Home() {
 
   async function submit() {
     if (!repositoryUrl.trim() || status === "loading") return;
+    const urlError = validateGitHubRepoUrl(repositoryUrl);
+    if (urlError) {
+      setStatus("error");
+      setError(urlError);
+      setResult(null);
+      setCopied(false);
+      setFeed([]);
+      setReportDraft("");
+      setExamPoints([]);
+      setQuestions([]);
+      setSessionId("");
+      setChat([]);
+      setInterviewTotal(0);
+      setSummary(null);
+      setAnswerDraft("");
+      setStageLabel("");
+      setCurrentStage(null);
+      setPlanSummary(null);
+      setFilesRead(0);
+      setFindingsSeen(0);
+      setLatestReadPath("");
+      return;
+    }
     setStatus("loading");
     setError("");
     setResult(null);
@@ -294,7 +317,7 @@ export default function Home() {
           </button>
         </div>
 
-        {status !== "idle" && (
+        {status !== "idle" && (currentStage || feed.length > 0 || filesRead > 0 || result || reportDraft) && (
           <ProgressDashboard
             status={status}
             mode={mode}
@@ -687,6 +710,34 @@ function roadmapTitle(stage: RoadmapStage, status: Status): string {
     complete: "分析完成"
   };
   return labels[stage];
+}
+
+function validateGitHubRepoUrl(input: string): string | null {
+  let url: URL;
+  try {
+    url = new URL(input.trim());
+  } catch {
+    return "请输入完整的 GitHub 仓库链接，例如 https://github.com/owner/repo。";
+  }
+  if (url.hostname !== "github.com" && url.hostname !== "www.github.com") {
+    return "请输入 github.com 仓库链接。";
+  }
+  const [owner, repoSegment, marker, ...rest] = url.pathname.split("/").filter(Boolean);
+  if (!owner || !repoSegment) {
+    return "GitHub 链接需要包含 owner 和 repo。";
+  }
+  const repo = repoSegment.replace(/\.git$/, "");
+  const repoNamePattern = /^[A-Za-z0-9_.-]+$/;
+  if (!repo || !repoNamePattern.test(owner) || !repoNamePattern.test(repo)) {
+    return "GitHub 仓库链接中的 owner 或 repo 不合法。";
+  }
+  if (marker && marker !== "tree") {
+    return "请输入 GitHub 仓库主页链接，或 /tree/{branch} 分支链接。";
+  }
+  if (marker === "tree" && rest.length === 0) {
+    return "GitHub 分支链接需要包含 branch。";
+  }
+  return null;
 }
 
 function RenderedInterviewPlan({

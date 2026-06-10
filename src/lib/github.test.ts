@@ -43,6 +43,15 @@ describe("parseGitHubUrl", () => {
       branch: "dev"
     });
   });
+
+  it("rejects invalid or unsupported GitHub URLs", () => {
+    expect(() => parseGitHubUrl("github.com/foo/bar")).toThrow("完整的 GitHub 仓库链接");
+    expect(() => parseGitHubUrl("https://example.com/foo/bar")).toThrow("github.com");
+    expect(() => parseGitHubUrl("https://github.com/foo")).toThrow("owner 和 repo");
+    expect(() => parseGitHubUrl("https://github.com/foo/bar/issues")).toThrow("仓库主页链接");
+    expect(() => parseGitHubUrl("https://github.com/foo/bar/blob/main/README.md")).toThrow("仓库主页链接");
+    expect(() => parseGitHubUrl("https://github.com/foo/bar/tree")).toThrow("branch");
+  });
 });
 
 describe("file filtering", () => {
