@@ -99,6 +99,7 @@ V1.0.0 的核心闭环：
 
 后置内容：
 
+- v1.0.0-alpha.1：GitHub repo paper-code 理解。
 - v1.0.0-beta：接入 `kaomian`。
 - v1.0.0-rc：支持 GitHub repo + 一句话自述。
 - v1.1.0：arXiv / 论文项目理解。
@@ -150,6 +151,16 @@ v1.0.0-alpha：
 
 - 只支持 GitHub repo 理解。
 - 输出仓库理解报告和基础项目考核面试计划。
+
+v1.0.0-alpha.1：
+
+- 不改变输入形态，仍然只支持公开 GitHub 仓库。
+- 把 GitHub repo 理解从通用软件工程审查改成 AI 算法岗 paper-code 项目考核。
+- 自动识别 paper-code / general-code / unknown。
+- Step 1 改为论文项目理解，并按仓库形态选择轻量 skill：benchmark、training、inference、method、data、reproduce。
+- 文件筛选优先覆盖 README / paper docs、configs、train、infer、eval、data、method、scripts。
+- 输出 paper claim、方法代码地图、训练 / 推理 / 评测复现路线和算法岗追问。
+- 继续后置 `kaomian`、一句话自述、arXiv 和 JD。
 
 v1.0.0-beta：
 

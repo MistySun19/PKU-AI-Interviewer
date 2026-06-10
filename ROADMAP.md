@@ -4,14 +4,16 @@
 
 核心判断：
 
-> 先证明系统能独立读懂 GitHub 仓库，再逐步加入题库、用户自述、论文和 JD。
+> 先证明系统能独立读懂 GitHub 仓库，尤其是论文 / AI 项目制代码库，再逐步加入题库、用户自述、论文和 JD。
 
 这个顺序是对的，因为它避免系统一开始就依赖用户描述或岗位描述。只有仓库理解足够扎实，后面的 `kaomian`、一句话补充、arXiv 和 JD 才会成为增强层，而不是泛化问题生成器的装饰。
 
 ## 计划线
 
 ```text
-Phase 1：GitHub repo
+Phase 1：GitHub repo 基础理解
+        ↓
+Phase 1.1：GitHub repo paper-code 理解
         ↓
 Phase 2：GitHub repo + kaomian
         ↓
@@ -22,7 +24,7 @@ Phase 4：arXiv / 论文项目
 Phase 5：JD / 岗位偏置
 ```
 
-## Phase 1：只支持 GitHub repo
+## Phase 1：只支持 GitHub repo 基础理解
 
 目标：
 
@@ -41,6 +43,29 @@ Phase 5：JD / 岗位偏置
 - `kaomian`。
 - 用户自述。
 - arXiv。
+- JD。
+
+## Phase 1.1：GitHub repo paper-code 理解
+
+目标：
+
+- 不改变输入形态，仍然只支持公开 GitHub 仓库链接。
+- 自动判断仓库是 `paper-code`、`general-code` 还是 `unknown`。
+- 对论文 / AI 项目制代码库，优先读取 README / paper docs、configs、train、infer、eval、data、method、scripts。
+- 输出 paper claim、方法代码地图、训练 / 推理 / 评测复现路线和算法岗项目追问。
+
+必须证明：
+
+- 系统不是通用软件工程评分器。
+- 系统能把论文或 README claim 连接到代码和实验文件。
+- 系统能识别 baseline、ablation、metric、config、data leakage、reproducibility 等算法岗追问点。
+- 大型 benchmark 或 label 文件不会挤掉核心方法代码。
+
+暂不做：
+
+- `kaomian`。
+- 用户自述。
+- arXiv 输入。
 - JD。
 
 ## Phase 2：接入 kaomian
@@ -119,7 +144,8 @@ JD 很有用，但太早接会带来两个问题：
 
 ## 当前推荐版本对应
 
-- `v1.0.0-alpha`: GitHub repo 理解。
+- `v1.0.0-alpha`: GitHub repo 基础理解。
+- `v1.0.0-alpha.1`: GitHub repo paper-code 理解。
 - `v1.0.0-beta`: GitHub repo + `kaomian`。
 - `v1.0.0-rc`: GitHub repo + 一句话自述。
 - `v1.1.0`: arXiv / 论文项目。

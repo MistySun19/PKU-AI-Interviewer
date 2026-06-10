@@ -2,7 +2,7 @@
 
 AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 
-当前 V1.0.0 方向：用户输入 GitHub 仓库。系统先把仓库目标、代码结构、核心模块、数据流、评测逻辑读懂，再结合 `kaomian` 高频题库，生成一份有证据来源的项目考核面试计划。
+当前 V1.0.0-alpha.1 方向：用户输入公开 GitHub 仓库。系统优先按论文 / AI 项目制代码库理解方法 claim、核心代码、训练配置、数据处理、评测逻辑和复现路线，生成一份有证据来源的算法岗项目考核面试计划。
 
 一句话定位：
 
@@ -11,12 +11,11 @@ AI、算法、研究岗实习与保研场景下的项目考核面试生成器。
 ## V1.0.0 闭环
 
 1. 输入 GitHub 仓库链接。
-2. 系统抓取 README、文件树、关键代码、测试和评测文件。
-3. 系统结构化理解项目目标、核心模块、主流程和数据流。
-4. 系统审查可出题点。
-5. 系统检索 `kaomian` 高频八股题。
-6. 系统把仓库证据和八股题连接起来。
-7. 输出一份项目考核面试计划。
+2. 系统抓取 README、文件树、关键方法代码、配置、训练、推理、数据和评测文件。
+3. 系统自动判断 `paper-code` / `general-code` / `unknown`。
+4. 系统用轻量论文项目理解 skill 结构化理解 paper claim、核心方法、训练 / 推理入口、数据流和评测逻辑。
+5. 系统审查可出题点。
+6. 输出一份项目考核面试计划。
 
 ## 本地运行
 
@@ -28,12 +27,14 @@ npm run dev
 
 打开 `http://localhost:3000`，输入公开 GitHub 仓库链接即可生成 alpha 报告。
 
+当前 deep research 请求可能较慢，`/api/analyze` 和模型请求超时设置为 20 分钟。
+
 环境变量：
 
 - `OPENAI_API_KEY`: OpenAI-compatible API key。未配置时会生成降级报告。
 - `OPENAI_BASE_URL`: OpenAI-compatible endpoint，默认 `https://api.openai.com/v1`。
 - `OPENAI_MODEL`: OpenAI-compatible 模型名；使用 Tokendance 时可以留空。
-- `GITHUB_TOKEN`: 可选，用于提高 GitHub API rate limit。
+- `GITHUB_TOKEN`: 可选但强烈建议。GitHub REST API 不按请求收费；未认证通常只有 60 次/小时/IP，配置 token 后常规可到 5000 次/小时。
 - `TOKENDANCE_API_KEY`: 可选，Tokendance API key；未配置 `OPENAI_API_KEY` 时自动使用。
 - `TOKENDANCE_BASE_URL`: 可选，Tokendance OpenAI-compatible endpoint。
 - `TOKENDANCE_CHAT_COMPLETIONS_URL`: 可选，Tokendance chat completions 完整 URL。
@@ -44,9 +45,12 @@ npm run dev
 - `kaomian`: V1.0.0 直接使用的题库快照。
 - `bagu-killer`: 未来用于定时更新题库的生产流水线。
 
+alpha.1 暂不接入 `kaomian`，先把 GitHub repo paper-code 理解做扎实。
+
 ## 后续增强
 
-- v1.0.0-alpha：只支持 GitHub repo 理解。
+- v1.0.0-alpha：只支持 GitHub repo 基础理解。
+- v1.0.0-alpha.1：支持 GitHub repo paper-code 理解。
 - v1.0.0-beta：接入 `kaomian`。
 - v1.0.0-rc：支持 GitHub repo + 一句话自述。
 - v1.1.0：接入 arXiv / 论文项目理解。
@@ -65,6 +69,7 @@ npm run dev
 - `docs/workflows/VERSIONING.md`: 版本管理规则
 - `docs/workflows/WORKLOG_SYSTEM.md`: 工作日志体系
 - `docs/comparisons/devcontext-vs-pku-agent-workflow.html`: DevContext.AI 和本项目 agent workflow 对比
+- `docs/research/iclr-paper-repo-research.md`: ICLR / AI paper repo 结构调研与 alpha.1 文件选择依据
 - `docs/adr/`: 架构决策记录
 - `PROJECT_POSITIONING_v0.0.1.md`: v0.0.1 项目定位总结
 - `interview-worklog.md`: 用户访谈工作日志
