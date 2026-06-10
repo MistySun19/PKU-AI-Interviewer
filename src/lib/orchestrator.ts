@@ -173,7 +173,8 @@ async function run(repositoryUrl: string, mode: AnalyzeMode, channel: EventChann
         sessionId: session.id,
         question: session.questions[0],
         index: 0,
-        total: session.questions.length
+        total: session.questions.length,
+        session
       });
     }
   }

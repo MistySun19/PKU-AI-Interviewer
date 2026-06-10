@@ -3,7 +3,8 @@ import {
   applyAnswer,
   currentQuestionText,
   decideNextStep,
-  getInterviewSession
+  getInterviewSession,
+  restoreInterviewSession
 } from "@/lib/interview";
 import { evaluateAnswer, formatModelError, summarizeInterview } from "@/lib/llm";
 import type { AnswerEvaluation, InterviewSession, InterviewSummary, SseEvent } from "@/lib/types";
@@ -14,7 +15,8 @@ export const maxDuration = 300;
 const requestSchema = z.object({
   sessionId: z.string().min(1),
   answer: z.string().default(""),
-  end: z.boolean().default(false)
+  end: z.boolean().default(false),
+  restoreSession: z.custom<InterviewSession>().optional()
 });
 
 export async function POST(request: Request) {
@@ -25,7 +27,10 @@ export async function POST(request: Request) {
     return Response.json({ error: "请求体需要包含 sessionId 和 answer。" }, { status: 400 });
   }
 
-  const session = getInterviewSession(body.sessionId);
+  let session = getInterviewSession(body.sessionId);
+  if (!session && body.restoreSession?.id === body.sessionId) {
+    session = restoreInterviewSession(body.restoreSession);
+  }
   if (!session) {
     return Response.json({ error: "会话不存在或已过期，请重新开始面试。" }, { status: 404 });
   }
@@ -62,6 +67,7 @@ export async function POST(request: Request) {
         if (body.end) {
           session.finished = true;
           send({ type: "summary", summary: await safeSummarize(session) });
+          send({ type: "session_state", session });
           send({ type: "done" });
           return;
         }
@@ -124,6 +130,7 @@ export async function POST(request: Request) {
         } else {
           send({ type: "summary", summary: await safeSummarize(session) });
         }
+        send({ type: "session_state", session });
         send({ type: "done" });
       } catch (error) {
         send({ type: "error", message: error instanceof Error ? error.message : "面试服务异常。" });

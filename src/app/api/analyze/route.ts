@@ -1,13 +1,14 @@
 import { z } from "zod";
+import { createAnalysisRun, getAnalysisRun, subscribeAnalysisRun } from "@/lib/analysis-runs";
 import { parseGitHubUrl } from "@/lib/github";
-import { runAnalysisPipeline } from "@/lib/orchestrator";
 import type { SseEvent } from "@/lib/types";
 
 export const runtime = "nodejs";
 export const maxDuration = 1200;
 
 const requestSchema = z.object({
-  repositoryUrl: z.string().min(1),
+  repositoryUrl: z.string().optional(),
+  runId: z.string().optional(),
   mode: z.enum(["survey", "interview"]).default("survey")
 });
 
@@ -16,15 +17,26 @@ export async function POST(request: Request) {
   try {
     body = requestSchema.parse(await request.json());
   } catch {
-    return Response.json({ error: "请求体需要包含 repositoryUrl。" }, { status: 400 });
+    return Response.json({ error: "请求体需要包含 repositoryUrl 或 runId。" }, { status: 400 });
   }
-  try {
-    parseGitHubUrl(body.repositoryUrl);
-  } catch (error) {
-    return Response.json(
-      { error: error instanceof Error ? error.message : "GitHub 仓库链接无法解析。" },
-      { status: 400 }
-    );
+
+  let run = body.runId ? getAnalysisRun(body.runId) : undefined;
+  if (body.runId && !run) {
+    return Response.json({ error: "分析任务不存在或已过期，请重新开始。" }, { status: 404 });
+  }
+  if (!run) {
+    if (!body.repositoryUrl) {
+      return Response.json({ error: "请求体需要包含 repositoryUrl 或 runId。" }, { status: 400 });
+    }
+    try {
+      parseGitHubUrl(body.repositoryUrl);
+    } catch (error) {
+      return Response.json(
+        { error: error instanceof Error ? error.message : "GitHub 仓库链接无法解析。" },
+        { status: 400 }
+      );
+    }
+    run = createAnalysisRun(body.repositoryUrl, body.mode);
   }
 
   const encoder = new TextEncoder();
@@ -46,7 +58,7 @@ export async function POST(request: Request) {
       ping();
       const heartbeat = setInterval(ping, 5000);
       try {
-        for await (const event of runAnalysisPipeline(body.repositoryUrl, body.mode)) {
+        for await (const event of subscribeAnalysisRun(run)) {
           send(event);
         }
       } catch (error) {
@@ -64,7 +76,8 @@ export async function POST(request: Request) {
       "Content-Type": "text/event-stream; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       Connection: "keep-alive",
-      "X-Accel-Buffering": "no"
+      "X-Accel-Buffering": "no",
+      "X-Analysis-Run-Id": run.id
     }
   });
 }

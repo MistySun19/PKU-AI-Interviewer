@@ -163,6 +163,7 @@ export type DimensionDigest = {
 };
 
 export type SseEvent =
+  | { type: "run"; runId: string }
   | { type: "stage"; stage: PipelineStage; detail?: string }
   | { type: "plan"; plan: ResearchPlanSummary }
   | { type: "file_read"; path: string; dimension?: string }
@@ -171,7 +172,8 @@ export type SseEvent =
   | { type: "exam_point"; point: ExamPoint; index: number }
   | { type: "question"; question: InterviewQuestion; index: number; total?: number; source: "repo" | "kaomian" }
   | { type: "result"; result: AnalyzeResponse }
-  | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number }
+  | { type: "session"; sessionId: string; question: InterviewQuestion; index: number; total: number; session?: InterviewSession }
+  | { type: "session_state"; session: InterviewSession }
   | {
       type: "evaluation";
       questionIndex: number;

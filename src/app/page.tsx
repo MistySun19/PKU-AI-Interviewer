@@ -6,6 +6,7 @@ import type {
   AnalyzeResponse,
   ExamPoint,
   InterviewQuestion,
+  InterviewSession,
   InterviewSummary,
   PipelineStage,
   ResearchPlanSummary,
@@ -38,6 +39,7 @@ type PersistedRun = {
   repositoryUrl: string;
   mode: AnalyzeMode;
   status: Status;
+  runId: string;
   result: AnalyzeResponse | null;
   error: string;
   feed: FeedItem[];
@@ -54,6 +56,7 @@ type PersistedRun = {
   chat: ChatMessage[];
   interviewTotal: number;
   summary: InterviewSummary | null;
+  interviewSession: InterviewSession | null;
   answerDraft: string;
 };
 
@@ -80,6 +83,7 @@ export default function Home() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
+  const [analysisRunId, setAnalysisRunId] = useState("");
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [feed, setFeed] = useState<FeedItem[]>([]);
@@ -97,12 +101,14 @@ export default function Home() {
   const [chat, setChat] = useState<ChatMessage[]>([]);
   const [interviewTotal, setInterviewTotal] = useState(0);
   const [summary, setSummary] = useState<InterviewSummary | null>(null);
+  const [interviewSession, setInterviewSession] = useState<InterviewSession | null>(null);
   const [answerDraft, setAnswerDraft] = useState("");
   const [sending, setSending] = useState(false);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [restoredNotice, setRestoredNotice] = useState("");
   const feedSeq = useRef(0);
   const hydrated = useRef(false);
+  const reconnectingRun = useRef(false);
   const interviewReady = mode === "interview" && (sessionId || summary);
   const interviewMissing = mode === "interview" && status === "done" && !sessionId && !summary;
 
@@ -113,9 +119,10 @@ export default function Home() {
 
     setRepositoryUrl(saved.repositoryUrl);
     setMode(saved.mode);
-    setStatus(saved.status === "loading" ? "error" : saved.status);
+    setAnalysisRunId(saved.runId);
+    setStatus(saved.status === "loading" && saved.runId ? "loading" : saved.status === "loading" ? "error" : saved.status);
     setResult(saved.result);
-    setError(saved.status === "loading" ? "上次分析被刷新中断，已恢复刷新前已经生成的内容。" : saved.error);
+    setError(saved.status === "loading" && !saved.runId ? "上次分析被刷新中断，已恢复刷新前已经生成的内容。" : saved.error);
     setFeed(saved.feed);
     setStageLabel(saved.stageLabel);
     setCurrentStage(saved.currentStage);
@@ -130,10 +137,18 @@ export default function Home() {
     setChat(saved.chat);
     setInterviewTotal(saved.interviewTotal);
     setSummary(saved.summary);
+    setInterviewSession(saved.interviewSession);
     setAnswerDraft(saved.answerDraft);
     setLastSavedAt(saved.savedAt);
-    setRestoredNotice(saved.status === "loading" ? "已恢复刷新前的中间结果，原分析流已中断。" : "已恢复上次分析记录。");
+    setRestoredNotice(
+      saved.status === "loading" && saved.runId
+        ? "正在重新连接上次分析任务。"
+        : saved.status === "loading"
+          ? "已恢复刷新前的中间结果，原分析流已中断。"
+          : "已恢复上次分析记录。"
+    );
     feedSeq.current = Math.max(0, ...saved.feed.map((item) => item.id), ...saved.chat.map((item) => item.id));
+    if (saved.status === "loading" && saved.runId) void reconnectAnalysisRun(saved.runId);
   }, []);
 
   useEffect(() => {
@@ -147,6 +162,7 @@ export default function Home() {
       repositoryUrl,
       mode,
       status,
+      runId: analysisRunId,
       result,
       error,
       feed,
@@ -163,6 +179,7 @@ export default function Home() {
       chat,
       interviewTotal,
       summary,
+      interviewSession,
       answerDraft
     };
     try {
@@ -172,6 +189,7 @@ export default function Home() {
       setRestoredNotice("浏览器本地存储空间不足，本次记录可能无法完整保存。");
     }
   }, [
+    analysisRunId,
     answerDraft,
     chat,
     currentStage,
@@ -181,6 +199,7 @@ export default function Home() {
     filesRead,
     findingsSeen,
     interviewTotal,
+    interviewSession,
     latestReadPath,
     mode,
     planSummary,
@@ -212,6 +231,9 @@ export default function Home() {
         setStageLabel(event.detail ?? event.stage);
         pushFeed("stage", event.detail ?? event.stage);
         break;
+      case "run":
+        setAnalysisRunId(event.runId);
+        break;
       case "file_read":
         setFilesRead((prev) => prev + 1);
         setLatestReadPath(event.path);
@@ -241,6 +263,7 @@ export default function Home() {
         break;
       case "session":
         setSessionId(event.sessionId);
+        setInterviewSession(event.session ?? null);
         setInterviewTotal(event.total);
         pushChat({
           role: "interviewer",
@@ -248,6 +271,9 @@ export default function Home() {
           text: event.question.question,
           meta: `Q1/${event.total}`
         });
+        break;
+      case "session_state":
+        setInterviewSession(event.session);
         break;
       case "evaluation":
         pushChat({
@@ -294,6 +320,7 @@ export default function Home() {
       setStatus("error");
       setError(urlError);
       setResult(null);
+      setAnalysisRunId("");
       setCopied(false);
       setFeed([]);
       setReportDraft("");
@@ -303,6 +330,7 @@ export default function Home() {
       setChat([]);
       setInterviewTotal(0);
       setSummary(null);
+      setInterviewSession(null);
       setAnswerDraft("");
       setStageLabel("");
       setCurrentStage(null);
@@ -315,6 +343,7 @@ export default function Home() {
     setStatus("loading");
     setError("");
     setResult(null);
+    setAnalysisRunId("");
     setCopied(false);
     setFeed([]);
     setReportDraft("");
@@ -324,6 +353,7 @@ export default function Home() {
     setChat([]);
     setInterviewTotal(0);
     setSummary(null);
+    setInterviewSession(null);
     setAnswerDraft("");
     setStageLabel("连接分析服务");
     setCurrentStage("scout");
@@ -343,12 +373,61 @@ export default function Home() {
         const data = await response.json().catch(() => null);
         throw new Error(data?.error ?? `分析失败 (${response.status})。`);
       }
+      const responseRunId = response.headers.get("X-Analysis-Run-Id");
+      if (responseRunId) setAnalysisRunId(responseRunId);
 
       await consumeSse(response.body, handleEvent);
       setStatus((prev) => (prev === "loading" ? "done" : prev));
     } catch (err) {
       setError(err instanceof Error ? err.message : "分析失败。");
       setStatus("error");
+    }
+  }
+
+  async function reconnectAnalysisRun(runId: string) {
+    if (reconnectingRun.current) return;
+    reconnectingRun.current = true;
+    setError("");
+    setStatus("loading");
+    setRestoredNotice("正在重新连接上次分析任务。");
+
+    try {
+      const response = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ runId })
+      });
+      if (!response.ok || !response.body) {
+        const data = await response.json().catch(() => null);
+        throw new Error(data?.error ?? `续接分析失败 (${response.status})。`);
+      }
+      const responseRunId = response.headers.get("X-Analysis-Run-Id");
+      if (responseRunId) setAnalysisRunId(responseRunId);
+      setFeed([]);
+      setReportDraft("");
+      setExamPoints([]);
+      setQuestions([]);
+      setSessionId("");
+      setChat([]);
+      setInterviewTotal(0);
+      setSummary(null);
+      setInterviewSession(null);
+      setStageLabel("重新连接分析任务");
+      setCurrentStage(null);
+      setPlanSummary(null);
+      setFilesRead(0);
+      setFindingsSeen(0);
+      setLatestReadPath("");
+      feedSeq.current = 0;
+      await consumeSse(response.body, handleEvent);
+      setStatus((prev) => (prev === "loading" ? "done" : prev));
+      setRestoredNotice("已续接并恢复上次分析任务。");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "续接分析失败，请重新开始。");
+      setStatus("error");
+      setRestoredNotice("服务端分析任务无法续接，已保留本地保存的内容。");
+    } finally {
+      reconnectingRun.current = false;
     }
   }
 
@@ -366,7 +445,7 @@ export default function Home() {
       const response = await fetch("/api/interview", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId, answer, end })
+        body: JSON.stringify({ sessionId, answer, end, restoreSession: interviewSession ?? undefined })
       });
       if (!response.ok || !response.body) {
         const data = await response.json().catch(() => null);
@@ -396,6 +475,7 @@ export default function Home() {
     setRepositoryUrl("");
     setStatus("idle");
     setResult(null);
+    setAnalysisRunId("");
     setError("");
     setCopied(false);
     setFeed([]);
@@ -406,6 +486,7 @@ export default function Home() {
     setChat([]);
     setInterviewTotal(0);
     setSummary(null);
+    setInterviewSession(null);
     setAnswerDraft("");
     setStageLabel("");
     setCurrentStage(null);
@@ -927,6 +1008,7 @@ function readPersistedRun(): PersistedRun | null {
       repositoryUrl: data.repositoryUrl,
       mode: data.mode,
       status: data.status,
+      runId: typeof data.runId === "string" ? data.runId : "",
       result: data.result ?? null,
       error: typeof data.error === "string" ? data.error : "",
       feed: Array.isArray(data.feed) ? data.feed : [],
@@ -943,6 +1025,7 @@ function readPersistedRun(): PersistedRun | null {
       chat: Array.isArray(data.chat) ? data.chat : [],
       interviewTotal: typeof data.interviewTotal === "number" ? data.interviewTotal : 0,
       summary: data.summary ?? null,
+      interviewSession: data.interviewSession ?? null,
       answerDraft: typeof data.answerDraft === "string" ? data.answerDraft : ""
     };
   } catch {

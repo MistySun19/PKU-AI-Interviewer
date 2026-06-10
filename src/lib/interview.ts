@@ -74,6 +74,19 @@ export function getInterviewSession(id: string): InterviewSession | undefined {
   return session;
 }
 
+export function restoreInterviewSession(snapshot: InterviewSession): InterviewSession {
+  evictStaleSessions();
+  const session: InterviewSession = {
+    ...snapshot,
+    busy: false,
+    transcript: [...snapshot.transcript],
+    evaluations: [...snapshot.evaluations],
+    questions: [...snapshot.questions]
+  };
+  sessions.set(session.id, session);
+  return session;
+}
+
 export type NextStep =
   | { action: "follow_up"; followUpQuestion: string }
   | { action: "next" }
