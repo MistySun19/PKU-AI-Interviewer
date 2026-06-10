@@ -27,11 +27,19 @@ import type {
   Understanding
 } from "./types";
 
-const WORKER_CONCURRENCY = 3;
-const MAX_RESEARCH_ROUNDS = 2;
+// 并发深读维度数：每次 LLM 调用有 ~13s 固定网关延迟，多维度一批跑完能省批次等待
+const WORKER_CONCURRENCY = clampInt(process.env.RESEARCH_CONCURRENCY, 6, 1, 16);
+// digest 轮次：默认 2 轮（gap 追读补全证据，质量底线，不可降到 1）
+const MAX_RESEARCH_ROUNDS = clampInt(process.env.RESEARCH_MAX_ROUNDS, 2, 2, 3);
 const MAX_EXTRA_FILES = 8;
 const MAX_REQUESTED_FILES_PER_DIMENSION = 3;
 const WORKER_INPUT_CHAR_BUDGET = 160_000;
+
+function clampInt(raw: string | undefined, fallback: number, min: number, max: number): number {
+  const value = Number(raw);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, Math.trunc(value)));
+}
 
 type DimensionAssignment = {
   key: ResearchPlanSummary["dimensions"][number]["key"];

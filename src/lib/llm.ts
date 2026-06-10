@@ -242,7 +242,7 @@ ${context.readme.slice(0, 12_000)}
       }
     ];
   const parsed = await withRetry("plan", async () =>
-    parseModelJson(planSchema, await chatJson(messages, 180_000), "plan")
+    parseModelJson(planSchema, await chatJson(messages, 180_000, "research"), "plan")
   );
 
   const known = new Set(context.files.map((file) => file.path));
@@ -296,7 +296,7 @@ ${args.filesBlock}
       }
     ];
   return withRetry(`digest:${args.dimensionKey}`, async () =>
-    parseModelJson(digestSchema, await chatJson(messages, 180_000), `digest:${args.dimensionKey}`)
+    parseModelJson(digestSchema, await chatJson(messages, 180_000, "research"), `digest:${args.dimensionKey}`)
   );
 }
 
@@ -832,15 +832,16 @@ export function formatModelError(error: unknown): string {
 }
 
 type ChatMessage = { role: "system" | "user"; content: string };
+type ModelRole = "research" | "final";
 
-async function chatJson(messages: ChatMessage[], timeoutMs = 240_000): Promise<string> {
+async function chatJson(messages: ChatMessage[], timeoutMs = 240_000, role: ModelRole = "final"): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) throw new Error("未配置 OPENAI_API_KEY 或 TOKENDANCE_API_KEY。");
 
   const chatCompletionsUrl =
     process.env.TOKENDANCE_CHAT_COMPLETIONS_URL ??
     `${(process.env.OPENAI_BASE_URL ?? process.env.TOKENDANCE_BASE_URL ?? "https://api.openai.com/v1").replace(/\/$/, "")}/chat/completions`;
-  const model = getModelName();
+  const model = getModelName(role);
   const response = await fetch(chatCompletionsUrl, {
     method: "POST",
     signal: AbortSignal.timeout(timeoutMs),
@@ -868,8 +869,10 @@ async function chatJson(messages: ChatMessage[], timeoutMs = 240_000): Promise<s
   return content;
 }
 
-function getModelName(): string {
+function getModelName(role: ModelRole = "final"): string {
   if (process.env.OPENAI_MODEL) return process.env.OPENAI_MODEL;
+  // 调研阶段（plan/digest）可单独配更快的模型；不配则回退到主模型
+  if (role === "research" && process.env.TOKENDANCE_RESEARCH_MODEL) return process.env.TOKENDANCE_RESEARCH_MODEL;
   if (process.env.TOKENDANCE_MODEL) return process.env.TOKENDANCE_MODEL;
   if (process.env.TOKENDANCE_API_KEY) return "deepseek-v4-pro";
   return "gpt-4o-mini";

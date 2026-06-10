@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { DimensionDigest, RepoContext, RepoFileContent, SseEvent } from "./types";
 
+// 在 orchestrator 模块加载前启用 2 轮，覆盖默认 1 轮，以便测试 gap 追读的第二轮
+vi.hoisted(() => {
+  process.env.RESEARCH_MAX_ROUNDS = "2";
+});
+
 vi.mock("./github", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./github")>();
   return { ...actual, fetchRepoContext: vi.fn(), fetchSingleFile: vi.fn() };
