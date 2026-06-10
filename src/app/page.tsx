@@ -75,7 +75,7 @@ export default function Home() {
     setResult(null);
     setSelectedRiskId("");
     setSelectedEvidenceKey("");
-    setProgress([{ id: crypto.randomUUID(), text: "正在读取仓库，准备定位会被问穿的地方。" }]);
+    setProgress([{ id: createClientId(), text: "正在读取仓库，准备定位会被问穿的地方。" }]);
     setCurrentStage("scout");
     setFilesRead(0);
     setFindingsSeen(0);
@@ -164,7 +164,7 @@ export default function Home() {
   }
 
   function pushProgress(text: string) {
-    setProgress((items) => [...items.slice(-8), { id: crypto.randomUUID(), text }]);
+    setProgress((items) => [...items.slice(-8), { id: createClientId(), text }]);
   }
 
   function selectRisk(risk: RepoInterviewRisk) {
@@ -737,4 +737,11 @@ function riskLevelLabel(level: RepoInterviewRisk["riskLevel"]): string {
   if (level === "high") return "高风险";
   if (level === "medium") return "中风险";
   return "低风险";
+}
+
+function createClientId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
 }
