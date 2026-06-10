@@ -134,6 +134,45 @@ h2 {
   cursor: not-allowed;
 }
 
+.persistenceRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  margin-top: 10px;
+  border: 1px solid var(--line);
+  background: color-mix(in srgb, var(--panel) 84%, var(--panel2));
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.persistenceRow span {
+  overflow-wrap: anywhere;
+}
+
+.persistenceRow button {
+  flex: 0 0 auto;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--accent-dark);
+  cursor: pointer;
+  padding: 7px 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.persistenceRow button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.persistenceRow button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .progress,
 .error {
   margin-top: 16px;
@@ -1397,6 +1436,11 @@ pre {
 
   .inputRow button {
     min-height: 48px;
+  }
+
+  .persistenceRow {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .sidebar {

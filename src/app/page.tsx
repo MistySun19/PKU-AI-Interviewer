@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   AnalyzeMode,
   AnalyzeResponse,
@@ -29,6 +29,33 @@ type ChatMessage =
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 type RiskLevel = ExamPoint["riskLevel"];
 type Difficulty = InterviewQuestion["difficulty"];
+
+const PERSISTENCE_KEY = "pku-ai-interviewer:last-run:v1";
+
+type PersistedRun = {
+  version: 1;
+  savedAt: number;
+  repositoryUrl: string;
+  mode: AnalyzeMode;
+  status: Status;
+  result: AnalyzeResponse | null;
+  error: string;
+  feed: FeedItem[];
+  stageLabel: string;
+  currentStage: PipelineStage | null;
+  planSummary: ResearchPlanSummary | null;
+  filesRead: number;
+  findingsSeen: number;
+  latestReadPath: string;
+  reportDraft: string;
+  examPoints: ExamPoint[];
+  questions: InterviewQuestion[];
+  sessionId: string;
+  chat: ChatMessage[];
+  interviewTotal: number;
+  summary: InterviewSummary | null;
+  answerDraft: string;
+};
 
 async function consumeSse(body: ReadableStream<Uint8Array>, onEvent: (event: SseEvent) => void): Promise<void> {
   const reader = body.getReader();
@@ -72,9 +99,100 @@ export default function Home() {
   const [summary, setSummary] = useState<InterviewSummary | null>(null);
   const [answerDraft, setAnswerDraft] = useState("");
   const [sending, setSending] = useState(false);
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [restoredNotice, setRestoredNotice] = useState("");
   const feedSeq = useRef(0);
+  const hydrated = useRef(false);
   const interviewReady = mode === "interview" && (sessionId || summary);
   const interviewMissing = mode === "interview" && status === "done" && !sessionId && !summary;
+
+  useEffect(() => {
+    const saved = readPersistedRun();
+    hydrated.current = true;
+    if (!saved) return;
+
+    setRepositoryUrl(saved.repositoryUrl);
+    setMode(saved.mode);
+    setStatus(saved.status === "loading" ? "error" : saved.status);
+    setResult(saved.result);
+    setError(saved.status === "loading" ? "上次分析被刷新中断，已恢复刷新前已经生成的内容。" : saved.error);
+    setFeed(saved.feed);
+    setStageLabel(saved.stageLabel);
+    setCurrentStage(saved.currentStage);
+    setPlanSummary(saved.planSummary);
+    setFilesRead(saved.filesRead);
+    setFindingsSeen(saved.findingsSeen);
+    setLatestReadPath(saved.latestReadPath);
+    setReportDraft(saved.reportDraft);
+    setExamPoints(saved.examPoints);
+    setQuestions(saved.questions);
+    setSessionId(saved.sessionId);
+    setChat(saved.chat);
+    setInterviewTotal(saved.interviewTotal);
+    setSummary(saved.summary);
+    setAnswerDraft(saved.answerDraft);
+    setLastSavedAt(saved.savedAt);
+    setRestoredNotice(saved.status === "loading" ? "已恢复刷新前的中间结果，原分析流已中断。" : "已恢复上次分析记录。");
+    feedSeq.current = Math.max(0, ...saved.feed.map((item) => item.id), ...saved.chat.map((item) => item.id));
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated.current) return;
+    if (!hasPersistableContent({ currentStage, result, reportDraft, feed, examPoints, questions, sessionId, chat, summary })) return;
+
+    const savedAt = Date.now();
+    const snapshot: PersistedRun = {
+      version: 1,
+      savedAt,
+      repositoryUrl,
+      mode,
+      status,
+      result,
+      error,
+      feed,
+      stageLabel,
+      currentStage,
+      planSummary,
+      filesRead,
+      findingsSeen,
+      latestReadPath,
+      reportDraft,
+      examPoints,
+      questions,
+      sessionId,
+      chat,
+      interviewTotal,
+      summary,
+      answerDraft
+    };
+    try {
+      window.localStorage.setItem(PERSISTENCE_KEY, JSON.stringify(snapshot));
+      setLastSavedAt(savedAt);
+    } catch {
+      setRestoredNotice("浏览器本地存储空间不足，本次记录可能无法完整保存。");
+    }
+  }, [
+    answerDraft,
+    chat,
+    currentStage,
+    error,
+    examPoints,
+    feed,
+    filesRead,
+    findingsSeen,
+    interviewTotal,
+    latestReadPath,
+    mode,
+    planSummary,
+    questions,
+    reportDraft,
+    repositoryUrl,
+    result,
+    sessionId,
+    stageLabel,
+    status,
+    summary
+  ]);
 
   function pushFeed(kind: FeedItem["kind"], text: string) {
     feedSeq.current += 1;
@@ -269,6 +387,37 @@ export default function Home() {
     window.setTimeout(() => setCopied(false), 1600);
   }
 
+  function clearPersistedRun() {
+    try {
+      window.localStorage.removeItem(PERSISTENCE_KEY);
+    } catch {
+      // ignore localStorage failures; clearing UI state still matters.
+    }
+    setRepositoryUrl("");
+    setStatus("idle");
+    setResult(null);
+    setError("");
+    setCopied(false);
+    setFeed([]);
+    setReportDraft("");
+    setExamPoints([]);
+    setQuestions([]);
+    setSessionId("");
+    setChat([]);
+    setInterviewTotal(0);
+    setSummary(null);
+    setAnswerDraft("");
+    setStageLabel("");
+    setCurrentStage(null);
+    setPlanSummary(null);
+    setFilesRead(0);
+    setFindingsSeen(0);
+    setLatestReadPath("");
+    setLastSavedAt(null);
+    setRestoredNotice("");
+    feedSeq.current = 0;
+  }
+
   return (
     <main className="shell">
       <section className="workspace">
@@ -316,6 +465,18 @@ export default function Home() {
             {status === "loading" ? "分析中" : mode === "survey" ? "生成报告" : "开始面试"}
           </button>
         </div>
+
+        {(lastSavedAt || restoredNotice) && (
+          <div className="persistenceRow">
+            <span>
+              {restoredNotice || "本轮记录已自动保存"}
+              {lastSavedAt ? ` · ${formatSavedAt(lastSavedAt)}` : ""}
+            </span>
+            <button type="button" onClick={clearPersistedRun} disabled={status === "loading"}>
+              清空本地记录
+            </button>
+          </div>
+        )}
 
         {status !== "idle" && (currentStage || feed.length > 0 || filesRead > 0 || result || reportDraft) && (
           <ProgressDashboard
@@ -748,6 +909,106 @@ function validateGitHubRepoUrl(input: string): string | null {
     return "GitHub 分支链接需要包含 branch。";
   }
   return null;
+}
+
+function readPersistedRun(): PersistedRun | null {
+  try {
+    const raw = window.localStorage.getItem(PERSISTENCE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw) as Partial<PersistedRun>;
+    if (data.version !== 1) return null;
+    if (typeof data.savedAt !== "number") return null;
+    if (typeof data.repositoryUrl !== "string") return null;
+    if (!isAnalyzeMode(data.mode)) return null;
+    if (!isStatus(data.status)) return null;
+    return {
+      version: 1,
+      savedAt: data.savedAt,
+      repositoryUrl: data.repositoryUrl,
+      mode: data.mode,
+      status: data.status,
+      result: data.result ?? null,
+      error: typeof data.error === "string" ? data.error : "",
+      feed: Array.isArray(data.feed) ? data.feed : [],
+      stageLabel: typeof data.stageLabel === "string" ? data.stageLabel : "",
+      currentStage: isPipelineStage(data.currentStage) ? data.currentStage : null,
+      planSummary: data.planSummary ?? null,
+      filesRead: typeof data.filesRead === "number" ? data.filesRead : 0,
+      findingsSeen: typeof data.findingsSeen === "number" ? data.findingsSeen : 0,
+      latestReadPath: typeof data.latestReadPath === "string" ? data.latestReadPath : "",
+      reportDraft: typeof data.reportDraft === "string" ? data.reportDraft : "",
+      examPoints: Array.isArray(data.examPoints) ? data.examPoints : [],
+      questions: Array.isArray(data.questions) ? data.questions : [],
+      sessionId: typeof data.sessionId === "string" ? data.sessionId : "",
+      chat: Array.isArray(data.chat) ? data.chat : [],
+      interviewTotal: typeof data.interviewTotal === "number" ? data.interviewTotal : 0,
+      summary: data.summary ?? null,
+      answerDraft: typeof data.answerDraft === "string" ? data.answerDraft : ""
+    };
+  } catch {
+    return null;
+  }
+}
+
+function hasPersistableContent({
+  currentStage,
+  result,
+  reportDraft,
+  feed,
+  examPoints,
+  questions,
+  sessionId,
+  chat,
+  summary
+}: {
+  currentStage: PipelineStage | null;
+  result: AnalyzeResponse | null;
+  reportDraft: string;
+  feed: FeedItem[];
+  examPoints: ExamPoint[];
+  questions: InterviewQuestion[];
+  sessionId: string;
+  chat: ChatMessage[];
+  summary: InterviewSummary | null;
+}) {
+  return Boolean(
+    currentStage ||
+      result ||
+      reportDraft ||
+      feed.length > 0 ||
+      examPoints.length > 0 ||
+      questions.length > 0 ||
+      sessionId ||
+      chat.length > 0 ||
+      summary
+  );
+}
+
+function isAnalyzeMode(value: unknown): value is AnalyzeMode {
+  return value === "survey" || value === "interview";
+}
+
+function isStatus(value: unknown): value is Status {
+  return value === "idle" || value === "loading" || value === "done" || value === "error";
+}
+
+function isPipelineStage(value: unknown): value is PipelineStage {
+  return (
+    value === "scout" ||
+    value === "plan" ||
+    value === "research" ||
+    value === "synthesize" ||
+    value === "questions" ||
+    value === "interview_ready"
+  );
+}
+
+function formatSavedAt(savedAt: number): string {
+  return new Intl.DateTimeFormat("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).format(savedAt);
 }
 
 function RenderedInterviewPlan({
