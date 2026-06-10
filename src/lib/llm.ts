@@ -9,9 +9,11 @@ import {
 import type {
   AnalysisMode,
   AnalyzeResponse,
+  AnswerEvaluation,
   DimensionDigest,
   ExamPoint,
   InterviewQuestion,
+  InterviewSummary,
   PaperCodeMapItem,
   RepoContext,
   ResearchPlanSummary,
@@ -549,6 +551,107 @@ function tryParseNdjsonLine(line: string): unknown {
   } catch {
     return undefined;
   }
+}
+
+const scoreSchema = z.preprocess((value) => {
+  const num = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(num) ? Math.min(5, Math.max(1, Math.round(num))) : 3;
+}, z.number());
+
+const evaluationSchema = z.object({
+  score: scoreSchema,
+  verdict: lenientEnum(["strong", "ok", "weak"], "ok"),
+  feedback: z.string().default(""),
+  gaps: stringArraySchema,
+  followUpQuestion: z.string().optional().default("")
+});
+
+const interviewSummarySchema = z.object({
+  overall: z.string().default(""),
+  strengths: stringArraySchema,
+  weaknesses: stringArraySchema,
+  reviewPlan: stringArraySchema,
+  scores: z.preprocess(
+    (value) => (Array.isArray(value) ? value : []),
+    z.array(z.object({ question: z.string(), score: scoreSchema }))
+  )
+});
+
+export async function evaluateAnswer(args: {
+  repoFullName: string;
+  understanding: Understanding;
+  question: InterviewQuestion;
+  questionText: string;
+  answer: string;
+}): Promise<AnswerEvaluation> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `仓库：${args.repoFullName}
+项目理解摘要：${args.understanding.summary}
+核心模块：${args.understanding.coreModules.map((module) => module.name).join("、") || "未识别"}
+
+主考题元数据：
+${JSON.stringify(
+  {
+    question: args.question.question,
+    evidence: args.question.evidence,
+    expectedAnswer: args.question.expectedAnswer,
+    redFlags: args.question.redFlags,
+    followUps: args.question.followUps
+  },
+  null,
+  2
+)}
+
+实际提问（可能是该主考题下的追问）：${args.questionText}
+
+候选人回答：
+"""
+${args.answer.slice(0, 4000)}
+"""
+
+任务：作为面试官评估这个回答。返回 JSON：
+{"score": 1到5的整数, "verdict": "strong|ok|weak", "feedback": "对候选人说的 2-3 句中文反馈，先肯定可取之处，再点出最关键缺口", "gaps": ["缺失的关键要点"], "followUpQuestion": "verdict 为 weak 时给一个针对缺口的追问，否则给空字符串"}
+
+评分标准：
+- 5/strong：覆盖期望要点，能落到仓库具体文件/实现，无红旗回答。
+- 3-4/ok：方向正确但深度不足或漏了关键点。
+- 1-2/weak：踩中红旗、答非所问、只有空泛套话，或回答过短/直接说不知道。`
+    }
+  ];
+  return withRetry("evaluate", async () =>
+    parseModelJson(evaluationSchema, await chatJson(messages, 120_000), "evaluate")
+  );
+}
+
+export async function summarizeInterview(args: {
+  repoFullName: string;
+  understanding: Understanding;
+  rounds: Array<{ question: string; answer: string; score: number; verdict: string; gaps: string[] }>;
+}): Promise<InterviewSummary> {
+  const messages: ChatMessage[] = [
+    { role: "system", content: SYSTEM_PROMPT },
+    {
+      role: "user",
+      content: `仓库：${args.repoFullName}
+项目理解摘要：${args.understanding.summary}
+
+完整面试记录（按时间顺序）：
+${JSON.stringify(args.rounds, null, 2)}
+
+任务：生成面试总结。返回 JSON：
+{"overall": "3-5 句总体评价，中文，直接对候选人说", "strengths": ["表现好的点"], "weaknesses": ["薄弱点"], "reviewPlan": ["面试前补坑动作，必须具体可执行，结合本仓库"], "scores": [{"question": "题目", "score": 1到5}]}
+
+要求：
+- weaknesses 和 reviewPlan 要落到具体题目和仓库模块，不要空泛建议。
+- scores 覆盖每道主考题。`
+    }
+  ];
+  return withRetry("summary", async () =>
+    parseModelJson(interviewSummarySchema, await chatJson(messages, 180_000), "summary")
+  );
 }
 
 export function assembleResponse(
