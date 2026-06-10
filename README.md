@@ -70,6 +70,7 @@ alpha.1 暂不接入 `kaomian`，先把 GitHub repo paper-code 理解做扎实�
 - `docs/workflows/WORKLOG_SYSTEM.md`: 工作日志体系
 - `docs/comparisons/devcontext-vs-pku-agent-workflow.html`: DevContext.AI 和本项目 agent workflow 对比
 - `docs/research/iclr-paper-repo-research.md`: ICLR / AI paper repo 结构调研与 alpha.1 文件选择依据
+- `docs/research/deep-research-agent-design.md`: Repo Deep Research Agent 调研结论与架构设计
 - `docs/adr/`: 架构决策记录
 - `PROJECT_POSITIONING_v0.0.1.md`: v0.0.1 项目定位总结
 - `interview-worklog.md`: 用户访谈工作日志
